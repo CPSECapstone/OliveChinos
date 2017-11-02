@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = {
     entry:  __dirname + '/js/index.jsx',
     output: {
@@ -16,6 +17,11 @@ const config = {
           use: 'babel-loader'
         }
       ]
-    }
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        title: 'Olive Chinos MyCRT'
+      })
+    ]
 };
 module.exports = config;

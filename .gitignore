@@ -1,0 +1,15 @@
+# gitignore for Olive Chinos
+.* # ignore the hidden files
+!.gitignore
+node_modules/
+.bash_history
+.bash_logout
+.bashrc
+.cache/
+.lesshst
+.npm/
+.profile
+.ssh/
+.sudo_as_admin_successful
+.viminfo
+dist/
