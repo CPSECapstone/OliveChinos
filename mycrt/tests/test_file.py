@@ -14,4 +14,4 @@ if __name__ == '__main__':
 """
 
 def test_simple(): 
-    assert 2 == 1
+    assert 1 == 1
