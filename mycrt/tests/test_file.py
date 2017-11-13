@@ -1,5 +1,7 @@
 #from server import mycrt
 import pytest
+from context import *
+
 
 """
 if __name__ == '__main__':
@@ -15,3 +17,6 @@ if __name__ == '__main__':
 
 def test_simple(): 
     assert 1 == 1
+
+def test_import():
+    assert "Hello World!" == server.mycrt.hello()
