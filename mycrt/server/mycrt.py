@@ -9,7 +9,7 @@ def index():
 
 @application.route("/hello")
 def hello():
-    return "Hello World!"
+    return "Hello World! Testing env"
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0')

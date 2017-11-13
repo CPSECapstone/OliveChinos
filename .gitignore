@@ -14,3 +14,4 @@ node_modules/
 .viminfo
 dist/
 npm-debug.log
+mycrt/mycrtenv/
