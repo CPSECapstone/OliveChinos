@@ -8,7 +8,7 @@ node_modules/
 .lesshst
 .npm/
 .profile
-.pyc
+*.pyc
 .ssh/
 .gitconfig
 .sudo_as_admin_successful
