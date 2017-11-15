@@ -10,13 +10,18 @@ export default class Login extends Component {
       email: '',
       password: ''
     }
+    this.handleEmailChange = this.handleEmailChange.bind(this)
+    this.validateForm = this.validateForm.bind(this)
+    this.handlePasswordChange = this.handlePasswordChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+
   }
 
   validateForm() {
     return this.state.email.length > 0 && this.state.password.length > 0
   }
 
-  handleEmailChange(inputEmail) {
+  handleEmailChange = inputEmail => {
     this.setState({
       email: inputEmail.value
     });
