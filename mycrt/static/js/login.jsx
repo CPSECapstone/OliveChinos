@@ -21,7 +21,7 @@ export default class Login extends Component {
     return this.state.email.length > 0 && this.state.password.length > 0
   }
 
-  handleEmailChange = inputEmail => {
+  handleEmailChange(inputEmail) {
     this.setState({
       email: inputEmail.value
     });
