@@ -2,8 +2,8 @@ import boto3
 
 # replace with user input
 # hard coding is bad
-user_access_key_id = 'AKIAIOKVCKN2C2GSC7CA'
-user_secret_access_key = 'bWZz2Oou4ro3J9whrwr2EqwUEZaTWWPrI8vPsoSH'
+user_access_key_id = 'AKIAIE2W56K7DHZBQO4A'
+user_secret_access_key = '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'
 
 # "rds" is the access point into the user's rds resources
 rds = boto3.client(
