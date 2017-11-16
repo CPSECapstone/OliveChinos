@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import StaticHome from './StaticHome'
+
 export default class Login extends Component {
     
 
