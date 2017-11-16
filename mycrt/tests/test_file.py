@@ -1,6 +1,6 @@
 #from server import mycrt
 import pytest
-from context import *
+from .context import *
 
 
 """

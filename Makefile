@@ -3,6 +3,7 @@ clean:
 	find . -name "*.pyo" -type f -delete
 
 init:
+	cd ./mycrt/static && npm install && npm run build
 	python -m pip install -r requirements.txt
 
 test: clean
