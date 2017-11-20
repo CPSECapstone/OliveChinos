@@ -10,9 +10,15 @@ username = "olive"
 password = "olivechinos"
 database = "CRDB"
 
-access_key = "AKIAI7RV7YQJG4IHVANQ"
-secret_key = "8G8hw8Htlc4dfo6AHon4ZXS1YFAkVnm5qNUrLFr4"
+access_key = None # Replace with actual keys
+secret_key = None
 region = "us-east-2"
+
+credentials = {
+  "aws_access_key" : access_key,
+  "aws_secret_access_key" : secret_key,
+  "region_name" : region
+}
 
 
 s3_client = boto3.client(
@@ -60,8 +66,12 @@ print("Connection closed.")
 print("Accessing log file.")
 
 def notBanned(line):
-  return "Query" in line[:30] and not("2 Query SELECT 1" in line  or 
-             "2 Query SELECT count(*) from information_schema.TABLES WHERE TABLE_SCHEMA = 'mysql' AND TABLE_NAME = 'rds_heartbeat2'" in line)
+  return "Query" in line[:30] and not (
+    "2 Query SELECT 1" in line  or 
+    "2 Query SELECT count(*) from information_schema.TABLES WHERE TABLE_SCHEMA = 'mysql' AND TABLE_NAME = 'rds_heartbeat2'" in line or
+    "2 Query SELECT value FROM mysql.rds_hearbeat2" in line or
+    "2 Query SELECT NAME< VALUE FROM mysql.rds_configuration" in line or
+    )
 
 log_file = rds_client.download_db_log_file_portion(
   DBInstanceIdentifier = db_id,
