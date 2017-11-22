@@ -7,9 +7,12 @@ application = Flask(__name__, static_folder="../static/dist", template_folder=".
 def index():
     return render_template("index.html")
 
-@application.route("/hello")
-def hello():
-    return "Hello World!"
+
+# this is an example of a route to get data from functions in the python files
+# and send it to the user interface
+@application.route("/analytics")
+def analytics():
+    return get_analytics()
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0')

@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = {
-    entry:  __dirname + '/js/index.jsx',
+    entry:  __dirname + '/index.jsx',
     output: {
         path: __dirname + '/dist',
         filename: 'bundle.js',

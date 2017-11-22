@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Analytics from "./Analytics";
 
 export default class StaticHome extends React.Component {
 
@@ -91,7 +92,7 @@ export default class StaticHome extends React.Component {
           }}>
         <h1 style={{
           textAlign: 'center',
-          marginBottom: '30px'}}>MyCRT Tool</h1>
+          marginBottom: '30px'}}>MyCRT Tool ****</h1>
         <div>
           <h3
           style={{
@@ -123,6 +124,8 @@ export default class StaticHome extends React.Component {
           <button style={{backgroundColor:'#3e6382'}} id="button" type="button" className="btn btn-primary">Refresh Metrics</button>
           </div>
         </div>
+
+        <Analytics />
 
       </div>
     )
