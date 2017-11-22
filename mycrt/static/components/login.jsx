@@ -1,23 +1,26 @@
 import React, { Component } from 'react'
+import {connect} from 'react-redux'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import StaticHome from './StaticHome'
 import MakeshiftHome from './MakeshiftHome'
 
-export default class Login extends Component {
-    
+import {setAuth, setPublicKey, setPrivateKey} from '../actions'
+
+
+class Login extends Component {
 
   constructor(props) {
     super(props)
-
     this.state = {
-      validLogin: false,
+      validLogin: this.props.loggedIn,
       publicKey: this.props.publicKey,
-      privateKey: this.props.privateKey,
+      privateKey: this.props.privateKey
     }
 
-    this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
     this.validateForm = this.validateForm.bind(this)
     this.handlePrivateKeyChange = this.handlePrivateKeyChange.bind(this)
+    this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
+    this.handleLogin = this.handleLogin.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
@@ -26,18 +29,19 @@ export default class Login extends Component {
     return true;
   }
 
-  handlePublicKeyChange(inputPublicKey) {
-      console.log(inputPublicKey.value)
-    this.setState({
-      publicKey: inputPublicKey.value
-    });
+  handlePrivateKeyChange(event) {
+    this.setState({privateKey: event.target.value});
   }
 
-  handlePrivateKeyChange(inputPrivateKey) {
-      console.log(inputPrivateKey.value)
-    this.setState({
-      privateKey: inputPrivateKey.value
-    })
+  handlePublicKeyChange(event) {
+    this.setState({publicKey: event.target.value});
+  }
+
+  handleLogin(event) {
+    event.preventDefault();
+    this.props.dispatch(setAuth())
+    this.props.dispatch(setPublicKey(this.state.publicKey));
+    this.props.dispatch(setPrivateKey(this.state.privateKey));
   }
 
   handleSubmit(event) {
@@ -46,51 +50,38 @@ export default class Login extends Component {
 
   renderLogin() {
       return(
-    <div 
+    <div
       style={{
           textAlign:'center',
           width:'50vw',
           border:'thin solid black',
           padding: '15px'
           }}className="Login">
-        <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="email" bsSize="large">
-            <ControlLabel>Public AWS Key</ControlLabel>
-            <FormControl
-              autoFocus
-              value={this.state.publicKey}
-              onChange={this.handlePublicKeyChange}
-            />
-          </FormGroup>
-          <FormGroup controlId="password" bsSize="large">
-            <ControlLabel>Private AWS Key</ControlLabel>
-            <FormControl
-              value={this.state.privateKey}
-              onChange={this.handlePrivateKeyChange}
-              type="password"
-            />
-          </FormGroup>
-          <Button
-            block
-            bsSize="large"
-            disabled={!this.validateForm()}
-            type="submit"
-            onClick={() => this.setState({validLogin: true})}
-          >
-            Login
-          </Button>
+        <form onSubmit={this.handleLogin}>
+        <ControlLabel>Public AWS Key</ControlLabel>
+        <input type="text" onChange={this.handlePublicKeyChange} />
+        <ControlLabel>Private AWS Key</ControlLabel>
+        <input type="text" onChange={this.handlePrivateKeyChange} />
+        <Button
+          block
+          bsSize="large"
+          disabled={!this.validateForm()}
+          type="submit"
+          onClick={this.handleLogin}
+        >
+          Login
+        </Button>
         </form>
       </div>
       );
   }
 
   renderStaticHome() {
-      if(this.state.validLogin == true) {
-            console.log('rendering static home');
+      console.log(this.props);
+      if(this.props.loggedIn == true) {
             return <MakeshiftHome/>
       }
       else {
-          console.log('should render login')
         return (this.renderLogin());
       }
   }
@@ -103,3 +94,7 @@ export default class Login extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({loggedIn: state.loggedIn, publicKey: state.publicKey, privateKey: state.privateKey})
+
+export default connect(mapStateToProps)(Login)
