@@ -11,26 +11,36 @@ export default class Capture extends React.Component {
 constructor(props) {
     super(props);
 
-    this.state = {analytics: 'No Analytics to show'};
+    this.state = {capture: 'Capture Inactive'};
 
   //binding required for callback
-    this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
+    this.startCapture = this.startCapture.bind(this);
+    this.stopCapture = this.stopCapture.bind(this);
 }
 
-getPythonAnalytics() {
-  jquery.get(window.location.href + 'analytics', (data) => {
-    this.setState({analytics: data});
-  });
+startCapture() {
+    this.setState({capture: 'Capture Active'});
+//   jquery.get(window.location.href + 'capture', (data) => {
+//     this.setState({capture: data});
+//   });
+}
+
+stopCapture() {
+    this.setState({capture: 'Capture Inactive'});
 }
 
   render () {
     return (
       <div>
         <hr/>
-        <Button bsSize="large" bsStyle="danger" onClick={this.getPythonAnalytics}>
-          Get Analytics
+        <Button style={{marginLeft:'20px'}} bsSize="large" bsStyle="success" onClick={this.startCapture}>
+          Start Capture
         </Button>
-        <h1>{this.state.analytics}</h1>
+        <Button style={{marginLeft:'20px'}} bsSize="large" bsStyle="danger" onClick={this.stopCapture}>
+          Stop Capture
+        </Button>
+        <hr/>
+        <h4 style={{marginLeft:'20px'}}>{this.state.capture}</h4>
       </div>
     );
   }

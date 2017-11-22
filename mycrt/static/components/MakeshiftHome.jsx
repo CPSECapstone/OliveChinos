@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 require('../styles/tabstyles.css');
 import Analytics from './Analytics';
+import Capture from './Capture';
 
 export default class MakeshiftHome extends Component {
     constructor(props) {
@@ -43,7 +44,10 @@ export default class MakeshiftHome extends Component {
       renderPage() {
         if(this.state.onCapture == true) {
           return(
-            <div className='tabcontent'>On capture page</div>
+            <div className='tabcontent'>
+              <h3 style={{marginLeft:'30px'}}>Capture</h3>
+              <Capture />
+            </div>
           );
         }
         else if(this.state.onReplay == true) {
