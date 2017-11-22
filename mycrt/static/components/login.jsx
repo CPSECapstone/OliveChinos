@@ -11,8 +11,8 @@ export default class Login extends Component {
 
     this.state = {
       validLogin: false,
-      publicKey: '',
-      privateKey: '',
+      publicKey: this.props.publicKey,
+      privateKey: this.props.privateKey,
     }
 
     this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
