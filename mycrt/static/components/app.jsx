@@ -13,6 +13,8 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       validLogin: false,
+      publicKey: '',
+      privateKay: '',
     }
   }
 
@@ -28,24 +30,6 @@ export default class App extends React.Component {
   render() {
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
-    // return(
-    //   <div>
-    //     <MakeshiftHome />
-    //   </div>
-    // );
-    // return(
-    //   <div>
-    //     <h1 style={{textAlign:'center', marginBottom:'30px'}}>MyCRT Tool</h1>
-    //     <div>
-    //       <div className="tab">
-    //         <button className="tablinks" onClick={() => this.renderCapture()} id="button" type="button">Capture</button>
-    //         <button className="tablinks" onClick={() => this.renderReplay()}>Replay</button>
-    //         <button className="tablinks" onClick={() => this.renderAnalyze()}>Analyze</button>
-    //       </div>
-    //       {this.renderPage()}
-    //     </div>
-    //   </div>
-    // );
     return (
       <div>
         {this.getValidLogin()}

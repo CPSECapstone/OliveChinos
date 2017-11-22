@@ -10,14 +10,14 @@ export default class Login extends Component {
     super(props)
 
     this.state = {
-      email: '',
-      password: '',
-      validLogin: false
+      validLogin: false,
+      publicKey: '',
+      privateKey: '',
     }
 
-    this.handleEmailChange = this.handleEmailChange.bind(this)
+    this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
     this.validateForm = this.validateForm.bind(this)
-    this.handlePasswordChange = this.handlePasswordChange.bind(this)
+    this.handlePrivateKeyChange = this.handlePrivateKeyChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
@@ -26,17 +26,17 @@ export default class Login extends Component {
     return true;
   }
 
-  handleEmailChange(inputEmail) {
-      console.log(inputEmail.value)
+  handlePublicKeyChange(inputPublicKey) {
+      console.log(inputPublicKey.value)
     this.setState({
-      email: inputEmail.value
+      publicKey: inputPublicKey.value
     });
   }
 
-  handlePasswordChange(inputPassword) {
-      console.log(inputPassword.value)
+  handlePrivateKeyChange(inputPrivateKey) {
+      console.log(inputPrivateKey.value)
     this.setState({
-      password: inputPassword.value
+      privateKey: inputPrivateKey.value
     })
   }
 
@@ -55,19 +55,18 @@ export default class Login extends Component {
           }}className="Login">
         <form onSubmit={this.handleSubmit}>
           <FormGroup controlId="email" bsSize="large">
-            <ControlLabel>Email</ControlLabel>
+            <ControlLabel>Public AWS Key</ControlLabel>
             <FormControl
               autoFocus
-              type="email"
-              value={this.state.email}
-              onChange={this.handleEmailChange}
+              value={this.state.publicKey}
+              onChange={this.handlePublicKeyChange}
             />
           </FormGroup>
           <FormGroup controlId="password" bsSize="large">
-            <ControlLabel>Password</ControlLabel>
+            <ControlLabel>Private AWS Key</ControlLabel>
             <FormControl
-              value={this.state.password}
-              onChange={this.handlePasswordChange}
+              value={this.state.privateKey}
+              onChange={this.handlePrivateKeyChange}
               type="password"
             />
           </FormGroup>
