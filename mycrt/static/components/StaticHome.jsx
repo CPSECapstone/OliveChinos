@@ -86,13 +86,13 @@ export default class StaticHome extends React.Component {
     return (
       <div 
         style={{
-          backgroundColor: '#e5e5e5',
+          // backgroundColor: '#e5e5e5',
           paddingTop: '20px',
           height: '100vh'
           }}>
         <h1 style={{
           textAlign: 'center',
-          marginBottom: '30px'}}>MyCRT Tool ****</h1>
+          marginBottom: '30px'}}>MyCRT Tool</h1>
         <div>
           <h3
           style={{
