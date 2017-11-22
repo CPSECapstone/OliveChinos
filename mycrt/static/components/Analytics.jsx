@@ -11,33 +11,33 @@ export default class Analytics extends React.Component {
 constructor(props) {
     super(props);
 
-    this.state = {analytics: '...Loading Analytics...'};
+    this.state = {analytics: 'No Analytics to show'};
 
   //binding required for callback
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
 }
 
 getAnalytics(analytics) {
+  console.log(this.props);
   this.setState({analytics: this.props.analytics});
 }
 
 getPythonAnalytics() {
-  // debugger;
   jquery.get(window.location.href + 'analytics', (data) => {  
     console.log(data);
     this.getAnalytics(data);
   });
 }
 
-
   render () {
     return (
       <div>
-        <h1>{this.state.analytics}</h1>
+        
         <hr/>
         <Button bsSize="large" bsStyle="danger" onClick={this.getPythonAnalytics}>
           Get Analytics
         </Button>
+        <h1>{this.state.analytics}</h1>
       </div>
     );
   }
