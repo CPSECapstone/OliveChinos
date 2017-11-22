@@ -3,7 +3,7 @@
     float: left;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    width: 30%;
+    width: 20%;
     height: 300px;
 }
 
@@ -37,7 +37,7 @@
     float: left;
     padding: 0px 12px;
     border: 1px solid #ccc;
-    width: 70%;
+    width: 79%;
     border-left: none;
     height: 300px;
 }
