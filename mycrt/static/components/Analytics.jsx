@@ -27,10 +27,11 @@ getPythonAnalytics() {
     return (
       <div>
         <hr/>
-        <Button bsSize="large" bsStyle="danger" onClick={this.getPythonAnalytics}>
+        <Button style={{marginLeft:'20px'}} bsSize="large" bsStyle="info" onClick={this.getPythonAnalytics}>
           Get Analytics
         </Button>
-        <h1>{this.state.analytics}</h1>
+        <hr/>
+        <h4 style={{marginLeft:'20px'}}>{this.state.analytics}</h4>
       </div>
     );
   }

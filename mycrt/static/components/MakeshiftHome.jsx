@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 require('../styles/tabstyles.css');
 import Analytics from './Analytics';
 import Capture from './Capture';
+import Replay from './Replay';
 
 export default class MakeshiftHome extends Component {
     constructor(props) {
@@ -45,23 +46,24 @@ export default class MakeshiftHome extends Component {
         if(this.state.onCapture == true) {
           return(
             <div className='tabcontent'>
-              <h3 style={{marginLeft:'30px'}}>Capture</h3>
+              <h3 style={{marginLeft:'20px'}}>Capture</h3>
               <Capture />
             </div>
           );
         }
         else if(this.state.onReplay == true) {
           return(
-            <div className='tabcontent'>On Replay page</div>
+            <div className='tabcontent'>
+              <h3 style={{marginLeft:'20px'}}>Replay</h3>
+              <Replay />
+            </div>
           );
         }
         else if(this.state.onAnalyze == true) {
           return(
-              <div>
-            <div className='tabcontent'>On Analyze page
-            <Analytics />
-            </div>
-                
+            <div className='tabcontent'>
+            <h3 style={{marginLeft:'20px'}}>Analyze</h3>
+              <Analytics />
             </div>
           );
         }
