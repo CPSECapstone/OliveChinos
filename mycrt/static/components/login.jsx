@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import StaticHome from './StaticHome'
+import MakeshiftHome from './MakeshiftHome'
 
 export default class Login extends Component {
     
@@ -87,7 +88,7 @@ export default class Login extends Component {
   renderStaticHome() {
       if(this.state.validLogin == true) {
             console.log('rendering static home');
-            return <StaticHome/>
+            return <MakeshiftHome/>
       }
       else {
           console.log('should render login')
