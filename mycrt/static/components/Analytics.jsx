@@ -17,22 +17,15 @@ constructor(props) {
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
 }
 
-getAnalytics(analytics) {
-  console.log(this.props);
-  this.setState({analytics: this.props.analytics});
-}
-
 getPythonAnalytics() {
-  jquery.get(window.location.href + 'analytics', (data) => {  
-    console.log(data);
-    this.getAnalytics(data);
+  jquery.get(window.location.href + 'analytics', (data) => {
+    this.setState({analytics: data});
   });
 }
 
   render () {
     return (
       <div>
-        
         <hr/>
         <Button bsSize="large" bsStyle="danger" onClick={this.getPythonAnalytics}>
           Get Analytics
