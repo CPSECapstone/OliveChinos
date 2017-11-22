@@ -22,7 +22,8 @@ getAnalytics(analytics) {
 }
 
 getPythonAnalytics() {
-  $.get(window.location.href + 'analytics', (data) => {  
+  // debugger;
+  jquery.get(window.location.href + 'analytics', (data) => {  
     console.log(data);
     this.getAnalytics(data);
   });
