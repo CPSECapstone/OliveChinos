@@ -1,3 +1,6 @@
+//Redux stuff
+//Ask Yeng if you have questions!
+
 import {
 SET_PUBLIC_KEY,
 SET_PRIVATE_KEY,
@@ -23,9 +26,9 @@ export function setAuth() {
   return {type: SET_AUTH}
 }
 
-export function setCapture(bool) {
-  return {type: SET_CAPTURE, bool}
+export function setCapture() {
+  return {type: SET_CAPTURE}
 }
-export function setReplay(bool) {
-  return {type: SET_REPLAY, bool}
+export function setReplay() {
+  return {type: SET_REPLAY}
 }

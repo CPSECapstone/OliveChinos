@@ -2,11 +2,12 @@
 import React from 'react'
 import Sidebar from 'react-sidebar'
 import Login from './login'
+import {connect} from 'react-redux'
 import { Router, Route } from 'react-router'
 import MakeshiftHome from './MakeshiftHome'
 
-export default class App extends React.Component {
-  
+class App extends React.Component {
+
   constructor(props) {
     super(props);
 
@@ -27,6 +28,7 @@ export default class App extends React.Component {
   }
 
   render() {
+    console.log(this.props);
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
     return (
@@ -36,3 +38,7 @@ export default class App extends React.Component {
     );
   }
 }
+
+const mapStateToProps = state => ({data: state})
+
+export default connect(mapStateToProps)(App)

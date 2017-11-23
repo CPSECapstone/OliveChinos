@@ -1,4 +1,5 @@
-import {combineReducers} from 'redux';
+//Redux stuff
+//Ask Yeng if you have questions!
 
 import {
   SET_PUBLIC_KEY,
@@ -38,14 +39,14 @@ function reducer(state = initialState, action) {
       })
     case CHANGE_KEYS:
     return Object.assign({}, state, {
-
         formState: action.formState
       })
+
     case SET_CAPTURE:
     return Object.assign({}, state, {
-
         captureActive: !state.captureActive
       })
+
     case SET_REPLAY:
     return Object.assign({}, state, {
 

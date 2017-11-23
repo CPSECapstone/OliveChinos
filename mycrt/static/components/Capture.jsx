@@ -1,17 +1,24 @@
 import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button } from 'react-bootstrap';
+import {connect} from 'react-redux'
+
+
+import {setCapture} from '../actions'
 
 // var $ = require(jquery);
 
 /* Use this element as a reference when creating components*/
 
-export default class Capture extends React.Component {
+class Capture extends React.Component {
 
 constructor(props) {
     super(props);
 
-    this.state = {capture: 'Capture Inactive'};
+    this.state = {
+      capture: 'Capture Inactive',
+      captureActive: this.props.captureActive
+    };
 
   //binding required for callback
     this.startCapture = this.startCapture.bind(this);
@@ -19,6 +26,7 @@ constructor(props) {
 }
 
 startCapture() {
+    this.props.dispatch(setCapture());
     this.setState({capture: 'Capture Active'});
 //   jquery.get(window.location.href + 'capture', (data) => {
 //     this.setState({capture: data});
@@ -26,6 +34,7 @@ startCapture() {
 }
 
 stopCapture() {
+  this.props.dispatch(setCapture());
     this.setState({capture: 'Capture Inactive'});
 }
 
@@ -45,3 +54,7 @@ stopCapture() {
     );
   }
 }
+
+const mapStateToProps = state => ({captureActive: state.captureActive})
+
+export default connect(mapStateToProps)(Capture)
