@@ -1,15 +1,21 @@
 import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button } from 'react-bootstrap';
+import {startReplay} from '../actions';
+import {connect} from 'react-redux';
+import {setReplay} from '../actions';
 
 /* Use this element as a reference when creating components*/
 
-export default class Replay extends React.Component {
+class Replay extends React.Component {
 
 constructor(props) {
     super(props);
 
-    this.state = {replay: 'Replay Inactive'};
+    this.state = {
+      replay: this.props.replay,
+      replayActive: this.props.replayActive
+    };
 
   //binding required for callback
     this.startReplay = this.startReplay.bind(this);
@@ -17,6 +23,7 @@ constructor(props) {
 
 startReplay() {
     this.setState({replay: 'Replay Active'});
+    this.props.dispatch(setReplay());
 //   jquery.get(window.location.href + 'capture', (data) => {
 //     this.setState({capture: data});
 //   });
@@ -35,3 +42,8 @@ startReplay() {
     );
   }
 }
+
+
+const mapStateToProps = state => ({replayActive: state.replayActive, replay: state.replay})
+
+export default connect(mapStateToProps)(Replay)

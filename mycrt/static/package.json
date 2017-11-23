@@ -35,8 +35,11 @@
     "webpack": "^3.8.1"
   },
   "dependencies": {
+    "css-in-js": "^1.1.0",
     "react-bootstrap": "^0.31.5",
+    "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
-    "react-sidebar": "^2.3.2"
+    "react-sidebar": "^2.3.2",
+    "redux": "^3.7.2"
   }
 }

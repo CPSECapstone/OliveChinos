@@ -77,7 +77,6 @@ class Login extends Component {
   }
 
   renderStaticHome() {
-      console.log(this.props);
       if(this.props.loggedIn == true) {
             return <MakeshiftHome/>
       }

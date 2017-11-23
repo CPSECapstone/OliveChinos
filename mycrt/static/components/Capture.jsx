@@ -2,11 +2,7 @@ import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button } from 'react-bootstrap';
 import {connect} from 'react-redux'
-
-
-import {setCapture} from '../actions'
-
-// var $ = require(jquery);
+import {startCapture, stopCapture} from '../actions'
 
 /* Use this element as a reference when creating components*/
 
@@ -16,7 +12,7 @@ constructor(props) {
     super(props);
 
     this.state = {
-      capture: 'Capture Inactive',
+      capture: this.props.capture,
       captureActive: this.props.captureActive
     };
 
@@ -26,16 +22,17 @@ constructor(props) {
 }
 
 startCapture() {
-    this.props.dispatch(setCapture());
     this.setState({capture: 'Capture Active'});
+    this.props.dispatch(startCapture());
+    //reference this for when we need REST endpoints
 //   jquery.get(window.location.href + 'capture', (data) => {
 //     this.setState({capture: data});
 //   });
 }
 
 stopCapture() {
-  this.props.dispatch(setCapture());
-    this.setState({capture: 'Capture Inactive'});
+  this.setState({capture: 'Capture Inactive'});
+  this.props.dispatch(stopCapture());
 }
 
   render () {
@@ -55,6 +52,6 @@ stopCapture() {
   }
 }
 
-const mapStateToProps = state => ({captureActive: state.captureActive})
+const mapStateToProps = state => ({captureActive: state.captureActive, capture: state.capture})
 
 export default connect(mapStateToProps)(Capture)

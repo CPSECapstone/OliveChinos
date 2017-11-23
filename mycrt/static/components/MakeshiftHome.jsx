@@ -1,17 +1,21 @@
 import React, { Component } from 'react';
 require('../styles/tabstyles.css');
+import styles from '../styles/tabstyles.css.js';
 import Analytics from './Analytics';
 import Capture from './Capture';
 import Replay from './Replay';
+import {connect} from 'react-redux';
 
-export default class MakeshiftHome extends Component {
+class MakeshiftHome extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             onCapture: true,
             onReplay: false,
-            onAnalyze: false
+            onAnalyze: false,
+            captureActive: this.props.captureActive,
+            replayActive: this.props.replayActive,
           }
     }
 
@@ -67,15 +71,28 @@ export default class MakeshiftHome extends Component {
             </div>
           );
         }
-    
+      }
+
+      currentAction() {
+        if(this.props.data.captureActive == true) {
+          return <div >Capture in Progress...</div>
+        }
+        else if(this.props.data.replayActive == true) {
+          return <div >Replay in Progress...</div>
+        }
+        else {
+          return <div></div>
+        }
       }
 
     render() {
+      var activeStyle = this.props.data.captureActive || this.props.data.replayActive ? styles.active : styles.notActive;
         return(
             <div>
             <h1 style={{textAlign:'center', marginBottom:'30px'}}>MyCRT Tool</h1>
             <div>
               <div className="tab">
+                <button style={activeStyle} className="tablinks">{this.currentAction()}</button>
                 <button className="tablinks" onClick={() => this.renderCapture()} id="button" type="button">Capture</button>
                 <button className="tablinks" onClick={() => this.renderReplay()}>Replay</button>
                 <button className="tablinks" onClick={() => this.renderAnalyze()}>Analyze</button>
@@ -86,3 +103,7 @@ export default class MakeshiftHome extends Component {
         );
     }
 }
+
+const mapStateToProps = state => ({data: state})
+
+export default connect(mapStateToProps)(MakeshiftHome)

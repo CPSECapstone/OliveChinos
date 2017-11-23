@@ -6,7 +6,8 @@ SET_PUBLIC_KEY,
 SET_PRIVATE_KEY,
 CHANGE_KEYS,
 SET_AUTH,
-SET_CAPTURE,
+START_CAPTURE,
+STOP_CAPTURE,
 SET_REPLAY
 } from './constants'
 
@@ -26,8 +27,12 @@ export function setAuth() {
   return {type: SET_AUTH}
 }
 
-export function setCapture() {
-  return {type: SET_CAPTURE}
+export function startCapture() {
+  return {type: START_CAPTURE}
+}
+
+export function stopCapture() {
+  return {type: STOP_CAPTURE}
 }
 export function setReplay() {
   return {type: SET_REPLAY}

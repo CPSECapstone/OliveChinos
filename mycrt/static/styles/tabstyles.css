@@ -41,3 +41,8 @@
     border-left: none;
     height: 300px;
 }
+
+#activeAction {
+    background-color: #77e686
+}
+

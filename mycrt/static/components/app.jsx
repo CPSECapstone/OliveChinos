@@ -28,7 +28,6 @@ class App extends React.Component {
   }
 
   render() {
-    console.log(this.props);
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
     return (

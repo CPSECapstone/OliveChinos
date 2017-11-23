@@ -6,7 +6,8 @@ import {
   SET_PRIVATE_KEY,
   CHANGE_KEYS,
   SET_AUTH,
-  SET_CAPTURE,
+  START_CAPTURE,
+  STOP_CAPTURE,
   SET_REPLAY
 } from '../actions/constants'
 
@@ -17,11 +18,12 @@ let initialState = {
   error: '',
   loggedIn: false,
   captureActive: false,
-  replayActive: false
+  replayActive: false,
+  capture: 'Capture Inactive',
+  replay: 'Replay Inactive'
 }
 
 function reducer(state = initialState, action) {
-  console.log(action);
   switch (action.type) {
     case SET_PUBLIC_KEY:
       return Object.assign({}, state, {
@@ -42,16 +44,24 @@ function reducer(state = initialState, action) {
         formState: action.formState
       })
 
-    case SET_CAPTURE:
+    case START_CAPTURE:
     return Object.assign({}, state, {
-        captureActive: !state.captureActive
+        captureActive: true,
+        capture: 'Capture Active'
+      })
+
+    case STOP_CAPTURE:
+    return Object.assign({}, state, {
+        captureActive: false,
+        capture: 'Capture Inactive'
       })
 
     case SET_REPLAY:
     return Object.assign({}, state, {
-
-        replayActive: !state.replayActive
+        replayActive: !state.replayActive,
+        replay: 'Replay Active'
       })
+
     default:
       return state
   }
