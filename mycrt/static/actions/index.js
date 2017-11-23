@@ -1,3 +1,6 @@
+//Redux stuff
+//Ask Yeng if you have questions!
+
 import {
 SET_PUBLIC_KEY,
 SET_PRIVATE_KEY,
