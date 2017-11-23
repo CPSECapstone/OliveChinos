@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import {connect} from 'react-redux'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
-import StaticHome from './StaticHome'
 import MakeshiftHome from './MakeshiftHome'
 
 import {setAuth, setPublicKey, setPrivateKey} from '../actions'
@@ -76,7 +75,7 @@ class Login extends Component {
       );
   }
 
-  renderStaticHome() {
+  renderMakeshiftHome() {
       if(this.props.loggedIn == true) {
             return <MakeshiftHome/>
       }
@@ -88,7 +87,7 @@ class Login extends Component {
   render() {
     return (
         <div>
-      {this.renderStaticHome()}
+      {this.renderMakeshiftHome()}
       </div>
     );
   }
