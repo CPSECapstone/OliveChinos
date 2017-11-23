@@ -79,11 +79,10 @@ def _create_bucket(s3_client):
 
   return bucket_id
 
-def _put_bucket(s3_client, bucket_id, data):
+def _put_bucket(s3_client, data, bucket_id, log_key = "test-log"):
 
-  byte_log = pickle.dumps(transactions)
+  byte_log = pickle.dumps(data)
 
-  log_key = "test-log"
   s3_client.put_object(
     Bucket = bucket_id,
     Body = byte_log,
@@ -109,7 +108,7 @@ def end_capture(credentials, db_id = "pi"):
   transactions = _parse_log_file(log_file, start_time[0])
 
   bucket_id = _create_bucket(s3_client)
-  _put_bucket(s3_client, bucket_id, transactions)
+  _put_bucket(s3_client, transactions, bucket_id)
 
   return transactions
 
