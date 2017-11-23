@@ -31,7 +31,7 @@ class App extends React.Component {
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
     return (
-      <div>
+      <div style={{marginLeft:'1vw'}}>
         {this.getValidLogin()}
         </div>
     );
