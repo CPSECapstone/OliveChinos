@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import {connect} from 'react-redux'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import MakeshiftHome from './MakeshiftHome'
+import '../styles/loginstyles.css'
 
 import {setAuth, setPublicKey, setPrivateKey} from '../actions'
 
@@ -57,9 +58,14 @@ class Login extends Component {
           padding: '15px'
           }}className="Login">
         <form onSubmit={this.handleLogin}>
+        <h2>Login to the MyCRT Tool</h2>
+        <hr/>
         <ControlLabel>Public AWS Key</ControlLabel>
+        <br/>
         <input type="text" onChange={this.handlePublicKeyChange} />
-        <ControlLabel>Private AWS Key</ControlLabel>
+        <br/>
+        <ControlLabel style={{marginTop:'10px'}}>Private AWS Key</ControlLabel>
+        <br/>
         <input type="text" onChange={this.handlePrivateKeyChange} />
         <Button
           block
@@ -67,6 +73,7 @@ class Login extends Component {
           disabled={!this.validateForm()}
           type="submit"
           onClick={this.handleLogin}
+          className='loginButton'
         >
           Login
         </Button>

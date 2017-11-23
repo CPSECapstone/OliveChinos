@@ -1,0 +1,21 @@
+.Login {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    height: 50vh;
+}
+/* 
+label {
+    margin: 3vh;
+}
+
+input {
+    margin: 3vh;
+} */
+
+.loginButton {
+    margin-top: 5vh;
+}
