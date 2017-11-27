@@ -1,70 +1,82 @@
 import pymysql as sql
 import boto3
 import datetime
+import pickle
 
-transactionList = ['SELECT * FROM users', 'SELECT * FROM users', 'SELECT * FROM users', 'SELECT * FROM users']
-# def retrieveMetrics(connection):
-#    cur = connection.cursor()
-#    cur.execute("SELECT name, subsystem, status,  FROM INFORMATION_SCHEMA.INNODB_METRICS WHERE status = 'enabled' ORDER BY NAME")
+import .capture
 
-#    for line in cur.fetchall():
-#       print(line)
+#db_id = "pi"
+#hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
+username = "olive"
+password = "olivechinos"
+database = "CRDB"
 
-s3Client = boto3.client(
-   's3',
-   aws_access_key_id = user_access_key_id,
-   aws_secret_access_key = user_secret_access_key,
-   region_name = region)
+def _get_hostname(rds_client, db_id):
+  instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
+  rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address')
+  return rds_host
 
-cloudwatch_client = boto3.client(
-   'cloudwatch',
-   aws_access_key_id = user_access_key_id,
-   aws_secret_access_key = user_secret_access_key,
-   region_name = region)
+def _execute_transactions(hostname, transactions):
+  myConnection = sql.connect(host = hostname, user = username, passwd = password, db = database)
+  cur = connection.cursor()
+  start_time = datetime.datetime.utcnow()
 
-#metric = cloudwatch_client.Metric('AWS/RDS', 'CPUUtilization')
+  for _, command in transactions:
+    cur.execute(command)
 
-def replayTransactions(connection, transactions):
-   cur = connection.cursor()
+  end_time = datetime.datetime.utcnow()
 
-   for transaction in transactions:
-      cur.execute(transaction)
+  myConnection.close()
+  return start_time, end_time
 
+def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-log"):
+  bucket_obj = s3_client.get_object(
+    Bucket = bucket_id,
+    Key = log_key
+  )
+  new_byte_log = bucket_obj["Body"].read()
+  transactions = pickle.loads(new_byte_log)
 
-# # "rds" is the access point into the user's rds resources
-# rds = boto3.client(
-#     'rds', #can change to any compatible aws service 
-#     aws_access_key_id=user_access_key_id, 
-#     aws_secret_access_key=user_secret_access_key
-# )
+  return transactions
 
-# instances = rds.describe_db_instances()
+def _get_metrics(cloudwatch_client, start_time, end_time):
+  return cloudwatch_client.get_metric_statistics(
+      Namespace='AWS/RDS',
+      MetricName='FreeableMemory',
+      Dimensions = [{
+           "Name" : "DBInstanceIdentifier",
+           "Value" : "pi"
+      }],
+      StartTime=startTime,
+      EndTime=endTime,
+      Period=60,
+      Statistics=[
+          'Average'
+     ]
+  )
 
-# print (instances)
+def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-metrics"):
 
-myConnection = sql.connect(host = hostname, user = username, passwd = password, db = database)
+  byte_log = pickle.dumps(metrics)
 
-startTime = datetime.datetime.utcnow() - datetime.timedelta(minutes = 60)
-replayTransactions(myConnection, transactionList)
-endTime = datetime.datetime.utcnow()
+  s3_client.put_object(
+    Bucket = bucket_id,
+    Body = byte_log,
+    Key = log_key
+  )
 
-response = cloudwatch_client.get_metric_statistics(
-    Namespace='AWS/RDS',
-    MetricName='FreeableMemory',
-    Dimensions = [{
-         "Name" : "DBInstanceIdentifier",
-         "Value" : "pi"
-    }],
-    StartTime=startTime,
-    EndTime=endTime,
-    Period=60,
-    Statistics=[
-        'Average'
-    ]
-)
+def execute_replay(credentials, db_id = "pi"):
+  rds_client = boto3.client('rds', **credentials)
+  s3_client = boto3.client('s3', **credentials)
+  cloudwatch_client = boto3.client('cloudwatch', **credentials)
 
-#retrieveMetrics(myConnection)
+  hostname = _get_hostname(rds_client, db_id)
+  transactions = _get_transactions(s3_client)
 
-print(response)
-myConnection.close()
+  start_time, end_time = _execute_transactions(hostname, transactions)
+
+  metrics = _get_metrics(cloudwatch_client, start_time, end_time)
+  
+  _store_metrics(s3_client, metrics)
+  
 

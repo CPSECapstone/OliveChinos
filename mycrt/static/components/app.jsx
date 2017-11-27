@@ -2,37 +2,42 @@
 import React from 'react'
 import Sidebar from 'react-sidebar'
 import Login from './login'
-import Tester from './tester'
-import StaticHome from './StaticHome'
+import {connect} from 'react-redux'
 import { Router, Route } from 'react-router'
+import MakeshiftHome from './MakeshiftHome'
 
-export default class App extends React.Component {
-  
+class App extends React.Component {
+
   constructor(props) {
     super(props);
+
     this.state = {
-      validLogin: false
+      validLogin: false,
+      publicKey: '',
+      privateKey: '',
     }
   }
 
   getValidLogin() {
     if(this.state.validLogin == false) {
-      return <Login/>
+      return <Login publicKey={this.state.publicKey} privateKey={this.state.privateKey}/>
     }
     else {
-      return <StaticHome/>
+      return <MakeshiftHome />
     }
   }
-
-
 
   render() {
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
     return (
-      <div>
+      <div style={{marginLeft:'1vw'}}>
         {this.getValidLogin()}
         </div>
     );
   }
 }
+
+const mapStateToProps = state => ({data: state})
+
+export default connect(mapStateToProps)(App)

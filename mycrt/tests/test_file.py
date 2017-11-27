@@ -19,4 +19,4 @@ def test_simple():
     assert 1 == 1
 
 def test_import():
-    assert "Hello World!" == server.mycrt.hello()
+    assert "Pretend this is some analytics Data" == server.mycrt.analytics()
