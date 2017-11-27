@@ -1,6 +1,6 @@
 # server.py
 from flask import Flask, render_template
-from Analytics import *
+from .Analytics import *
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
