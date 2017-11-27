@@ -1,6 +1,10 @@
 # server.py
 from flask import Flask, render_template
-from utility.analytics import *
+try:
+    from .utility.analytics import *
+except SystemError:
+    from utility.analytics import *
+
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
