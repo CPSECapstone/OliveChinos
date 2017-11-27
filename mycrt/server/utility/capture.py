@@ -14,6 +14,12 @@ credentials = {
 }
 '''
 
+#db_id = "pi"
+hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
+username = "olive"
+password = "olivechinos"
+database = "CRDB"
+
 def list_databases(credentials, rds_client = None, close_client = False):
   if rds_client is None:
     close_client = True
@@ -32,7 +38,7 @@ def _line_filter(line):
     "2 Query SELECT 1" in line  or
     "2 Query SELECT count(*) from information_schema.TABLES WHERE TABLE_SCHEMA = 'mysql' AND TABLE_NAME = 'rds_heartbeat2'" in line or
     "2 Query SELECT value FROM mysql.rds_hearbeat2" in line or
-    "2 Query SELECT NAME, VALUE FROM mysql.rds_configuration" in line or
+    "2 Query SELECT NAME, VALUE FROM mysql.rds_configuration" in line
     )
 
 
@@ -72,6 +78,8 @@ def _create_bucket(s3_client):
   try:
     # Ensure only one bucket exists
     s3_client.delete_bucket(bucket_id)
+  except:
+    pass  
 
   s3_client.create_bucket(
     Bucket = bucket_id,
@@ -127,11 +135,11 @@ def testConnection(connection):
     for line in cur.fetchall():
       print(line)
 
-myConnection = sql.connect(host = hostname, user = username, passwd = password, db = database)
-testConnection(myConnection)
-myConnection.close()
-bucket_obj = s3_client.get_object(
-  Bucket = bucket_id,
-  Key = log_key
-)
-new_byte_log = pickle.loads(bucket_obj["Body"].read())
+#myConnection = sql.connect(host = hostname, user = username, passwd = password, db = database)
+#testConnection(myConnection)
+#myConnection.close()
+#bucket_obj = s3_client.get_object(
+#  Bucket = bucket_id,
+#  Key = log_key
+#)
+#new_byte_log = pickle.loads(bucket_obj["Body"].read())

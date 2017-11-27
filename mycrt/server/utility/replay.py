@@ -3,7 +3,7 @@ import boto3
 import datetime
 import pickle
 
-import .capture
+from .capture import *
 
 #db_id = "pi"
 #hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"

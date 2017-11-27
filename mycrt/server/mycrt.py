@@ -1,6 +1,10 @@
 # server.py
 from flask import Flask, render_template
-from Analytics import *
+
+try:
+    from .utility.analytics import *
+except SystemError:
+    from utility.analytics import *
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
@@ -38,6 +42,8 @@ def replay():
 def analytics():
 	analyticsNumber = flask.request.args.get('id')
     return get_analytics()
+
+
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0')
