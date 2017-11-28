@@ -1,7 +1,7 @@
 import pickle
 import pymysql as sql
 import boto3
-import datetime
+from datetime import datetime
 import time
 import re
 

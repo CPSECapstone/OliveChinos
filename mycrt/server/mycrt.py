@@ -1,5 +1,7 @@
 # server.py
-from flask import Flask, render_template, request
+import sys
+import configparser
+from flask import Flask, render_template, request, abort
 
 try:
     from .utility.capture import *
@@ -16,24 +18,33 @@ except:
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
-pubKey = "abc"
-privateKey = "123"
+pubKey = ""
+privateKey = ""
+config = configparser.ConfigParser()
+config.read('config.ini')
+if config['DEFAULT']:
+    pubKey = config['DEFAULT']['publicKey']
+    privateKey = config['DEFAULT']['privateKey']
+
 credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey}
+print (credentials, file=sys.stderr)
 
 @application.route("/")
 def index():
     return render_template("index.html")
 
 
-# this is an example of a route to get data from functions in the python files
-# and send it to the user interface
-
-
 @application.route("/login", methods=["POST"])
 def login():
-    pubKey = request.values.get('pubKey') # Your form's
-    privateKey = request.values.get('privateKey') # input names
-    return verify_login(pubKey, privateKey)
+    data = request.get_json()
+    pubKey = data["publicKey"] 
+    privateKey = data["privateKey"] 
+    if pubKey == None or privateKey == None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        return ('', 204)
+    else: 
+        abort(401) 
 
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
@@ -58,4 +69,4 @@ def analytics():
 
 
 if __name__ == "__main__":
-    application.run(host='0.0.0.0')
+    application.run(debug=False, host='0.0.0.0')
