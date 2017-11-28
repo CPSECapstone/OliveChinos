@@ -36,6 +36,10 @@ print (credentials, file=sys.stderr)
 def index():
     return render_template("index.html")
 
+@application.route("/test")
+def rest_test():
+    return "Test REST endpoint."
+
 
 @application.route("/login", methods=["POST"])
 def login():
