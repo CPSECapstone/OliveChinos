@@ -4,6 +4,7 @@ import boto3
 from datetime import datetime
 import time
 import re
+import sys
 
 # Example of credentials dictionary
 '''
@@ -19,6 +20,7 @@ hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
 username = "olive"
 password = "olivechinos"
 database = "CRDB"
+region = "us-east-2"
 
 def list_databases(credentials, rds_client = None, close_client = False):
   if rds_client is None:
@@ -36,8 +38,11 @@ def list_databases(credentials, rds_client = None, close_client = False):
 def _line_filter(line):
   return "Query" in line[:30] and not (
     "2 Query SELECT 1" in line  or
+    "PURGE BINARY LOGS TO" in line or 
+    "select @@session" in line or 
+    "INSERT INTO mysql.rds_heartbeat2" in line or 
     "2 Query SELECT count(*) from information_schema.TABLES WHERE TABLE_SCHEMA = 'mysql' AND TABLE_NAME = 'rds_heartbeat2'" in line or
-    "2 Query SELECT value FROM mysql.rds_hearbeat2" in line or
+    "2 Query SELECT value FROM mysql.rds_heartbeat2" in line or
     "2 Query SELECT NAME, VALUE FROM mysql.rds_configuration" in line
     )
 
@@ -60,12 +65,12 @@ def _parse_log_file(log_file, start_time):
   transactions = [_parse_line(line) for line in log_file_lines]
 
   filter_index = 0
-  pattern = "%y%m%d %H%M%S"
-  last_time = datetime.datetime.now()
+  pattern = "%y%m%d %H:%M:%S"
+  last_time = datetime.now()
   for i in range(len(transactions)-1, -1, -1):
     time, line = transactions[i]
     if time != "":
-      last_time = datetime.datetime.strptime(time, pattern)
+      last_time = datetime.strptime(time, pattern)
       if last_time < start_time:
         filter_index = i+1
         break
@@ -88,7 +93,7 @@ def _create_bucket(s3_client):
 
   return bucket_id
 
-def _put_bucket(s3_client, data, bucket_id, log_key = "test-log"):
+def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
 
   byte_log = pickle.dumps(data)
 
@@ -104,10 +109,14 @@ def start_capture(credentials, db_id = "pi"):
   start_time[0] = datetime.now()
 
 def end_capture(credentials, db_id = "pi"):
+  region = credentials['region_name']
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
 
-  instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
+  #instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
+  instances = rds_client.describe_db_instances()
+  print (instances, file=sys.stderr)
+
   rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address') 
 
   log_file = rds_client.download_db_log_file_portion(
@@ -116,7 +125,8 @@ def end_capture(credentials, db_id = "pi"):
   
   transactions = _parse_log_file(log_file, start_time[0])
 
-  bucket_id = _create_bucket(s3_client)
+  #bucket_id = _create_bucket(s3_client)
+  bucket_id = "my-crt-test-bucket-olive-chinos"
   _put_bucket(s3_client, transactions, bucket_id)
 
   return transactions

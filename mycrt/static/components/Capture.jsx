@@ -8,7 +8,7 @@ import {startCapture, stopCapture} from '../actions'
 
 class Capture extends React.Component {
 
-constructor(props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -19,21 +19,25 @@ constructor(props) {
   //binding required for callback
     this.startCapture = this.startCapture.bind(this);
     this.stopCapture = this.stopCapture.bind(this);
-}
+  }
 
-startCapture() {
+  startCapture() {
     this.setState({capture: 'Capture Active'});
     this.props.dispatch(startCapture());
-    //reference this for when we need REST endpoints
-//   jquery.get(window.location.href + 'capture', (data) => {
-//     this.setState({capture: data});
-//   });
-}
+    jquery.post(window.location.href + 'capture/start', (data) => {
+      //this.setState({capture: data});
+      console.log(data);
+    });
+  }
 
-stopCapture() {
-  this.setState({capture: 'Capture Inactive'});
-  this.props.dispatch(stopCapture());
-}
+  stopCapture() {
+    this.setState({capture: 'Capture Inactive'});
+    this.props.dispatch(stopCapture());
+    jquery.post(window.location.href + 'capture/end', (data) => {
+      //this.setState({capture: data});
+      console.log(data);
+    });
+  }
 
   render () {
     return (

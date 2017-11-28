@@ -7,6 +7,7 @@ const config = {
         path: __dirname + '/dist',
         filename: 'bundle.js',
     },
+    devtool: "#eval-source-map",
     resolve: {
         extensions: ['.js', '.jsx', '.css']
     },
@@ -31,6 +32,10 @@ const config = {
         title: 'Olive Chinos MyCRT'
       }),
       new ExtractTextPlugin('styles.css'),
+      new webpack.LoaderOptionsPlugin({
+       debug: true
+     })
+
     ]
 };
 module.exports = config;

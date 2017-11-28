@@ -31,7 +31,7 @@ getPythonAnalytics() {
           Get Analytics
         </Button>
         <hr/>
-        <h4 style={{marginLeft:'20px'}}>{this.state.analytics}</h4>
+        <h4 style={{marginLeft:'20px'}}><pre>{JSON.stringify(this.state.analytics, null, 2)}</pre></h4>
       </div>
     );
   }

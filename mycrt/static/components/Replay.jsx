@@ -9,7 +9,7 @@ import {setReplay} from '../actions';
 
 class Replay extends React.Component {
 
-constructor(props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -17,17 +17,18 @@ constructor(props) {
       replayActive: this.props.replayActive
     };
 
-  //binding required for callback
+    //binding required for callback
     this.startReplay = this.startReplay.bind(this);
-}
+  }
 
-startReplay() {
+  startReplay() {
     this.setState({replay: 'Replay Active'});
     this.props.dispatch(setReplay());
-//   jquery.get(window.location.href + 'capture', (data) => {
-//     this.setState({capture: data});
-//   });
-}
+    jquery.post(window.location.href + 'replay', (data) => {
+      //this.setState({capture: data});
+      console.log(data);
+    });
+  }
 
   render () {
     return (

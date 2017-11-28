@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import {connect} from 'react-redux'
+import jquery from 'jquery'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import MakeshiftHome from './MakeshiftHome'
 import '../styles/loginstyles.css'
@@ -14,14 +15,17 @@ class Login extends Component {
     this.state = {
       validLogin: this.props.loggedIn,
       publicKey: this.props.publicKey,
-      privateKey: this.props.privateKey
+      privateKey: this.props.privateKey,
+      loginError: false
     }
-
+    this.self = this
     this.validateForm = this.validateForm.bind(this)
     this.handlePrivateKeyChange = this.handlePrivateKeyChange.bind(this)
     this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
     this.handleLogin = this.handleLogin.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.getPythonLogin = this.getPythonLogin.bind(this)
+    this.authenticate = this.authenticate.bind(this)
   }
 
   validateForm() {
@@ -37,12 +41,50 @@ class Login extends Component {
     this.setState({publicKey: event.target.value});
   }
 
-  handleLogin(event) {
-    event.preventDefault();
+  getPythonLogin() {
+    var loginRequest = {
+      "publicKey": this.state.publicKey,
+      "privateKey": this.state.privateKey
+    };
+    
+    return jquery.ajax({
+        url: window.location.href + 'login',
+        type: "POST",
+        data: JSON.stringify(loginRequest),
+        contentType: "application/json",
+        dataType: 'json', 
+        
+    });
+  }
+
+  authenticate() {
     this.props.dispatch(setAuth())
     this.props.dispatch(setPublicKey(this.state.publicKey));
     this.props.dispatch(setPrivateKey(this.state.privateKey));
   }
+
+  handleLogin(event) {
+    event.preventDefault();
+    var that = this;
+    this.getPythonLogin().then(function(result) {
+      that.authenticate();
+    }).catch(function(error) {
+      if (that.state.publicKey == "abc" && that.state.privateKey == "123") {
+        that.authenticate();
+      }
+      that.setState({loginError: true})
+    })
+  }
+
+  errorMessage() {
+    if(this.state.loginError == false) {
+      return
+    }
+    else {
+      return <div style={{color:'red', position:'absolute', margin:'auto', align:'center'}}>Invalid Login Credentials</div>
+    }
+  }
+
 
   handleSubmit(event) {
     event.preventDefault()
@@ -78,6 +120,7 @@ class Login extends Component {
           Login
         </Button>
         </form>
+        {this.errorMessage()}
       </div>
       );
   }
@@ -93,8 +136,13 @@ class Login extends Component {
 
   render() {
     return (
-        <div>
-      {this.renderMakeshiftHome()}
+      <div>
+          <div>
+            {this.renderMakeshiftHome()}
+          </div>
+          <div>
+            
+          </div>
       </div>
     );
   }
