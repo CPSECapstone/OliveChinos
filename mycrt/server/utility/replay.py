@@ -25,7 +25,12 @@ def _execute_transactions(hostname, transactions):
   start_test = datetime.now()
 
   print (transactions, file=sys.stderr)
+  print('\n', len(transactions), file=sys.stderr)
+  i = 0
   for _, command in transactions:
+    i += 1
+    if i % 10 == 0:
+      print(i, file = sys.stderr)
     try:
       cur.execute(command)
     except:

@@ -31,7 +31,9 @@ getJSONAnalytics() {
     return(
       <div>
         <div className='row'>
-          <p style={{marginLeft:'20px'}}>Database Name: "{this.state.analytics.db_id}" | Replay Start Time: {this.state.analytics.start_time} | Replay End Time: {this.state.analytics.end_time}</p>
+          <p style={{marginLeft:'20px'}}><b>Database Name:</b> "{this.state.analytics.db_id}"</p>
+          <p style={{marginLeft:'20px'}}><b>Replay Start Time:</b> {this.state.analytics.start_time}</p>
+          <p style={{marginLeft:'20px'}}><b>Replay End Time:</b> {this.state.analytics.end_time}</p>
         </div>
       <h4 style={{marginLeft:'20px', border:'1px solid'}}>
       <div style={{overflowY:'scroll', height:'18vh'}}>
