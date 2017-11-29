@@ -13,7 +13,10 @@ class Capture extends React.Component {
 
     this.state = {
       capture: this.props.capture,
-      captureActive: this.props.captureActive
+      captureActive: this.props.captureActive,
+      haveCaptureData: false,
+      captureData: ''
+
     };
 
   //binding required for callback
@@ -34,9 +37,21 @@ class Capture extends React.Component {
     this.setState({capture: 'Capture Inactive'});
     this.props.dispatch(stopCapture());
     jquery.post(window.location.href + 'capture/end', (data) => {
-      //this.setState({capture: data});
-      console.log(data);
+      this.setState({haveCaptureData: true})
+      this.setState({captureData: data})
     });
+  }
+
+  renderCaptureData() {
+    if(this.state.haveCaptureData == true) {
+      return (
+      <h4 style={{marginLeft:'20px', border:'1px solid'}}>
+      <div style={{overflowY:'scroll', height:'18vh'}}>
+      <pre>{JSON.stringify(this.state.captureData, null, 2)}</pre>
+      </div>
+      </h4>
+      );
+    }
   }
 
   render () {
@@ -51,6 +66,7 @@ class Capture extends React.Component {
         </Button>
         <hr/>
         <h4 style={{marginLeft:'20px'}}>{this.state.capture}</h4>
+        {this.renderCaptureData()}
       </div>
     );
   }

@@ -64,9 +64,10 @@ def capture_start():
 @application.route("/capture/end", methods=["POST"])
 def capture_end():
     #db_name = request.values.get('db') 
-    end_capture(credentials)
+    capture_details = end_capture(credentials)
     return jsonify({
-        "status": "ended"
+        "status": "ended",
+        "capture_details": capture_details
     })
 
 @application.route("/replay", methods=["POST"])

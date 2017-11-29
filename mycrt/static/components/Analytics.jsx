@@ -23,6 +23,26 @@ getPythonAnalytics() {
   });
 }
 
+getJSONAnalytics() {
+  if(this.state.analytics == 'No Analytics to show') {
+    return <h4 style={{marginLeft:'20px'}}><pre>{JSON.stringify(this.state.analytics, null, 2)}</pre></h4>
+  }
+  else {
+    return(
+      <div>
+        <div className='row'>
+          <p style={{marginLeft:'20px'}}>Database Name: "{this.state.analytics.db_id}" | Replay Start Time: {this.state.analytics.start_time} | Replay End Time: {this.state.analytics.end_time}</p>
+        </div>
+      <h4 style={{marginLeft:'20px', border:'1px solid'}}>
+      <div style={{overflowY:'scroll', height:'18vh'}}>
+        <pre>{JSON.stringify(this.state.analytics, null, 2)}</pre>
+      </div>
+      </h4>
+      </div>
+    );
+  }
+}
+
   render () {
     return (
       <div>
@@ -31,7 +51,7 @@ getPythonAnalytics() {
           Get Analytics
         </Button>
         <hr/>
-        <h4 style={{marginLeft:'20px'}}><pre>{JSON.stringify(this.state.analytics, null, 2)}</pre></h4>
+        {this.getJSONAnalytics()}
       </div>
     );
   }
