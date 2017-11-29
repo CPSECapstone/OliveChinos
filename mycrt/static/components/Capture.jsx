@@ -15,13 +15,16 @@ class Capture extends React.Component {
       capture: this.props.capture,
       captureActive: this.props.captureActive,
       haveCaptureData: false,
-      captureData: ''
+      captureData: '',
+      query: ''
 
     };
 
   //binding required for callback
     this.startCapture = this.startCapture.bind(this);
     this.stopCapture = this.stopCapture.bind(this);
+    this.handleQueryChange = this.handleQueryChange.bind(this);
+    this.sendQuery = this.sendQuery.bind(this);
   }
 
   startCapture() {
@@ -54,6 +57,23 @@ class Capture extends React.Component {
     }
   }
 
+  handleQueryChange(event) {
+    this.setState({query: event.target.value})
+  }
+
+  sendQuery() {
+    var queryJSON = {
+      query: this.state.query
+    }
+    var returnVal = jquery.ajax({
+      url: window.location.href + 'capture/executeQuery',
+      type: "POST",
+      data: JSON.stringify(queryJSON),
+      contentType: "application/json",
+      dataType: 'json',
+    });
+  }
+
   render () {
     return (
       <div>
@@ -64,9 +84,14 @@ class Capture extends React.Component {
         <Button style={{marginLeft:'20px'}} bsSize="large" bsStyle="danger" onClick={this.stopCapture}>
           Stop Capture
         </Button>
+        <input style={{marginLeft:'20px'}} onChange={this.handleQueryChange}></input>
+        <Button className='btn-md' onClick={this.sendQuery}>
+          Send Query
+        </Button>
         <hr/>
         <h4 style={{marginLeft:'20px'}}>{this.state.capture}</h4>
         {this.renderCaptureData()}
+        
       </div>
     );
   }

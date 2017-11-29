@@ -70,6 +70,22 @@ def capture_end():
         "capture_details": capture_details
     })
 
+@application.route("/capture/executeQuery", methods=["POST"])
+def query_execute():
+    query = request.get_json()['query']
+    print()
+    try:
+        execute_query(query)
+        return jsonify({
+                "status": "success",
+                "query" : query
+            })
+    except:
+        return jsonify({
+                "status": "failure",
+                "query" : query
+            })
+
 @application.route("/replay", methods=["POST"])
 def replay():
     #db_name = request.values.get('db') 

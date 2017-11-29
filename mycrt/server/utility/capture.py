@@ -22,6 +22,14 @@ password = "olivechinos"
 database = "CRDB"
 region = "us-east-2"
 
+def execute_query(query):
+  connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
+  cur = connection.cursor()
+  cur.execute(query)
+
+  connection.close()
+  return
+
 def list_databases(credentials, rds_client = None, close_client = False):
   if rds_client is None:
     close_client = True
