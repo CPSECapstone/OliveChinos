@@ -11,7 +11,7 @@ from .capture import *
 username = "olive"
 password = "olivechinos"
 database = "CRDB"
-period = 5
+period = 1
 
 def _get_hostname(rds_client, db_id):
   instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
@@ -48,7 +48,7 @@ def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", 
   new_byte_log = bucket_obj["Body"].read()
   transactions = pickle.loads(new_byte_log)
 
-  transactions = [(x,y[6:]) for x,y in transactions]
+  #transactions = [(x,y[6:]) for x,y in transactions]
 
   print (transactions, file=sys.stderr)
 

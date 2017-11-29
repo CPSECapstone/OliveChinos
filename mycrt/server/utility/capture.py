@@ -71,6 +71,7 @@ def _parse_log_file(log_file, start_time):
   log_file_lines = [line.strip() for line in log_file_lines if _line_filter(line)]
 
   transactions = [_parse_line(line) for line in log_file_lines]
+  transactions = [(x,y[6:]) for x,y in transactions]
 
   filter_index = 0
   pattern = "%y%m%d %H:%M:%S"
@@ -115,6 +116,7 @@ start_time = [None]
 
 def start_capture(credentials, db_id = "pi"):
   start_time[0] = datetime.now()
+  print (start_time[0], file=sys.stderr)
 
 def end_capture(credentials, db_id = "pi"):
   region = credentials['region_name']

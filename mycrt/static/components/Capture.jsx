@@ -49,7 +49,7 @@ class Capture extends React.Component {
     if(this.state.haveCaptureData == true) {
       return (
       <h4 style={{marginLeft:'20px', border:'1px solid'}}>
-      <div style={{overflowY:'scroll', height:'18vh'}}>
+      <div style={{overflowY:'scroll', height:'24vh', resize:'vertical'}}>
       <pre>{JSON.stringify(this.state.captureData, null, 2)}</pre>
       </div>
       </h4>
