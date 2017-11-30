@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button } from 'react-bootstrap';
-import LineChart from 'react-linechart';
 import Graph from './Graph';
-import '../node_modules/react-linechart/dist/styles.css';
+// import '../node_modules/react-linechart/dist/styles.css';
 
 // var $ = require(jquery);
 
@@ -30,7 +29,7 @@ getPythonAnalytics() {
   jquery.get(window.location.href + 'analytics', (data) => {
     this.setState({analytics: data});
   });
-  this.setState({ButtonText: 'Recieved Analytics'})
+  this.setState({ButtonText: 'Analytics'})
   
 }
 
@@ -42,6 +41,7 @@ getJSONAnalytics() {
     return(
       <div>
         <div className='row'>
+        <h4 style={{marginLeft:'20px'}}><u>Raw Data</u></h4>
           <p style={{marginLeft:'20px'}}><b>Database Name:</b> "{this.state.analytics.db_id}"</p>
           <p style={{marginLeft:'20px'}}><b>Replay Start Time:</b> {this.state.analytics.start_time}</p>
           <p style={{marginLeft:'20px'}}><b>Replay End Time:</b> {this.state.analytics.end_time}</p>
@@ -59,7 +59,7 @@ getJSONAnalytics() {
 renderCPUUtilizationGraph() {
   if(this.state.analytics!= 'No Analytics to show') {
     return (
-      <Graph value='CPUUtilization' analytics={this.state.analytics} xLabel="Time" yLabel="CPU Utilization"/>
+      <Graph color="steelblue" value='CPUUtilization' analytics={this.state.analytics} xLabel="Time" yLabel="Percent" title="CPU Utilization"/>
     );
   }
 }
@@ -67,7 +67,7 @@ renderCPUUtilizationGraph() {
 renderFreeableMemoryGraph() {
   if(this.state.analytics!= 'No Analytics to show') {
     return (
-      <Graph value='FreeableMemory' analytics={this.state.analytics} xLabel="Time" yLabel="Freeable Memory"/>
+      <Graph color="#298256" value='FreeableMemory' analytics={this.state.analytics} xLabel="Time" yLabel="" title="Freeable Memory (Bytes)"/>
     );
   }
 }
@@ -75,7 +75,15 @@ renderFreeableMemoryGraph() {
 renderWriteIOPSGraph() {
   if(this.state.analytics!= 'No Analytics to show') {
     return (
-      <Graph value='WriteIOPS' analytics={this.state.analytics} xLabel="Time" yLabel="Write IOPS"/>
+      <Graph color="lightcoral" value='WriteIOPS' analytics={this.state.analytics} xLabel="Time" yLabel="Count/Second" title="Write IOPS"/>
+    );
+  }
+}
+
+renderReadIOPSGraph() {
+  if(this.state.analytics!= 'No Analytics to show') {
+    return (
+      <Graph color="darkviolet" value='ReadIOPS' analytics={this.state.analytics} xLabel="Time" yLabel="Count/Second" title="Read IOPS"/>
     );
   }
 }
@@ -93,18 +101,12 @@ renderWriteIOPSGraph() {
         <div style={{height:'75vh', overflowY:'scroll'}}>
         <div>
           {this.renderCPUUtilizationGraph()}
-          </div>
-          <hr/>
-          <div>
-          {this.renderFreeableMemoryGraph()}
-          </div>
-          <hr/>
-          <div>
           {this.renderWriteIOPSGraph()}
-          </div>
-          <hr/>
+          {this.renderReadIOPSGraph()}
+          {this.renderFreeableMemoryGraph()}
           {this.getJSONAnalytics()}
         </div>
+      </div>
       </div>
     );
   }
