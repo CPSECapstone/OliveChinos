@@ -11,7 +11,7 @@ from .capture import *
 username = "olive"
 password = "olivechinos"
 database = "CRDB"
-period = 5
+period = 10
 
 def _get_hostname(rds_client, db_id):
   instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
@@ -25,7 +25,12 @@ def _execute_transactions(hostname, transactions):
   start_test = datetime.now()
 
   print (transactions, file=sys.stderr)
+  print('\n', len(transactions), file=sys.stderr)
+  i = 0
   for _, command in transactions:
+    i += 1
+    if i % 10 == 0:
+      print(i, file = sys.stderr)
     try:
       cur.execute(command)
     except:
@@ -43,7 +48,7 @@ def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", 
   new_byte_log = bucket_obj["Body"].read()
   transactions = pickle.loads(new_byte_log)
 
-  transactions = [(x,y[6:]) for x,y in transactions]
+  #transactions = [(x,y[6:]) for x,y in transactions]
 
   print (transactions, file=sys.stderr)
 
@@ -57,7 +62,8 @@ def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
            "Name" : "DBInstanceIdentifier",
            "Value" : "pi"
       }],
-      StartTime=start_time,
+      #StartTime=start_time,
+      StartTime=end_time - timedelta(hours=1),
       EndTime=end_time,
       Period=period,
       Statistics=[

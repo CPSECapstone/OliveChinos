@@ -25,7 +25,8 @@ class Replay extends React.Component {
     this.setState({replay: 'Replay Active'});
     this.props.dispatch(setReplay());
     jquery.post(window.location.href + 'replay', (data) => {
-      //this.setState({capture: data});
+      this.setState({replay: "Replay Inactive"});
+      this.props.dispatch(setReplay());
       console.log(data);
     });
   }
