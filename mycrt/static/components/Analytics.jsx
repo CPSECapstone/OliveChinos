@@ -36,7 +36,7 @@ getJSONAnalytics() {
           <p style={{marginLeft:'20px'}}><b>Replay End Time:</b> {this.state.analytics.end_time}</p>
         </div>
       <h4 style={{marginLeft:'20px', border:'1px solid'}}>
-      <div style={{overflowY:'scroll', height:'18vh'}}>
+      <div style={{overflowY:'scroll', height:'24vh', resize:'vertical'}}>
         <pre>{JSON.stringify(this.state.analytics, null, 2)}</pre>
       </div>
       </h4>

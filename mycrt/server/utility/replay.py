@@ -11,7 +11,7 @@ from .capture import *
 username = "olive"
 password = "olivechinos"
 database = "CRDB"
-period = 1
+period = 10
 
 def _get_hostname(rds_client, db_id):
   instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
@@ -62,7 +62,8 @@ def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
            "Name" : "DBInstanceIdentifier",
            "Value" : "pi"
       }],
-      StartTime=start_time,
+      #StartTime=start_time,
+      StartTime=end_time - timedelta(hours=1),
       EndTime=end_time,
       Period=period,
       Statistics=[
