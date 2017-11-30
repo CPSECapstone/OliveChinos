@@ -38,10 +38,15 @@
   },
   "dependencies": {
     "css-in-js": "^1.1.0",
+    "d3": "^4.12.0",
     "react-bootstrap": "^0.31.5",
+    "react-easy-chart": "^0.3.0",
+    "react-faux-dom": "^4.1.0",
+    "react-linechart": "^1.1.12",
     "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
     "react-sidebar": "^2.3.2",
+    "recharts": "^1.0.0-beta.5",
     "redux": "^3.7.2"
   }
 }
