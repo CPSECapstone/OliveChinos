@@ -1,0 +1,6 @@
+cli.egg-info/PKG-INFO
+cli.egg-info/SOURCES.txt
+cli.egg-info/dependency_links.txt
+cli.egg-info/entry_points.txt
+cli.egg-info/requires.txt
+cli.egg-info/top_level.txt
