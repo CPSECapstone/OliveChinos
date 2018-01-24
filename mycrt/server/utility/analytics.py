@@ -23,7 +23,7 @@ def get_analytics(credentials):
   capture_list = get_capture_list(credentials)
   for capture in capture_list:
     replay_list = get_replays_for_capture(credentials, capture)
-    metrics[capture] = {replay : retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
+    metrics[capture[:-1]] = {replay.replace(capture, "") : retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
   
   return metrics
 
