@@ -138,7 +138,7 @@ class Login extends Component {
   }
 
   renderMakeshiftHome() {
-    if (this.props.loggedIn == true) {
+    if (this.props.loggedIn == false) {
       return <MakeshiftHome />
     } else {
       return this.renderLogin()

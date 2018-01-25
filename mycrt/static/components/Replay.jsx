@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap'
 import { startReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
+import ReplayDetail from './ReplayDetail'
 
 /* Use this element as a reference when creating components*/
 
@@ -13,7 +14,7 @@ class Replay extends React.Component {
 
     this.state = {
       replay: this.props.replay,
-      replayActive: this.props.replayActive
+      activeReplays: this.props.activeReplays
     }
 
     //binding required for callback
@@ -41,6 +42,22 @@ class Replay extends React.Component {
     })
   }
 
+  displayReplays() {
+    let currentReplays = []
+    for (var i = 0; i < this.props.activeReplays; i++) {
+      currentReplays.push(
+        <li>
+          <ReplayDetail
+            key={'replay' + i}
+            replayName={'Replay ' + (i + 1)}
+            replayDate={'Jan 25, 2018'}
+          />
+        </li>
+      )
+    }
+    return <ul>{currentReplays}</ul>
+  }
+
   render() {
     return (
       <div>
@@ -55,13 +72,14 @@ class Replay extends React.Component {
         </Button>
         <hr />
         <h4 style={{ marginLeft: '20px' }}>{this.state.replay}</h4>
+        <div>{this.displayReplays()}</div>
       </div>
     )
   }
 }
 
 const mapStateToProps = state => ({
-  replayActive: state.replayActive,
+  activeReplays: state.activeReplays,
   replay: state.replay
 })
 
