@@ -52,7 +52,7 @@ componentWillReceiveProps() {
     console.log('DOES THIS WORK..?', this.state.analytics)
     return (
       <div>
-        <div style={{height:'40vh', border:'2px solid black'}}>
+        <div style={{height:'75vh', border:'1px solid black'}}>
         <div>
           <GraphContainer data={this.state.analytics}/>
         </div>
