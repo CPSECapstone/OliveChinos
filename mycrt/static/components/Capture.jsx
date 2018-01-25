@@ -3,6 +3,7 @@ import jquery from 'jquery'
 import { Button } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { startCapture, stopCapture } from '../actions'
+import CaptureDetail from './CaptureDetail'
 
 /* Use this element as a reference when creating components*/
 
@@ -12,7 +13,7 @@ class Capture extends React.Component {
 
     this.state = {
       capture: this.props.capture,
-      captureActive: this.props.captureActive,
+      activeCaptures: this.props.activeCaptures,
       haveCaptureData: false,
       captureData: '',
       query: ''
@@ -26,7 +27,7 @@ class Capture extends React.Component {
   }
 
   startCapture() {
-    this.setState({ capture: 'Capture Active' })
+    this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
     jquery.post(window.location.href + 'capture/start', data => {
       //this.setState({capture: data});
@@ -35,15 +36,13 @@ class Capture extends React.Component {
   }
 
   stopCapture() {
-    this.setState({ capture: 'Capture Inactive' })
+    this.setState({ capture: 'Capture Stopped' })
     this.props.dispatch(stopCapture())
     jquery.post(window.location.href + 'capture/end', data => {
       this.setState({ haveCaptureData: true })
       this.setState({ captureData: data })
     })
   }
-
-  addCaptur
 
   renderCaptureData() {
     if (this.state.haveCaptureData == true) {
@@ -76,6 +75,25 @@ class Capture extends React.Component {
     })
   }
 
+  displayCaptures() {
+    let currentCaptures = []
+    console.log('display')
+    console.log(this.props.activeCaptures)
+    for (var i = 0; i < this.props.activeCaptures; i++) {
+      currentCaptures.push(
+        <li>
+          <CaptureDetail
+            key={'capture' + i}
+            captureName={'Capture ' + (i + 1)}
+            captureDate={'Jan 25, 2018  '}
+            stopCapture={this.stopCapture}
+          />
+        </li>
+      )
+    }
+    return <ul>{currentCaptures}</ul>
+  }
+
   render() {
     return (
       <div>
@@ -88,14 +106,14 @@ class Capture extends React.Component {
         >
           Start Capture
         </Button>
-        <Button
+        {/*<Button
           style={{ marginLeft: '20px' }}
           bsSize="large"
           bsStyle="danger"
           onClick={this.stopCapture}
         >
           Stop Capture
-        </Button>
+        </Button>*/}
         <input
           style={{ marginLeft: '20px' }}
           onChange={this.handleQueryChange}
@@ -106,13 +124,15 @@ class Capture extends React.Component {
         <hr />
         <h4 style={{ marginLeft: '20px' }}>{this.state.capture}</h4>
         {this.renderCaptureData()}
+        <br />
+        <div>{this.displayCaptures()}</div>
       </div>
     )
   }
 }
 
 const mapStateToProps = state => ({
-  captureActive: state.captureActive,
+  activeCaptures: state.activeCaptures,
   capture: state.capture
 })
 

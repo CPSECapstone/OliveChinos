@@ -14,8 +14,8 @@ class MakeshiftHome extends Component {
       onCapture: true,
       onReplay: false,
       onAnalyze: false,
-      captureActive: this.props.captureActive,
-      replayActive: this.props.replayActive
+      activeCaptures: this.props.activeCaptures,
+      activeReplays: this.props.activeReplays
     }
   }
 
