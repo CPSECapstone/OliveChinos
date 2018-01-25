@@ -87,4 +87,3 @@ def analyze(replay_name, include_metric, time_frame, output_file):
     except (ValueError, KeyError, TypeError): 
         print('JSON format error')
          
-
