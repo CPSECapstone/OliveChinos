@@ -98,6 +98,8 @@ def replay():
 @application.route("/analytics", methods=["GET"])
 def analytics():
     #analyticsNumber = request.args.get('id')
+    print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
+    print(credentials, file=sys.stderr)
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 

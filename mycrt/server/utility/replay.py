@@ -71,7 +71,7 @@ def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
      ]
   )
 
-def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-metrics"):
+def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-folder/test-metrics"):
 
   byte_log = pickle.dumps(metrics)
 
