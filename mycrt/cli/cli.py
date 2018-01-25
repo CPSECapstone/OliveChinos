@@ -61,7 +61,9 @@ METRIC_NAMES = ['CPUUtilization', 'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
         help='specify time frame to analyze')
 @click.option('--output-file', 
         help='file to export graph to')
-def analyze(replay_name, include_metric, time_frame, output_file):
+@click.option('--raw', '-r', is_flag = True,
+        help='get raw json format')
+def analyze(replay_name, include_metric, time_frame, output_file, raw):
     """-analyze database performance from historic replay"""
 
     analytics = requests.get('http://localhost:5000/analytics')
@@ -69,21 +71,24 @@ def analyze(replay_name, include_metric, time_frame, output_file):
         raise ApiError('GET /analytics/ {}'.format(analytics.status_code))
 
     json_input = analytics.json()
-    try:
-        #Average of data points
-        cpu_util = get_average(json_input['CPUUtilization'])
-        freeable_mem = get_average(json_input['FreeableMemory'])
-        read_iops = get_average(json_input['ReadIOPS'])
-        write_iops = get_average(json_input['WriteIOPS'])
+    if raw: 
+        click.echo(json_input)
+    else :
+        try:
+            #Average of data points
+            cpu_util = get_average(json_input['CPUUtilization'])
+            freeable_mem = get_average(json_input['FreeableMemory'])
+            read_iops = get_average(json_input['ReadIOPS'])
+            write_iops = get_average(json_input['WriteIOPS'])
 
-        click.echo('Start Time: ' + str(json_input['start_time']))
-        click.echo('End Time: ' + str(json_input['end_time']))
-        click.echo('---METRIC AVERAGES---')
-        click.echo('CPU Utilization (%): ' + str(cpu_util))
-        click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-        click.echo('Read IOPS (count/sec): ' + str(read_iops))
-        click.echo('Write IOPS (count/sec): ' + str(write_iops))
+            click.echo('Start Time: ' + str(json_input['start_time']))
+            click.echo('End Time: ' + str(json_input['end_time']))
+            click.echo('---METRIC AVERAGES---')
+            click.echo('CPU Utilization (%): ' + str(cpu_util))
+            click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
+            click.echo('Read IOPS (count/sec): ' + str(read_iops))
+            click.echo('Write IOPS (count/sec): ' + str(write_iops))
 
-    except (ValueError, KeyError, TypeError): 
-        print('JSON format error')
-         
+        except (ValueError, KeyError, TypeError): 
+            print('JSON format error')
+             
