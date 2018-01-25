@@ -13,7 +13,8 @@ constructor(props) {
     this.state = {
       analytics: 'No Analytics to show',
       ButtonText: 'Get Analytics',
-      graphData: 'none'
+      graphData: 'none',
+      metricForGraph: 'none'
     };
 
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
@@ -31,14 +32,63 @@ renderMetricSelector() {
 
 renderMetricSelectorWithoutData() {
   return (
-    <table className="table table-hover">
+    <div>
+      <div className='col-xs-6' >
+        <table className="table table-hover">
+          <thead className="thead-dark">
+            <tr>
+              <th scope="col">Replay(s)</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>Loading Replay Data...</tr>
+        </tbody>
+      </table>
+    </div>
+    <div className='col-xs-6'>
+      {this.renderMetricOptions()}
+    </div>
+  </div>
+  );
+}
+
+selectMetricForGraph(metric, e) {
+  this.setState({metricForGraph: metric});
+}
+
+renderMetricOptions() {
+  return (
+    <table className="table table-hover" style={{borderLeft:'1px solid black'}}>
       <thead className="thead-dark">
         <tr>
-          <th scope="col">Replay(s)</th>
+          <th scope="col">Select Metric (only select one)</th>
         </tr>
       </thead>
       <tbody>
-      <tr>Loading Replay Data...</tr>
+      <tr>
+        <td onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
+        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+          CPU Utilization
+        </td>
+      </tr>
+      <tr>
+        <td onClick={this.selectMetricForGraph.bind(this, "Freeable Memory")}>
+        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+          Freeable Memory
+        </td>
+      </tr>
+      <tr>
+        <td onClick={this.selectMetricForGraph.bind(this, "ReadIOPS")}>
+        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+          Read IOPS
+        </td>
+      </tr>
+      <tr>
+        <td onClick={this.selectMetricForGraph.bind(this, "WriteIOPS")}>
+        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+          Write IOPS
+        </td>
+      </tr>
     </tbody>
   </table>
   );
@@ -55,23 +105,30 @@ renderMetricSelectorWithData() {
             replayOptions.push(replayTitle)
         }
         return (
-          <table className="table table-hover">
-            <thead className="thead-dark">
-              <tr>
-                <th scope="col">Replay(s)</th>
-              </tr>
-            </thead>
-            <tbody>
-            {replayOptions.map(replay => (
-              <tr onClick={this.addReplayToGraph.bind(this, replay)}>
-              <td key={replay}>
-              <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
-              {replay}
-              </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          <div>
+            <div className='col-xs-6' >
+                <table className="table table-hover">
+                  <thead className="thead-dark">
+                    <tr>
+                      <th scope="col">Replay(s)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {replayOptions.map(replay => (
+                    <tr onClick={this.addReplayToGraph.bind(this, replay)}>
+                    <td key={replay}>
+                    <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+                    {replay}
+                    </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+          </div>
+          <div className='col-xs-6'>
+              {this.renderMetricOptions()}
+          </div>
+        </div>
         );
     }
 }
@@ -99,7 +156,7 @@ getMetricArray() {
 renderConfigurableGraph() {
     if(this.state.analytics!= 'No Analytics to show') {
         return (
-          <Graph metric='CPUUtilization' selectedData={this.getMetricArray()}/>
+          <Graph metric={this.state.metricForGraph} selectedData={this.getMetricArray()}/>
         );
       }
 }
