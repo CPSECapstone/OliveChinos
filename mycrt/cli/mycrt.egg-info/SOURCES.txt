@@ -1,6 +1,0 @@
-mycrt.egg-info/PKG-INFO
-mycrt.egg-info/SOURCES.txt
-mycrt.egg-info/dependency_links.txt
-mycrt.egg-info/entry_points.txt
-mycrt.egg-info/requires.txt
-mycrt.egg-info/top_level.txt
