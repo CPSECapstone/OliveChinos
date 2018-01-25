@@ -154,7 +154,7 @@ getMetricArray() {
 }
 
 renderConfigurableGraph() {
-    if(this.state.analytics!= 'No Analytics to show') {
+    if(this.state.graphData!= 'none') {
         return (
           <Graph metric={this.state.metricForGraph} selectedData={this.getMetricArray()}/>
         );
