@@ -72,7 +72,7 @@ renderMetricOptions() {
         </td>
       </tr>
       <tr>
-        <td onClick={this.selectMetricForGraph.bind(this, "Freeable Memory")}>
+        <td onClick={this.selectMetricForGraph.bind(this, "FreeableMemory")}>
         <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
           Freeable Memory
         </td>
