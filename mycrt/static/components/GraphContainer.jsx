@@ -14,7 +14,9 @@ constructor(props) {
       analytics: 'No Analytics to show',
       ButtonText: 'Get Analytics',
       graphData: 'none',
-      metricForGraph: 'none'
+      metricForGraph: 'none',
+      listOfTotalPointsForGraph: 'none',
+      valuesForGraph: 'none'
     };
 
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
@@ -52,8 +54,12 @@ renderMetricSelectorWithoutData() {
   );
 }
 
+ 
 selectMetricForGraph(metric, e) {
-  this.setState({metricForGraph: metric});
+  console.log('SETTING METRIC FOR GRAPH');
+  this.setState({metricForGraph: metric},
+    this.setScrapedDataForGraph
+  );
 }
 
 renderMetricOptions() {
@@ -92,6 +98,44 @@ renderMetricOptions() {
     </tbody>
   </table>
   );
+}
+
+setScrapedDataForGraph(metricName) {
+  let pointsValues = []
+  let values
+  let dataMin = 0
+  let dataMax = 0
+  let listOfAnalytics = this.getReplayDataArray();
+  let listOfCurrentPoints;
+  if(this.state.listOfTotalPointsForGraph == 'none') {
+    listOfCurrentPoints = []
+  }
+  else {
+    listOfCurrentPoints = this.state.listOfTotalPointsForGraph;
+  }
+  if(this.state.valuesForGraph == 'none') {
+    values = []
+  }
+  else {
+    values = this.state.valuesForGraph
+  }
+  if(listOfAnalytics != undefined) {
+    if(this.state.metricForGraph == 'CPUUtilization') {
+        for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
+            let pointsValues = []
+            for(let i = 0; i < listOfAnalytics[outer][this.state.metricForGraph].length; i++) {
+                let currPoint = {seconds: `${i}`, cpuUtilization: listOfAnalytics[outer][this.state.metricForGraph][i].Average}
+                values.push(listOfAnalytics[outer][this.state.metricForGraph][i].Average)
+                pointsValues.push(currPoint)
+            }
+            listOfCurrentPoints.push(pointsValues)
+            }
+    }
+  
+    this.setState({listOfTotalPointsForGraph: listOfCurrentPoints})
+    this.setState({valuesForGraph: values})
+  }
+  
 }
 
 renderMetricSelectorWithData() {
@@ -135,35 +179,51 @@ renderMetricSelectorWithData() {
 
 addReplayToGraph(replay, e) {
   let currReplays = []
-  if(this.state.graphData != 'none') {
-    currReplays = this.state.graphData;
+  if(!this.contains(replay, this.state.graphData)) {
+      let currReplays = this.state.graphData;
   }
-  currReplays.push(replay);
-  this.setState({graphData: currReplays})
+      currReplays.push(replay);
+      this.setState({graphData: currReplays},
+        this.setScrapedDataForGraph
+      )
 }
 
-getMetricArray() {
+contains(obj, l) {
+  var i = l.length;
+  while (i--) {
+      if (l[i] === obj) {
+          return true;
+      }
+  }
+  return false;
+}
+
+getReplayDataArray() {
   if(this.state.graphData != 'none') {
-    let metricArray = []
+    let replayDataArray = []
     let replayNameArray = this.state.graphData
     replayNameArray.map(replayName => (
-      metricArray.push(this.props.data["test_folder"][`${replayName}.replay`])
+      replayDataArray.push(this.props.data["test_folder"][`${replayName}.replay`])
     ))
-    return metricArray
+    return replayDataArray
   }
 }
 
 renderConfigurableGraph() {
     if(this.state.graphData!= 'none') {
+      // console.log("***Normally would be rendering the graph component  RIGHT HERE*****")
+      // selectedData={this.getReplayDataArray()}
         return (
-          <Graph metric={this.state.metricForGraph} selectedData={this.getMetricArray()}/>
+          <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph}/>
         );
       }
 }
 
   render () {
-    console.log('this is the current replays selected: ', this.state.graphData)
-    console.log('current metric array: ', this.getMetricArray())
+  console.log('***HERE IS MY SANITY CHECK!!***')
+  console.log('In graph container: metric for graph state - ', this.state.metricForGraph)
+  console.log('In graph container: Total list of points for graph - ', this.state.listOfTotalPointsForGraph)
+  console.log('In graph container: list of values for graph ', this.state.valuesForGraph)
     return (
       <div>
         <div>
