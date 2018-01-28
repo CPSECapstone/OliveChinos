@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button } from 'react-bootstrap';
 import Graph from './Graph';
+import alasql from 'alasql'
 require('../styles/graphstyles.css');
 
 
@@ -16,7 +17,11 @@ constructor(props) {
       graphData: 'none',
       metricForGraph: 'none',
       listOfTotalPointsForGraph: 'none',
-      valuesForGraph: 'none'
+      valuesForGraph: 'none',
+      xLabel: '',
+      yLabel: '',
+      numLinesForGraphing: 0,
+      keys: 'none'
     };
 
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
@@ -119,23 +124,67 @@ setScrapedDataForGraph(metricName) {
   else {
     values = this.state.valuesForGraph
   }
+  // debugger;
+  let currKeys = []
+  if(this.state.keys != 'none') {
+    currKeys = this.state.keys
+  }
+  let metricNum = this.state.numLinesForGraphing
+  let yVariable = `cpuUtilization${metricNum}`
   if(listOfAnalytics != undefined) {
     if(this.state.metricForGraph == 'CPUUtilization') {
+      currKeys.push(yVariable)
+      this.setState({keys: currKeys})
         for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
             let pointsValues = []
             for(let i = 0; i < listOfAnalytics[outer][this.state.metricForGraph].length; i++) {
-                let currPoint = {seconds: `${i}`, cpuUtilization: listOfAnalytics[outer][this.state.metricForGraph][i].Average}
+                let currPoint = {seconds: `${i}`}
+                currPoint[yVariable] = listOfAnalytics[outer][this.state.metricForGraph][i].Average
                 values.push(listOfAnalytics[outer][this.state.metricForGraph][i].Average)
                 pointsValues.push(currPoint)
+                console.log('this is points values: ', pointsValues)
             }
-            listOfCurrentPoints.push(pointsValues)
+            console.log('points values is outside one for: ', pointsValues)
+            if(this.state.numLinesForGraphing < 2) {
+              console.log('setting state to this: **** OKAY WTF ****', pointsValues)
+              this.setState({listOfTotalPointsForGraph: pointsValues})
             }
+            else {
+            // this.setState({listOfTotalPointsForGraph: pointsValues},
+              this.updateFinalJSONObject(pointsValues)
+            }
+
+            // listOfCurrentPoints.push(pointsValues)
+          }
+
+          console.log('points values is outside both fors: ', pointsValues)
+          this.setState({xLabel: 'seconds'})
+          this.setState({yLabel: 'cpuUtilization'})
+          
     }
-  
-    this.setState({listOfTotalPointsForGraph: listOfCurrentPoints})
+
     this.setState({valuesForGraph: values})
+    console.log('**** THE NUMBER OF LINES TO GRAPH IS: ***', this.state.numLinesForGraphing)
   }
   
+}
+
+updateFinalJSONObject(newJsonElement) {
+  if(this.state.numLinesForGraphing > 1) {
+    console.log('**** OKAY PAY ATTENTION HERE ***')
+    let oldJsonElement = this.state.listOfTotalPointsForGraph;
+    console.log('what Im working with: ', this.oldJsonElement)
+    if(this.state.listOfTotalPointsForGraph != 'none') {
+      alasql.fn.extend = alasql.utils.extend;
+      var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
+      // var res1 = alasql('SELECT COLUMN extend(arr1._,arr2._) FROM ? arr1 JOIN ? arr2 USING id', [arr1,arr2]);
+      // console.log('this is the result!', res)
+      this.setState({listOfTotalPointsForGraph: res})
+    }
+  }
+  return 'none'
+  
+
 }
 
 renderMetricSelectorWithData() {
@@ -186,6 +235,8 @@ addReplayToGraph(replay, e) {
       this.setState({graphData: currReplays},
         this.setScrapedDataForGraph
       )
+      let newLineNum = this.state.numLinesForGraphing + 1
+      this.setState({numLinesForGraphing: newLineNum})
 }
 
 contains(obj, l) {
@@ -211,10 +262,8 @@ getReplayDataArray() {
 
 renderConfigurableGraph() {
     if(this.state.graphData!= 'none') {
-      // console.log("***Normally would be rendering the graph component  RIGHT HERE*****")
-      // selectedData={this.getReplayDataArray()}
         return (
-          <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph}/>
+          <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph} xLabel={this.state.xLabel} yLabel={this.state.yLabel} keys={this.state.keys}/>
         );
       }
 }

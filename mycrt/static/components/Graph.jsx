@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 // import LineChart from 'react-linechart'
 import {LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line} from 'recharts'
+// import { line } from '../../../../../../Library/Caches/typescript/2.6/node_modules/@types/d3-shape';
 
 export default class Graph extends Component {
     constructor(props) {
@@ -110,30 +111,31 @@ export default class Graph extends Component {
     }
 
     getGraphLines() {
-        console.log('HERE ID BE RENDERING A GRAPH OF SORTS')
         let linecharts = [];
-            for(let i = 0; i < listOfTotalPoints.length; i++) {
-                linecharts.push(listOfTotalPoints[i])
-            }
+            // for(let i = 0; i < listOfTotalPoints.length; i++) {
+            //     linecharts.push(listOfTotalPoints[i])
+            // }
 
             return(
             <div>
                 <div>
-                {linecharts.map(lineData => (
+                {/* {this.props.pointsArray.map(dataForSingleLine => ( */}
                     <div>
                     <h3 style={{marginLeft:'20px'}}>{this.props.metric}</h3>
-                <LineChart width={730} height={250} data={lineData}
+                <LineChart width={730} height={250} data={this.props.pointsArray}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis domain={[dataMin, dataMax]} label={{ value: 'y label here', angle: -90, position: 'insideLeft' }}/>
+                        <YAxis domain={[this.getMin(), this.getMax()]} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey='metric' stroke="#82ca9d" />
+                        {this.props.keys.map(currKey => (
+                        <Line type="monotone" dataKey={currKey} stroke="#82ca9d" />
+                        ))}
                         {/* <Line type="monotone" dataKey="uv" stroke="#82ca9d" /> */}
                 </LineChart>
                 </div>
-                  ))}
+                  {/* ))} */}
                   
                 </div>
             </div>
