@@ -59,7 +59,7 @@ export default class Graph extends Component {
 
     renderGraph() {
         if((this.props.values == 'none') || (this.props.pointsArray == 'none')) {
-            return <div>Empty Graph here</div>
+            return <div>{this.emptyGraph()}</div>
         }
         else {
             return (
@@ -68,6 +68,25 @@ export default class Graph extends Component {
                 </div>
             );
         }
+    }
+
+    emptyGraph() {
+        console.log('AYYYYY')
+        return (
+            <div>
+            <div>
+                <div>
+                <h3 style={{marginLeft:'20px'}}>{this.props.metric}</h3>
+            <LineChart width={730} height={250}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis domain={[0, 10]} label={{ angle: -90, position: 'insideLeft' }}/>
+            </LineChart>
+            </div>
+            </div>
+        </div>
+        );
     }
 
     getGraphLines() {
@@ -92,10 +111,12 @@ export default class Graph extends Component {
                 </div>
             </div>
             );
-        }
+    }
+        
 
     render() {
-        
+        console.log('this.props', this.props)
+
         return(
             <div>
                 {this.renderGraph()}

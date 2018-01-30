@@ -22,10 +22,32 @@ constructor(props) {
       yLabel: '',
       numLinesForGraphing: 0,
       keys: 'none',
-      replayArray: 'none'
+      replayArray: 'none',
+      isSelectedColorArray: 'none',
+      isSelectedBooleanArray: 'none'
     };
 
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
+
+}
+
+setIsSelectedColor() {
+  let selectedColorArray = this.state.isSelectedArray;
+  if(selectedColorArray == 'none') {
+    selectedColorArray = [] 
+  }
+  for(let i = 0; i < replayArray.length; i++) {
+    if(this.state.graphData[i] != 'not selected') {
+      selectedColorArray[i] = "#551a8b";
+    }
+    else {
+      selectedColorArray[i] = "#000";
+    }
+  }
+  this.setState({isSelectedColorArray: selectedColorArray})
+}
+
+setIsSelectedBooleanArray() {
 
 }
 
@@ -77,32 +99,36 @@ renderMetricOptions() {
       </thead>
       <tbody>
       <tr>
-        <td onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
-        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+        <td style={{backgroundColor: this.getbackgroundColor("CPUUtilization")}} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
           CPU Utilization
         </td>
       </tr>
       <tr>
-        <td onClick={this.selectMetricForGraph.bind(this, "FreeableMemory")}>
-        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+        <td style={{backgroundColor: this.getbackgroundColor("FreeableMemory")}} onClick={this.selectMetricForGraph.bind(this, "FreeableMemory")}>
           Freeable Memory
         </td>
       </tr>
       <tr>
-        <td onClick={this.selectMetricForGraph.bind(this, "ReadIOPS")}>
-        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+        <td style={{backgroundColor: this.getbackgroundColor("ReadIOPS")}} onClick={this.selectMetricForGraph.bind(this, "ReadIOPS")}>
           Read IOPS
         </td>
       </tr>
       <tr>
-        <td onClick={this.selectMetricForGraph.bind(this, "WriteIOPS")}>
-        <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+        <td style={{backgroundColor: this.getbackgroundColor("WriteIOPS")}} onClick={this.selectMetricForGraph.bind(this, "WriteIOPS")}>
           Write IOPS
         </td>
       </tr>
     </tbody>
   </table>
   );
+}
+
+getbackgroundColor(metricName) {
+  if(this.state.metricForGraph == metricName) {
+    return "#ADD8E6";
+  } else {
+    return "#fff";
+  }
 }
 
 setScrapedDataForGraph(metricName) {
@@ -114,33 +140,38 @@ setScrapedDataForGraph(metricName) {
   let metricNum = this.state.numLinesForGraphing;
   let listofAnalytics = this.getReplayDataArray();
   if(listofAnalytics != undefined) {
-    if(this.state.metricForGraph == 'CPUUtilization') {
-      this.getSpecifiedMetricData("seconds", "cpuUtilization", listofAnalytics)
-    } else if (this.state.metricForGraph == 'FreeableMemory') {
-      this.getSpecifiedMetricData("seconds", "FreeableMemory", listofAnalytics)
-    } else if (this.state.metricForGraph == 'ReadIOPS') {
-      this.getSpecifiedMetricData("seconds", "ReadIOPS", listofAnalytics)
-    } else if (this.state.metricForGraph == 'WriteIOPS') {
-      this.getSpecifiedMetricData("seconds", "WriteIOPS", listofAnalytics)
-    }
-
+    let totalNumberOfReplaysToChooseFrom = Object.keys(this.props.data["test_folder"]).length;
+    if(this.state.numLinesForGraphing <= totalNumberOfReplaysToChooseFrom) {
+      if(this.state.metricForGraph == 'CPUUtilization') {
+        this.getSpecifiedMetricData("seconds", "cpuUtilization", listofAnalytics)
+      } else if (this.state.metricForGraph == 'FreeableMemory') {
+        this.getSpecifiedMetricData("seconds", "FreeableMemory", listofAnalytics)
+      } else if (this.state.metricForGraph == 'ReadIOPS') {
+        this.getSpecifiedMetricData("seconds", "ReadIOPS", listofAnalytics)
+      } else if (this.state.metricForGraph == 'WriteIOPS') {
+        this.getSpecifiedMetricData("seconds", "WriteIOPS", listofAnalytics)
+      }
+  }
   }
   
 }
 
 getSpecifiedMetricData(xLabel, yLabel, graphData) {
-  let currKeys = []
-  let yVariable = this.state.graphData[this.state.numLinesForGraphing - 1]
+  let currKeys = this.state.keys
+  // let yVariable = this.state.graphData[this.state.numLinesForGraphing - 1]
+  let yVariable = this.state.graphData[this.state.graphData.length - 1]
   let listOfAnalytics = graphData;
   let values = this.state.valuesForGraph
   if(this.state.valuesForGraph == 'none') {
     values = []
   }
-  if(this.state.keys != 'none') {
-    currKeys = this.state.keys
+  if(this.state.keys == 'none') {
+    currKeys = []
   }
-  currKeys.push(yVariable)
-  this.setState({keys: currKeys})
+  if(this.state.graphData[this.state.numLinesForGraphing - 1] != undefined) {
+    currKeys.push(this.state.graphData[this.state.numLinesForGraphing - 1])
+  }
+  // this.setState({keys: currKeys})
   for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
       let pointsValues = []
       for(let i = 0; i < listOfAnalytics[outer][this.state.metricForGraph].length; i++) {
@@ -156,9 +187,6 @@ getSpecifiedMetricData(xLabel, yLabel, graphData) {
         this.updateFinalJSONObject(pointsValues)
       }
     }
-
-    this.setState({xLabel: this.xlabel})
-    this.setState({yLabel: this.ylabel})
     this.setState({valuesForGraph: values})
 }
 
@@ -172,8 +200,14 @@ updateFinalJSONObject(newJsonElement) {
     }
   }
   return 'none'
-  
+}
 
+getIsSelectedColor(metricName) {
+  for(let i = 0; i < this.state.graphData.length; i++) {
+    if(this.state.graphData[i] === metricName) {
+      return this.state.isSelectedColorArray[i]
+    }
+  }
 }
 
 renderMetricSelectorWithData() {
@@ -196,10 +230,11 @@ renderMetricSelectorWithData() {
                     </tr>
                   </thead>
                   <tbody>
+                  {/* style={{backgroundColor:{this.}}} */}
                   {replayOptions.map(replay => (
                     <tr onClick={this.addReplayToGraph.bind(this, replay)}>
                     <td key={replay}>
-                    <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input>
+                    {/* <input style={{margin:'10px'}}type="checkbox" className="form-check-input" id="exampleCheck1"></input> */}
                     {replay}
                     </td>
                     </tr>
@@ -215,12 +250,27 @@ renderMetricSelectorWithData() {
     }
 }
 
+remove(array, element) {
+  let newArray = [];
+  var index = array.indexOf(element);
+  if (index > -1) {
+    return array.splice(index, 1);
+  }
+}
+
+/*
+@todo: Fix this function to properly modify list of graphData to reflect
+only the replays that were selected and not the ones deselected
+*/
 addReplayToGraph(replay, e) {
   let currReplays = this.state.graphData;
   if (this.state.graphData == "none") {
     currReplays = []
   } 
-  if(!this.contains(replay, this.state.graphData)) {
+  // console.log('does it contain: ', replay)
+  if(this.contains(replay, this.state.graphData) == false) {
+    console.log('not on the graph yet')
+      // currReplays[this.state.numLinesForGraphing - 1] = replay;
       currReplays.push(replay);
       this.setState({graphData: currReplays},
         this.setScrapedDataForGraph
@@ -228,6 +278,16 @@ addReplayToGraph(replay, e) {
       let newLineNum = this.state.numLinesForGraphing + 1
       this.setState({numLinesForGraphing: newLineNum})
   }
+  else {
+    console.log('already on the graph')
+    currReplays = this.remove(currReplays, replay);
+    // console.log('okay this should be correct', currReplays)
+    this.setState({graphData: currReplays}, this.setScrapedDataForGraph);
+    let newLineNum = this.state.numLinesForGraphing - 1
+    this.setState({numLinesForGraphing: (newLineNum)})
+  }
+
+  // console.log('after replay adding to graph change: ', this.state.graphData)
       
 }
 
@@ -253,11 +313,13 @@ getReplayDataArray() {
 }
 
 renderConfigurableGraph() {
-    if(this.state.graphData!= 'none') {
+    // if(this.state.graphData!= 'none') {
+      console.log('THIS STATE KEYS', this.state.keys)
+      console.log('numLinesForGraphing: ', this.state.numLinesForGraphing)
         return (
-          <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph} xLabel={this.state.xLabel} yLabel={this.state.yLabel} keys={this.state.keys}/>
+          <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph} numLines={this.state.numLinesForGraphing} yLabel={this.state.yLabel} keys={this.state.graphData}/>
         );
-      }
+      // }
 }
 
   render () {
