@@ -21,7 +21,8 @@ constructor(props) {
       xLabel: '',
       yLabel: '',
       numLinesForGraphing: 0,
-      keys: 'none'
+      keys: 'none',
+      replayArray: 'none'
     };
 
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
@@ -61,7 +62,6 @@ renderMetricSelectorWithoutData() {
 
  
 selectMetricForGraph(metric, e) {
-  console.log('SETTING METRIC FOR GRAPH');
   this.setState({metricForGraph: metric},
     this.setScrapedDataForGraph
   );
@@ -106,79 +106,62 @@ renderMetricOptions() {
 }
 
 setScrapedDataForGraph(metricName) {
-  let pointsValues = []
-  let values
-  let dataMin = 0
-  let dataMax = 0
-  let listOfAnalytics = this.getReplayDataArray();
-  let listOfCurrentPoints;
+  let listOfCurrentPoints = this.state.listOfTotalPointsForGraph;
   if(this.state.listOfTotalPointsForGraph == 'none') {
     listOfCurrentPoints = []
   }
-  else {
-    listOfCurrentPoints = this.state.listOfTotalPointsForGraph;
-  }
-  if(this.state.valuesForGraph == 'none') {
-    values = []
-  }
-  else {
-    values = this.state.valuesForGraph
-  }
-  // debugger;
-  let currKeys = []
-  if(this.state.keys != 'none') {
-    currKeys = this.state.keys
-  }
-  let metricNum = this.state.numLinesForGraphing
-  let yVariable = `cpuUtilization${metricNum}`
-  if(listOfAnalytics != undefined) {
+  
+  let metricNum = this.state.numLinesForGraphing;
+  let listofAnalytics = this.getReplayDataArray();
+  if(listofAnalytics != undefined) {
     if(this.state.metricForGraph == 'CPUUtilization') {
-      currKeys.push(yVariable)
-      this.setState({keys: currKeys})
-        for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
-            let pointsValues = []
-            for(let i = 0; i < listOfAnalytics[outer][this.state.metricForGraph].length; i++) {
-                let currPoint = {seconds: `${i}`}
-                currPoint[yVariable] = listOfAnalytics[outer][this.state.metricForGraph][i].Average
-                values.push(listOfAnalytics[outer][this.state.metricForGraph][i].Average)
-                pointsValues.push(currPoint)
-                console.log('this is points values: ', pointsValues)
-            }
-            console.log('points values is outside one for: ', pointsValues)
-            if(this.state.numLinesForGraphing < 2) {
-              console.log('setting state to this: **** OKAY WTF ****', pointsValues)
-              this.setState({listOfTotalPointsForGraph: pointsValues})
-            }
-            else {
-            // this.setState({listOfTotalPointsForGraph: pointsValues},
-              this.updateFinalJSONObject(pointsValues)
-            }
-
-            // listOfCurrentPoints.push(pointsValues)
-          }
-
-          console.log('points values is outside both fors: ', pointsValues)
-          this.setState({xLabel: 'seconds'})
-          this.setState({yLabel: 'cpuUtilization'})
-          
+      this.getSpecifiedMetricData("seconds", "cpuUtilization", listofAnalytics)
     }
 
-    this.setState({valuesForGraph: values})
-    console.log('**** THE NUMBER OF LINES TO GRAPH IS: ***', this.state.numLinesForGraphing)
   }
   
 }
 
+getSpecifiedMetricData(xLabel, yLabel, graphData) {
+  let currKeys = []
+  let yVariable = this.state.graphData[this.state.numLinesForGraphing - 1]
+  let listOfAnalytics = graphData;
+  let values = this.state.valuesForGraph
+  if(this.state.valuesForGraph == 'none') {
+    values = []
+  }
+  if(this.state.keys != 'none') {
+    currKeys = this.state.keys
+  }
+  currKeys.push(yVariable)
+  this.setState({keys: currKeys})
+  for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
+      let pointsValues = []
+      for(let i = 0; i < listOfAnalytics[outer][this.state.metricForGraph].length; i++) {
+          let currPoint = {seconds: `${i}`}
+          currPoint[yVariable] = listOfAnalytics[outer][this.state.metricForGraph][i].Average
+          values.push(listOfAnalytics[outer][this.state.metricForGraph][i].Average)
+          pointsValues.push(currPoint)
+      }
+      if(this.state.numLinesForGraphing < 2) {
+        this.setState({listOfTotalPointsForGraph: pointsValues})
+      }
+      else {
+        this.updateFinalJSONObject(pointsValues)
+      }
+    }
+
+    this.setState({xLabel: this.xlabel})
+    this.setState({yLabel: this.ylabel})
+    this.setState({valuesForGraph: values})
+}
+
 updateFinalJSONObject(newJsonElement) {
   if(this.state.numLinesForGraphing > 1) {
-    console.log('**** OKAY PAY ATTENTION HERE ***')
     let oldJsonElement = this.state.listOfTotalPointsForGraph;
-    console.log('what Im working with: ', this.oldJsonElement)
     if(this.state.listOfTotalPointsForGraph != 'none') {
       alasql.fn.extend = alasql.utils.extend;
       var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
-      // var res1 = alasql('SELECT COLUMN extend(arr1._,arr2._) FROM ? arr1 JOIN ? arr2 USING id', [arr1,arr2]);
-      // console.log('this is the result!', res)
       this.setState({listOfTotalPointsForGraph: res})
     }
   }
@@ -227,7 +210,10 @@ renderMetricSelectorWithData() {
 }
 
 addReplayToGraph(replay, e) {
-  let currReplays = []
+  let currReplays = this.state.graphData;
+  if (this.state.graphData == "none") {
+    currReplays = []
+  } 
   if(!this.contains(replay, this.state.graphData)) {
       let currReplays = this.state.graphData;
   }
@@ -269,10 +255,6 @@ renderConfigurableGraph() {
 }
 
   render () {
-  console.log('***HERE IS MY SANITY CHECK!!***')
-  console.log('In graph container: metric for graph state - ', this.state.metricForGraph)
-  console.log('In graph container: Total list of points for graph - ', this.state.listOfTotalPointsForGraph)
-  console.log('In graph container: list of values for graph ', this.state.valuesForGraph)
     return (
       <div>
         <div>
