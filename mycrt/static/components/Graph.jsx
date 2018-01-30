@@ -55,6 +55,7 @@ export default class Graph extends Component {
     }
     //helper function to get maximum value of current total data being graphed
     //in ordder to scale the x axis
+    //@todo: FIX Y SCALING HERE (or wherever it needs to be) FOR WHEN DIFFERENT METRICS ARE GRAPHED BESIDES CPU UTILIZATION
     getMax() {
         let dataMax = this.props.values.reduce(function(a, b) {
             return Math.max(a, b);
