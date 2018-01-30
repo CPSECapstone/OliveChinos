@@ -16,9 +16,14 @@ export default class Graph extends Component {
             // analytics: this.props.analytics,
             // value: this.props.value,
             title: '',
-            color: '#fff'
+            color: ''
         };
     };
+
+    getRandomColor() {
+        let colorValues = ["darkred", "blue", "darkolivegreen", "deepskyblue", "goldenrod", "grey", "lightsalmon", "peru" ];
+        return colorValues[Math.floor(Math.random() * colorValues.length)];
+    }
 
     getTotalPoints() {
         let pointsValues = []
@@ -112,14 +117,10 @@ export default class Graph extends Component {
 
     getGraphLines() {
         let linecharts = [];
-            // for(let i = 0; i < listOfTotalPoints.length; i++) {
-            //     linecharts.push(listOfTotalPoints[i])
-            // }
 
             return(
             <div>
                 <div>
-                {/* {this.props.pointsArray.map(dataForSingleLine => ( */}
                     <div>
                     <h3 style={{marginLeft:'20px'}}>{this.props.metric}</h3>
                 <LineChart width={730} height={250} data={this.props.pointsArray}
@@ -130,9 +131,8 @@ export default class Graph extends Component {
                         <Tooltip />
                         <Legend />
                         {this.props.keys.map(currKey => (
-                        <Line type="monotone" dataKey={currKey} stroke="#82ca9d" />
+                        <Line type="monotone" dataKey={currKey} stroke={this.getRandomColor()} />
                         ))}
-                        {/* <Line type="monotone" dataKey="uv" stroke="#82ca9d" /> */}
                 </LineChart>
                 </div>
                   {/* ))} */}
