@@ -31,6 +31,10 @@ constructor(props) {
 
 }
 
+//This function fills an array with colors that are darker for the 
+//replay options that have been selected and lighter for those not selected
+//@todo: FIX THIS FUNCTION! Need to fix the state.graphData to be accurate
+//before this can be fixed.
 setIsSelectedColor() {
   let selectedColorArray = this.state.isSelectedArray;
   if(selectedColorArray == 'none') {
@@ -47,10 +51,8 @@ setIsSelectedColor() {
   this.setState({isSelectedColorArray: selectedColorArray})
 }
 
-setIsSelectedBooleanArray() {
-
-}
-
+//This will either render the metric table below the graph
+//or it will render an empty table if the data hasn't come in yet
 renderMetricSelector() {
   if(this.props.data == 'No analytics to show') {
     return this.renderMetricSelectorWithoutData()
@@ -60,6 +62,7 @@ renderMetricSelector() {
   }
 }
 
+//Empty metric selector for when data is still loading
 renderMetricSelectorWithoutData() {
   return (
     <div>
@@ -82,13 +85,15 @@ renderMetricSelectorWithoutData() {
   );
 }
 
- 
+//helper function that sets the state's current metric to the one that
+//the user selected
 selectMetricForGraph(metric, e) {
   this.setState({metricForGraph: metric},
     this.setScrapedDataForGraph
   );
 }
 
+//renders the four metric options always
 renderMetricOptions() {
   return (
     <table className="table table-hover" style={{borderLeft:'1px solid black'}}>
@@ -123,6 +128,8 @@ renderMetricOptions() {
   );
 }
 
+//this is a helper function to change the background color of the metric
+//that has been selected for the user to see
 getbackgroundColor(metricName) {
   if(this.state.metricForGraph == metricName) {
     return "#ADD8E6";
@@ -131,6 +138,11 @@ getbackgroundColor(metricName) {
   }
 }
 
+//this function will only do anything if the user changes the lines
+//they want to be graphed - both adding or removing lines
+//it will then get the specified data for the current metric and save it
+//to the graphData and totalPointsForGraph state objects respectively
+//to be passed into the graph component
 setScrapedDataForGraph(metricName) {
   let listOfCurrentPoints = this.state.listOfTotalPointsForGraph;
   if(this.state.listOfTotalPointsForGraph == 'none') {
@@ -156,6 +168,8 @@ setScrapedDataForGraph(metricName) {
   
 }
 
+//This is the helper function that will get the graph data for the specified
+//replays and metric and set the state objects accordingly
 getSpecifiedMetricData(xLabel, yLabel, graphData) {
   let currKeys = this.state.keys
   // let yVariable = this.state.graphData[this.state.numLinesForGraphing - 1]
@@ -171,6 +185,8 @@ getSpecifiedMetricData(xLabel, yLabel, graphData) {
   if(this.state.graphData[this.state.numLinesForGraphing - 1] != undefined) {
     currKeys.push(this.state.graphData[this.state.numLinesForGraphing - 1])
   }
+  // IF YOU FIX WHEN THIS PUSHES, USE THIS AND PASS STATE.KEYS AS A PROP INTO
+  // THE GRAPH COMPONENT
   // this.setState({keys: currKeys})
   for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
       let pointsValues = []
@@ -190,6 +206,9 @@ getSpecifiedMetricData(xLabel, yLabel, graphData) {
     this.setState({valuesForGraph: values})
 }
 
+//This is a helper function that takes in all of the json objects for the data
+//that is going to be graphed and does an outer merge on the JSON array so that
+//there is only one JSON object total for the graph component to parse
 updateFinalJSONObject(newJsonElement) {
   if(this.state.numLinesForGraphing > 1) {
     let oldJsonElement = this.state.listOfTotalPointsForGraph;
@@ -202,6 +221,10 @@ updateFinalJSONObject(newJsonElement) {
   return 'none'
 }
 
+//Helper function to change color of replay optionsthat are or aren't 
+//selected respectively.
+//THIS IS NOT FUNCTIONING CURRENTLY.
+//@todo: fix this and the color selectors for the replay options
 getIsSelectedColor(metricName) {
   for(let i = 0; i < this.state.graphData.length; i++) {
     if(this.state.graphData[i] === metricName) {
@@ -210,6 +233,9 @@ getIsSelectedColor(metricName) {
   }
 }
 
+//This function renders the current replay options that the user
+//has saved in their S3 bucket and displays those options by a unique
+//name or id that represents that replay 
 renderMetricSelectorWithData() {
     let replayOptions = [];
     let metricOptions = [];
@@ -250,6 +276,7 @@ renderMetricSelectorWithData() {
     }
 }
 
+//helper function to remove a specific element in an array
 remove(array, element) {
   let newArray = [];
   var index = array.indexOf(element);
@@ -285,12 +312,10 @@ addReplayToGraph(replay, e) {
     this.setState({graphData: currReplays}, this.setScrapedDataForGraph);
     let newLineNum = this.state.numLinesForGraphing - 1
     this.setState({numLinesForGraphing: (newLineNum)})
-  }
-
-  // console.log('after replay adding to graph change: ', this.state.graphData)
-      
+  }      
 }
 
+//helper function to see if a list contains an object
 contains(obj, l) {
   var i = l.length;
   while (i--) {
@@ -301,6 +326,8 @@ contains(obj, l) {
   return false;
 }
 
+//checks an array of all of the actual data points for a specified
+//replay and the current metric that was selected
 getReplayDataArray() {
   if(this.state.graphData != 'none') {
     let replayDataArray = []
@@ -312,14 +339,15 @@ getReplayDataArray() {
   }
 }
 
+//This function renders the graph object and passes
+//all specified data into it
 renderConfigurableGraph() {
-    // if(this.state.graphData!= 'none') {
-      console.log('THIS STATE KEYS', this.state.keys)
+      //There is an error here too, sometimes it goes above what it should be allowed to
+      //@todo : FIX THE NUMBER OF LINES FOR GRAPHING
       console.log('numLinesForGraphing: ', this.state.numLinesForGraphing)
         return (
           <Graph metric={this.state.metricForGraph} values={this.state.valuesForGraph} pointsArray={this.state.listOfTotalPointsForGraph} numLines={this.state.numLinesForGraphing} yLabel={this.state.yLabel} keys={this.state.graphData}/>
         );
-      // }
 }
 
   render () {

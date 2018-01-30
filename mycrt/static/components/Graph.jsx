@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
-// import LineChart from 'react-linechart'
 import {LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line} from 'recharts'
-// import { line } from '../../../../../../Library/Caches/typescript/2.6/node_modules/@types/d3-shape';
 
 export default class Graph extends Component {
     constructor(props) {
@@ -16,11 +14,15 @@ export default class Graph extends Component {
         };
     };
 
+    //function to get a random color from this array (feel free to change the color options in this array)
+    //and return random color for each different line in the graph
     getRandomColor() {
         let colorValues = ["darkred", "blue", "darkolivegreen", "deepskyblue", "goldenrod", "grey", "lightsalmon", "peru" ];
         return colorValues[Math.floor(Math.random() * colorValues.length)];
     }
 
+    //this function gets the total points to be graphed and the values for
+    //the actual linechart. it also sets the state of the totalValuesArray for the linechart
     getTotalPoints() {
         let pointsValues = []
         let values = []
@@ -43,13 +45,16 @@ export default class Graph extends Component {
         return listOfTotalPoints;
     }
 
+    //helper function to get minimum value of current total data being graphed
+    //in ordder to scale the x axis
     getMin() {
         let dataMin = this.props.values.reduce(function(a, b) {
             return Math.min(a, b);
         });
         return Math.floor(dataMin)
     }
-
+    //helper function to get maximum value of current total data being graphed
+    //in ordder to scale the x axis
     getMax() {
         let dataMax = this.props.values.reduce(function(a, b) {
             return Math.max(a, b);
@@ -57,6 +62,8 @@ export default class Graph extends Component {
         return Math.ceil(dataMax)
     }
 
+    //either graphs an empty graph if no replay or metric has been selected or 
+    //the lines that represent the replays that have been selected for that metric
     renderGraph() {
         if((this.props.values == 'none') || (this.props.pointsArray == 'none')) {
             return <div>{this.emptyGraph()}</div>
@@ -70,6 +77,7 @@ export default class Graph extends Component {
         }
     }
 
+    //empty graph for when no replay has been selected
     emptyGraph() {
         console.log('AYYYYY')
         return (
@@ -89,6 +97,8 @@ export default class Graph extends Component {
         );
     }
 
+    //returns the graph with the accurate data represented by lines on the linechart
+    //when there is replay data passed in from the graphContainer
     getGraphLines() {
         let linecharts = [];
             return(
@@ -115,8 +125,6 @@ export default class Graph extends Component {
         
 
     render() {
-        console.log('this.props', this.props)
-
         return(
             <div>
                 {this.renderGraph()}
