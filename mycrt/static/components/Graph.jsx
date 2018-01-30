@@ -28,7 +28,7 @@ export default class Graph extends Component {
         let dataMax = 0
         let listOfAnalytics = this.state.selectedData;
         let listOfTotalPoints = []
-        if(this.props.metric == 'CPUUtilization') {
+        // if(this.props.metric == 'CPUUtilization') {
             for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
                 let pointsValues = []
                   for(let i = 0; i < listOfAnalytics[outer][this.props.metric].length; i++) {
@@ -38,7 +38,7 @@ export default class Graph extends Component {
                   }
                   listOfTotalPoints.push(pointsValues)
                 }
-        }
+        // }
         this.setState({totalValuesArray: values})
         return listOfTotalPoints;
     }

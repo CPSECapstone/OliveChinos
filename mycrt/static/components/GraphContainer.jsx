@@ -116,6 +116,12 @@ setScrapedDataForGraph(metricName) {
   if(listofAnalytics != undefined) {
     if(this.state.metricForGraph == 'CPUUtilization') {
       this.getSpecifiedMetricData("seconds", "cpuUtilization", listofAnalytics)
+    } else if (this.state.metricForGraph == 'FreeableMemory') {
+      this.getSpecifiedMetricData("seconds", "FreeableMemory", listofAnalytics)
+    } else if (this.state.metricForGraph == 'ReadIOPS') {
+      this.getSpecifiedMetricData("seconds", "ReadIOPS", listofAnalytics)
+    } else if (this.state.metricForGraph == 'WriteIOPS') {
+      this.getSpecifiedMetricData("seconds", "WriteIOPS", listofAnalytics)
     }
 
   }
@@ -215,14 +221,14 @@ addReplayToGraph(replay, e) {
     currReplays = []
   } 
   if(!this.contains(replay, this.state.graphData)) {
-      let currReplays = this.state.graphData;
-  }
       currReplays.push(replay);
       this.setState({graphData: currReplays},
         this.setScrapedDataForGraph
       )
       let newLineNum = this.state.numLinesForGraphing + 1
       this.setState({numLinesForGraphing: newLineNum})
+  }
+      
 }
 
 contains(obj, l) {
