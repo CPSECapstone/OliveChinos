@@ -17,3 +17,4 @@ dist/
 npm-debug.log
 mycrt/mycrtenv/
 config.ini
+cli.egg-info/
