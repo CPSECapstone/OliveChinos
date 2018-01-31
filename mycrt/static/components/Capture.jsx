@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button } from 'react-bootstrap'
+import { Button, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { startCapture, stopCapture } from '../actions'
 import CaptureDetail from './CaptureDetail'
@@ -16,7 +16,9 @@ class Capture extends React.Component {
       activeCaptures: this.props.activeCaptures,
       haveCaptureData: false,
       captureData: '',
-      query: ''
+      query: '',
+      captureName: '',
+      captureDB: ''
     }
 
     //binding required for callback
@@ -24,6 +26,7 @@ class Capture extends React.Component {
     this.stopCapture = this.stopCapture.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
     this.sendQuery = this.sendQuery.bind(this)
+    this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
   }
 
   startCapture() {
@@ -62,6 +65,10 @@ class Capture extends React.Component {
     this.setState({ query: event.target.value })
   }
 
+  handleCaptureNameChange(event) {
+    this.setState({ captureName: event.target.value });
+  }
+
   sendQuery() {
     var queryJSON = {
       query: this.state.query
@@ -98,6 +105,29 @@ class Capture extends React.Component {
     return (
       <div>
         <hr />
+        <form>
+          <FormGroup
+            controlId="formBasicText"
+          //validationState={this.getValidationState()}
+          >
+            <ControlLabel>Capture Name</ControlLabel>
+            <FormControl
+              type="text"
+              value={this.state.captureName}
+              placeholder="Enter name"
+              onChange={this.handleCaptureNameChange}
+            />
+            <FormControl.Feedback />
+            <HelpBlock>Optional. If not provided, name will be generated.</HelpBlock>
+          </FormGroup>
+          <FormGroup controlId="formControlsSelect">
+            <ControlLabel>Select</ControlLabel>
+            <FormControl componentClass="select" placeholder="select">
+              <option value="select">select</option>
+              <option value="other">...</option>
+            </FormControl>
+          </FormGroup>
+        </form>
         <Button
           style={{ marginLeft: '20px' }}
           bsSize="large"
