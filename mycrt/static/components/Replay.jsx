@@ -20,6 +20,11 @@ class Replay extends React.Component {
     //binding required for callback
     this.startReplay = this.startReplay.bind(this)
     this.addReplay = this.addReplay.bind(this)
+    this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
+  }
+
+  handleReplayNameChange(event) {
+    this.setState({ privateKey: event.target.value })
   }
 
   startReplay() {
@@ -62,6 +67,23 @@ class Replay extends React.Component {
     return (
       <div>
         <hr />
+        <form>
+           <FormGroup
+             controlId="formBasicText"
+             validationState={this.getValidationState()}
+           >
+             <ControlLabel>Working example with validation</ControlLabel>
+             <FormControl
+               type="text"
+               value={this.state.value}
+               placeholder="Replay Name"
+               onChange={this.handleReplayNameChange}
+             />
+             <FormControl.Feedback />
+             <HelpBlock>Validation is based on string length.</HelpBlock>
+           </FormGroup>
+      </form>
+
         <Button
           style={{ marginLeft: '20px' }}
           bsSize="large"
