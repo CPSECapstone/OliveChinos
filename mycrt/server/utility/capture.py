@@ -32,7 +32,8 @@ def execute_query(query):
 
 def list_databases(credentials, rds_client = None, close_client = False):
   if rds_client is None:
-    close_client = True
+    #closing the client doesn't work
+    #close_client = True
     rds_client = boto3.client('rds', **credentials)
   
   instances = rds_client.describe_db_instances()
@@ -194,7 +195,7 @@ def end_capture(credentials, db_id = "pi"):
   bucket_id = "my-crt-test-bucket-olive-chinos"
   _put_bucket(s3_client, transactions, bucket_id)
 
-  return transactions
+  return (transactions, start_time[0])
 
 def testConnection(connection):
     
