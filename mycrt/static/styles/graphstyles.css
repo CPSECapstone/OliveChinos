@@ -1,0 +1,27 @@
+#metricSelector {
+    border: 1px solid black;
+    overflow-y: scroll;
+    height: 25vh;
+    /* position: absolute; */
+}
+
+.row {
+    margin-right: 0;
+    margin-left: 0;
+    /* border: 1px solid black; */
+}
+
+.btn {
+    border: 1px solid black;
+    padding: 20px 20px;
+}
+
+.thead-dark {
+    background: #000;
+    color: #fff;
+}
+
+.col-xs-6 {
+    padding-right: 0;
+    padding-left: 0;
+}
