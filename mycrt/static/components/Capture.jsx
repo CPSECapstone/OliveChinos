@@ -29,19 +29,43 @@ class Capture extends React.Component {
   startCapture() {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
-    jquery.post(window.location.href + 'capture/start', data => {
-      //this.setState({capture: data});
-      console.log(data)
+    var postData = {
+      "db": "pi", 
+      "captureName": "captureNameFrontend"
+      //"startTime": "now"
+    }
+    jquery.ajax({
+      url: window.location.href + 'capture/start',
+      type: 'POST',
+      data: JSON.stringify(postData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function(data) {
+      console.log(data);
     })
+    
   }
 
   stopCapture() {
     this.setState({ capture: 'Capture Stopped' })
     this.props.dispatch(stopCapture())
-    jquery.post(window.location.href + 'capture/end', data => {
-      this.setState({ haveCaptureData: true })
-      this.setState({ captureData: data })
+    var postData = {
+      "db": "pi",
+      "captureName": "captureNameFrontend"
+    }
+    var that = this;
+    jquery.ajax({
+      url: window.location.href + 'capture/end',
+      type: 'POST',
+      data: JSON.stringify(postData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function(data) {
+      that.setState({ haveCaptureData: true })
+      that.setState({ captureData: data })
+
     })
+    
   }
 
   renderCaptureData() {
