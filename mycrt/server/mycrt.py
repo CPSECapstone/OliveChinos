@@ -14,7 +14,7 @@ except:
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
-    from utility.login import *
+    from utility.login import * 
 
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -53,21 +53,59 @@ def login():
     else: 
         abort(401) 
 
+@application.route("/databaseInstances", methods=["GET"])
+def databaseInstances():
+    headers = request.headers
+    pubKey = headers["publicKey"] 
+    privateKey = headers["privateKey"] 
+    if pubKey == None or privateKey == None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        db_instances = list_databases(credentials)
+        return jsonify({
+            "databases" : db_instances
+        })
+    else: 
+        abort(401) 
+
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
-    #db_name = request.values.get('db') 
-    start_capture(credentials)
+    data = request.get_json()
+    db_name = data['db'] 
+
+    capture_name = data['captureName']
+    if capture_name == None:
+        capture_name = db_name + datetime.utcnow()
+    #TODO verify that capture name is unique. return 403? if not.
+    start_time = data['startTime']
+    end_time = data['endTime']
+    if start_time == None:
+        start_time = datetime.utcnow()
+    start_capture(credentials, db_name)
     return jsonify({
-        "status": "started"
+        "status": "started",
+        "db": db_name,
+        "captureName": capture_name,
+        "startTime": start_time
     })
 
 @application.route("/capture/end", methods=["POST"])
 def capture_end():
-    #db_name = request.values.get('db') 
-    capture_details = end_capture(credentials)
+    data = request.get_json()
+    db_name = data['db'] 
+    capture_name = data['captureName']
+    end_time = datetime.utcnow()
+    
+    capture_details, start_time = end_capture(credentials)
+    print ("In capture/end\n")
+
     return jsonify({
         "status": "ended",
-        "capture_details": capture_details
+        "db": db_name,
+        "captureName": capture_name,
+        "captureDetails": capture_details,
+        "startTime": start_time,
+        "endTime": end_time
     })
 
 @application.route("/capture/executeQuery", methods=["POST"])
@@ -88,11 +126,23 @@ def query_execute():
 
 @application.route("/replay", methods=["POST"])
 def replay():
-    #db_name = request.values.get('db') 
+    data = request.get_json()
+    db_name = data['db'] 
+    replay_name = data['replayName']
+    capture_name = data['captureName']
+    fast_mode = data['fastMode']
+    restore_db = data['restoreDb']
+    start_time = data['startTime']
+    if start_time == None:
+        start_time = datetime.utcnow()
     execute_replay(credentials)
     return jsonify({
         "status": "started",
-        "db": "pi"
+        "db": db_name,
+        "replayName": replay_name,
+        "fastMode": fast_mode,
+        "restoreDb": restore_db,
+        "startTime": start_time
     })
 
 @application.route("/analytics", methods=["GET"])
