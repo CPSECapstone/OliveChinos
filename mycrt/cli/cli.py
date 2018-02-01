@@ -9,16 +9,26 @@ def cli():
     """Tool to analyze database workloads"""
     pass
 
+def _get_default_capture_name(): 
+    capture_name = 'capture_'
+    #check if capture name exists
+    return capture_name
 
 @cli.command()
 @click.argument('db-instance')
-@click.option('--capture-name', default=default_capture_name,
+@click.option('--capture-name', default=_get_default_capture_name,
         help='nickname for capture')
-@click.option('-i', '--interactive', is_flag=True)
-@click.option('-s', '--schedule', prompt='Please enter <start_time,end_time>')
-@click.option('--view-captures', is_flag=True)
-def capture(db_instance, capture_name, i_flag, s_flag, view): 
+@click.option('-i', '--interactive', is_flag=True,
+        help='start capture in interactive mode, stop capture with "--stop" command')
+@click.option('-s', '--schedule', nargs=2, 
+        help='schedule capture to start at specified time; input: start_time stop_time')
+@click.option('--view-captures', is_flag=True, 
+        help='view previously scheduled captures')
+@click.option('--stop', is_flag=True,
+        help='stop specified capture in interactive mode; input: capture_name')
+def capture(db_instance, capture_name, interactive, schedule, view_captures, stop): 
     """-capture a database workload"""
+    #todo: if default capture name was used, increment number 1
     click.echo('capturing')
 
 
