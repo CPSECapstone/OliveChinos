@@ -32,6 +32,15 @@ if config['DEFAULT']:
 credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
 print (credentials, file=sys.stderr)
 
+def convertDatetimeToString(dTime):
+    return dTime.strftime('%Y/%m/%d_%H:%M:%S')
+
+def createCaptureName(dbName, formattedTime):
+    return 'C_' + dbName + '_' + formattedTime
+
+def createReplayName(dbName, formattedTime):
+    return 'R_' + dbName + '_' + formattedTime
+
 @application.route("/")
 def index():
     return render_template("index.html")
@@ -68,15 +77,47 @@ def databaseInstances():
     else: 
         abort(401) 
 
+@application.route("/capture/list", methods=["GET"])
+def captureList():
+    headers = request.headers
+    pubKey = headers["publicKey"] 
+    privateKey = headers["privateKey"] 
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        capture_list = get_capture_list(credentials)
+        return jsonify({
+            "captures" : capture_list
+        })
+    else: 
+        abort(401) 
+
+@application.route("/capture/replayList", methods=["GET"])
+def replayListForSpecificCapture():
+    headers = request.headers
+    capture_name = request.args.get("captureName")
+    pubKey = headers["publicKey"] 
+    privateKey = headers["privateKey"] 
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        replay_list = get_replays_for_capture(credentials, capture_name)
+        return jsonify({
+            "captureName": capture_name,
+            "replays" : replay_list
+        })
+    else: 
+        abort(401) 
+
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
     data = request.get_json()
     db_name = data['db'] 
-
-    capture_name = data.get('captureName', db_name + datetime.utcnow().strftime('%B %d %Y - %H:%M:%S') + "capture")
+    start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
     
     #TODO verify that capture name is unique. return 403? if not.
-    start_time = data.get('startTime', datetime.utcnow().strftime('%B %d %Y - %H:%M:%S'))
+    capture_name = data.get('captureName', createCaptureName(db_name, start_time))
+    
     end_time = data.get('endTime', 'No end time..')
     
     start_capture(credentials, db_name)
@@ -93,7 +134,7 @@ def capture_end():
     data = request.get_json()
     db_name = data['db'] 
     capture_name = data['captureName']
-    end_time = datetime.utcnow().strftime('%B %d %Y - %H:%M:%S')
+    end_time = convertDatetimeToString(datetime.utcnow())
     
     capture_details, start_time = end_capture(credentials)
 
@@ -126,11 +167,12 @@ def query_execute():
 def replay():
     data = request.get_json()
     db_name = data['db'] 
-    replay_name = data.get('replayName', db_name + datetime.utcnow().strftime('%B %d %Y - %H:%M:%S') + "replay")
+    start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
+
+    replay_name = data.get('replayName', createReplayName(db_name, start_time))
     capture_name = data['captureName']
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
-    start_time = data.get('startTime', datetime.utcnow().strftime('%B %d %Y - %H:%M:%S'))
     
     execute_replay(credentials)
     return jsonify({
