@@ -44,8 +44,6 @@ class GraphContainer extends React.Component {
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
-        console.log('color debugger: ', uniqueName)
-        console.log('***#### ', this.props)
         let captureReplaysSelected = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i]) {
@@ -100,12 +98,11 @@ class GraphContainer extends React.Component {
             this.props.dispatch(setBooleansForGraph(newBooleans, this.props.totalReplayCaptures, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName));
         }
         else {
-            alert('Must choose metric type')
+            alert('Please select metric type')
         }
     }
 
     render() {
-        console.log('CRSELECTOR PROPS: ', this.props)
         return(
             <tbody>
                 {this.getReplayCapturesWithData()}

@@ -44,7 +44,6 @@ let initialState = {
 }
 
 function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName) {
-  console.log('SANITY CHECK: booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName', booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName)
   let allAssignments = {}
   if(metric != false && uniqueName != false) {
     let newLinesToGraph = []
@@ -55,7 +54,6 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     }
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
-    // this.props.dispatch(setReplayCaptureNamesForGraph(newLinesToGraph))
     let lineNum = numLines + 1;
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
@@ -73,7 +71,6 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.numLinesForGraph = 0;
     allAssignments.totalNames = totalNames;
   }
-  console.log('before return in reducer, allassignments: ', allAssignments)
   return allAssignments
 }
 
@@ -84,7 +81,6 @@ function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, anal
     for (let outer = 0; outer < booleanArray.length; outer++) {
       let pointsValues = []
       if(booleanArray[outer]) {
-          // let uniqueName = totalNames[outer]
           let currIndex = `${uniqueName}.replay`
           for(let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
               let currPoint = {seconds: `${i}`}
@@ -92,7 +88,6 @@ function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, anal
               pointsValues.push(currPoint)
           }
           let formattedPoints = updateFinalJSONObject(pointsValues, numLines, dataPoints)
-          console.log('DO THE REAL SANITY CHECK HERE: ', formattedPoints)
           return formattedPoints
       }
     }
@@ -114,7 +109,6 @@ function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
     let allAssignments = getAssignments(action.booleanArray, action.totalNameArray , action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName);
-    console.log('ACTION: SETTING BOOLEANS + EVERYTHING FOR GRAPH')
       return Object.assign({}, state, {
         booleansForGraph: allAssignments.booleanArrayForGraph,
         replayCaptureNamesForGraph: allAssignments.replayCaptureNamesForGraph,
@@ -171,34 +165,29 @@ function reducer(state = initialState, action) {
         replay: 'Replay stopped'
       })
 
-    case SET_DATA_POINTS_FOR_GRAPH:
-      console.log('ACTION: SETTING DATA POINTS FOR GRAPH')
-      return Object.assign({}, state, {
-        dataPointsForGraph: action.key
-      })
-    case SET_VALUES_FOR_GRAPH:
-    console.log('ACTION: SETTING VALUES FOR GRAPH: ', action.key)
-      return Object.assign({}, state, {
-        valuesForGraph: action.key
-      })
+    // case SET_DATA_POINTS_FOR_GRAPH:
+    //   return Object.assign({}, state, {
+    //     dataPointsForGraph: action.key
+    //   })
+    // case SET_VALUES_FOR_GRAPH:
+    //   return Object.assign({}, state, {
+    //     valuesForGraph: action.key
+    //   })
 
     case SET_METRIC_FOR_GRAPH:
-    console.log('ACTION: SETTING METRIC FOR GRAPH')
       return Object.assign({}, state, {
         metricForGraph: action.key
       })
 
-    case SET_NUM_LINES_FOR_GRAPH:
-    console.log('ACTION: SETTING NUMBER OF LINES FOR GRAPH')
-      return Object.assign({}, state, {
-        numLinesForGraph: action.key
-      })
+    // case SET_NUM_LINES_FOR_GRAPH:
+    //   return Object.assign({}, state, {
+    //     numLinesForGraph: action.key
+    //   })
     
-    case SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH:
-    console.log('ACTION: SETTING REPLAY CAPTURE NAMES FOR GRAPH')
-      return Object.assign({}, state, {
-        replayCaptureNamesForGraph: action.key
-      })
+    // case SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH:
+    //   return Object.assign({}, state, {
+    //     replayCaptureNamesForGraph: action.key
+    //   })
 
     case SET_ANALYTICS_FOR_GRAPH:
       return Object.assign({}, state, {

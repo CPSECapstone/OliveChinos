@@ -57,12 +57,9 @@ class Graph extends Component {
         let dataMin = totalValues.reduce(function(a, b) {
             return Math.min(a, b);
         });
-        // console.log('minimum: ', dataMin)
         return Math.floor(dataMin)
     }
     //helper function to get maximum value of current total data being graphed
-    //in ordder to scale the x axis
-    //@todo: FIX Y SCALING HERE (or wherever it needs to be) FOR WHEN DIFFERENT METRICS ARE GRAPHED BESIDES CPU UTILIZATION
     getMax() {
         let totalValues = []
         for(let i = 0; i < this.props.pointsArray.length; i++) {
@@ -71,7 +68,6 @@ class Graph extends Component {
         let dataMax = totalValues.reduce(function(a, b) {
             return Math.max(a, b);
         });
-        // console.log('maximum: ', dataMax)
         return Math.ceil(dataMax)
     }
 
@@ -97,7 +93,7 @@ class Graph extends Component {
             <div>
                 <div>
                 <h3 style={{marginLeft:'20px'}}></h3>
-            <LineChart width={950} height={400}
+            <LineChart width={1400} height={400}
                 margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -111,16 +107,13 @@ class Graph extends Component {
 
     getLines() {
         let linesForGraphing = []
-        console.log('*****IN GRAPH GET LINES PROPS: ', this.props)
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i] == true) {
                 let currKey = this.props.totalNames[i];
-                console.log('currkey: ', currKey)
                 let line = <Line dataKey={currKey} stroke={this.getRandomColor()}/>
                 linesForGraphing.push(line)
             }
         }
-        console.log('lines being returned: ', linesForGraphing)
         return linesForGraphing
     }
 
@@ -133,18 +126,13 @@ class Graph extends Component {
                 <div>
                     <div>
                     <h3 style={{marginLeft:'20px'}}>Metric: {this.props.metric}</h3>
-                <LineChart width={950} height={400} data={this.props.pointsArray}
+                <LineChart width={1400} height={400} data={this.props.pointsArray}
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis domain={[this.getMin(), this.getMax()]} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
                         <Tooltip />
                         <Legend />
-                        {/* {this.props.values.map(currKey, i => (
-                        if(this.props.booleansForGraph[i] == true) {
-                            <Line type="monotone" dataKey={currKey} stroke={this.getRandomColor()} />
-                        }
-                        ))} */}
                         {this.getLines().map(line => (
                             line
                         ))}
@@ -157,7 +145,6 @@ class Graph extends Component {
         
 
     render() {
-        console.log('reduxstateprops IN GRAPH: ', this.props)
         return(
             <div>
                 {this.renderGraph()}
