@@ -1,22 +1,77 @@
 import click
+import traceback
 import requests #rest api
 
-default_capture_name='capture_1'
-default_replay_name='replay_1'
+
+'''
+pubKey=''
+privateKey=''
+region=''
+config=configparser.ConfigParser()
+config.read('config.ini')
+if config['DEFAULT']:
+    default=config['DEFAULT']
+    pubKey=default['publicKey']
+    privateKey=default['privateKey']
+    region=default['region']
+
+credentials= {'aws_access_key_id': pubKey, 
+              'aws_secret_access_key': privateKey, 
+              'region_name': region
+}
+'''
 
 @click.group()
 def cli(): 
     """Tool to analyze database workloads"""
     pass
 
-def _get_default_capture_name(): 
-    capture_name = 'capture_'
-    #check if capture name exists
-    return capture_name
+def _get_default_name(category, db_name): 
+    date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
+    #todo: check if capture name exists
+    return category + '_' + db_name + "_" + date_time
+
+def _start_capture(db_instance, capture_name): 
+    #todo: if default capture name was used, increment number 1
+
+    if not capture_name: #use default
+        capture_name = _get_default_capture_name(db_instance)
+
+    task = {"status": "started", 
+            "db": db_instance, 
+            "captureName": capture_name, 
+            "startTime": start_time
+    }
+
+    resp = requests.post('http://localhost:5000/capture/start', json=task)
+
+    if resp.status_code != 201:
+        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+
+
+'''def _stop_capture(db_instance, capture_name): 
+
+    end_time = datetime.utcnow()
+
+    capture_detials, start_time = end_capture(credentials)
+
+    task = {"status": "ended", 
+            "db": db_instance, 
+            "captureName": capture_name, 
+            "captureDetails": capture_details, #todo: get these from end_capture
+            "startTime": start_time, #todo: also get this from end_capture
+            "endTime": end_time
+    }
+
+    resp = requests.post('http://localhost:5000/capture/end', json=task)
+
+    if resp.status_code != 201: 
+        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+    '''
 
 @cli.command()
 @click.argument('db-instance')
-@click.option('--capture-name', default=_get_default_capture_name,
+@click.option('--capture-name', 
         help='nickname for capture')
 @click.option('-i', '--interactive', is_flag=True,
         help='start capture in interactive mode, stop capture with "--stop" command')
@@ -28,13 +83,22 @@ def _get_default_capture_name():
         help='stop specified capture in interactive mode; input: capture_name')
 def capture(db_instance, capture_name, interactive, schedule, view_captures, stop): 
     """-capture a database workload"""
-    #todo: if default capture name was used, increment number 1
-    click.echo('capturing')
+    #todo: validate capture name and db instance
+    if stop: 
+        _stop_capture(db_instance, capture_name)
+        click.echo('stopped capture ' + capture_name)
+
+    elif view_captures: 
+        click.echo('viewing captures')
+
+    else: 
+        _start_capture(db_instance, capture_name)
+        click.echo('started catpure ' + capture_name)
 
 
 @cli.command()
 @click.argument('db-instance')
-@click.option('--replay-name', default=default_replay_name,
+@click.option('--replay-name', 
         help='nickname for replay')
 @click.option('--capture-name', 
         help='name of capture to replay')
@@ -59,7 +123,6 @@ def get_average(metric_list):
 
     return average / len(metric_list)
 
-METRIC_NAMES = ['CPUUtilization', 'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
 
 @cli.command() 
 @click.option('--replay-name', multiple=True, 
@@ -86,19 +149,21 @@ def analyze(replay_name, include_metric, time_frame, output_file, raw):
     else :
         try:
             #Average of data points
-            cpu_util = get_average(json_input['CPUUtilization'])
-            freeable_mem = get_average(json_input['FreeableMemory'])
-            read_iops = get_average(json_input['ReadIOPS'])
-            write_iops = get_average(json_input['WriteIOPS'])
+            for folder in json_input: 
+                for replay_id in json_input[folder]: 
+                    replay = json_input[folder][replay_id]
+                    cpu_util = get_average(replay['CPUUtilization'])
+                    freeable_mem = get_average(replay['FreeableMemory'])
+                    read_iops = get_average(replay['ReadIOPS'])
+                    write_iops = get_average(replay['WriteIOPS'])
 
-            click.echo('Start Time: ' + str(json_input['start_time']))
-            click.echo('End Time: ' + str(json_input['end_time']))
-            click.echo('---METRIC AVERAGES---')
-            click.echo('CPU Utilization (%): ' + str(cpu_util))
-            click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-            click.echo('Read IOPS (count/sec): ' + str(read_iops))
-            click.echo('Write IOPS (count/sec): ' + str(write_iops))
+                    click.echo('Start Time: ' + str(replay['start_time']))
+                    click.echo('End Time: ' + str(replay['end_time']))
+                    click.echo('---METRIC AVERAGES---')
+                    click.echo('CPU Utilization (%): ' + str(cpu_util))
+                    click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
+                    click.echo('Read IOPS (count/sec): ' + str(read_iops))
+                    click.echo('Write IOPS (count/sec): ' + str(write_iops))
 
         except (ValueError, KeyError, TypeError): 
-            print('JSON format error')
-             
+            traceback.print_exc() 
