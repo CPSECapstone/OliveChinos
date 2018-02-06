@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import {LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line} from 'recharts'
+import { connect } from 'react-redux'
 
-export default class Graph extends Component {
+class Graph extends Component {
     constructor(props) {
         super(props)
 
@@ -48,25 +49,36 @@ export default class Graph extends Component {
     //helper function to get minimum value of current total data being graphed
     //in ordder to scale the x axis
     getMin() {
-        let dataMin = this.props.values.reduce(function(a, b) {
+        // for(let i = 0; i < this.props.pointsArray[this.props.metric].length; i++)
+        let totalValues = []
+        for(let i = 0; i < this.props.pointsArray.length; i++) {
+            totalValues.push(this.props.pointsArray[i][this.props.metric])
+        }
+        let dataMin = totalValues.reduce(function(a, b) {
             return Math.min(a, b);
         });
+        // console.log('minimum: ', dataMin)
         return Math.floor(dataMin)
     }
     //helper function to get maximum value of current total data being graphed
     //in ordder to scale the x axis
     //@todo: FIX Y SCALING HERE (or wherever it needs to be) FOR WHEN DIFFERENT METRICS ARE GRAPHED BESIDES CPU UTILIZATION
     getMax() {
-        let dataMax = this.props.values.reduce(function(a, b) {
+        let totalValues = []
+        for(let i = 0; i < this.props.pointsArray.length; i++) {
+            totalValues.push(this.props.pointsArray[i][this.props.metric])
+        }
+        let dataMax = totalValues.reduce(function(a, b) {
             return Math.max(a, b);
         });
+        // console.log('maximum: ', dataMax)
         return Math.ceil(dataMax)
     }
 
     //either graphs an empty graph if no replay or metric has been selected or 
     //the lines that represent the replays that have been selected for that metric
     renderGraph() {
-        if((this.props.values == 'none') || (this.props.pointsArray == 'none')) {
+        if((!this.props.values) || (!this.props.pointsArray)) {
             return <div>{this.emptyGraph()}</div>
         }
         else {
@@ -80,14 +92,13 @@ export default class Graph extends Component {
 
     //empty graph for when no replay has been selected
     emptyGraph() {
-        console.log('AYYYYY')
         return (
             <div>
             <div>
                 <div>
-                <h3 style={{marginLeft:'20px'}}>{this.props.metric}</h3>
-            <LineChart width={730} height={250}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <h3 style={{marginLeft:'20px'}}></h3>
+            <LineChart width={950} height={400}
+                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis domain={[0, 10]} label={{ angle: -90, position: 'insideLeft' }}/>
@@ -98,6 +109,21 @@ export default class Graph extends Component {
         );
     }
 
+    getLines() {
+        let linesForGraphing = []
+        console.log('*****IN GRAPH GET LINES PROPS: ', this.props)
+        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
+            if(this.props.booleansForGraph[i] == true) {
+                let currKey = this.props.totalNames[i];
+                console.log('currkey: ', currKey)
+                let line = <Line dataKey={currKey} stroke={this.getRandomColor()}/>
+                linesForGraphing.push(line)
+            }
+        }
+        console.log('lines being returned: ', linesForGraphing)
+        return linesForGraphing
+    }
+
     //returns the graph with the accurate data represented by lines on the linechart
     //when there is replay data passed in from the graphContainer
     getGraphLines() {
@@ -106,16 +132,21 @@ export default class Graph extends Component {
             <div>
                 <div>
                     <div>
-                    <h3 style={{marginLeft:'20px'}}>{this.props.metric}</h3>
-                <LineChart width={730} height={250} data={this.props.pointsArray}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <h3 style={{marginLeft:'20px'}}>Metric: {this.props.metric}</h3>
+                <LineChart width={950} height={400} data={this.props.pointsArray}
+                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis domain={[this.getMin(), this.getMax()]} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
                         <Tooltip />
                         <Legend />
-                        {this.props.keys.map(currKey => (
-                        <Line type="monotone" dataKey={currKey} stroke={this.getRandomColor()} />
+                        {/* {this.props.values.map(currKey, i => (
+                        if(this.props.booleansForGraph[i] == true) {
+                            <Line type="monotone" dataKey={currKey} stroke={this.getRandomColor()} />
+                        }
+                        ))} */}
+                        {this.getLines().map(line => (
+                            line
                         ))}
                 </LineChart>
                 </div>
@@ -126,6 +157,7 @@ export default class Graph extends Component {
         
 
     render() {
+        console.log('reduxstateprops IN GRAPH: ', this.props)
         return(
             <div>
                 {this.renderGraph()}
@@ -133,3 +165,10 @@ export default class Graph extends Component {
         );
     }
 }
+
+const mapStateToProps = state => ({
+    booleansForGraph: state.booleansForGraph,
+    totalNames: state.totalNames
+})
+
+export default connect(mapStateToProps)(Graph)

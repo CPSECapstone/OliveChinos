@@ -1,20 +1,23 @@
 import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button, PageHeader } from 'react-bootstrap';
-import GraphContainer from './GraphContainer';
+import GraphContainer from './GraphContainer-fixed';
+import EmptyGraphContainer from './EmptyGraphContainer';
+import { connect } from 'react-redux';
+import { setAnalyticsForGraph } from '../actions'
 // import '../node_modules/react-linechart/dist/styles.css';
 
 // var $ = require(jquery);
 
 /* Use this element as a reference when creating components*/
 
-export default class Analytics extends React.Component {
+class Analytics extends React.Component {
 
 constructor(props) {
     super(props);
 
     this.state = {
-      analytics: 'No analytics to show',
+      analytics: false,
       ButtonText: 'Get Analytics'
     };
 
@@ -23,20 +26,12 @@ constructor(props) {
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
 }
 
-// getPythonAnalytics() {
-//   jquery.get(window.location.href + 'analytics', (data) => {
-//     console.log('Wait so here....?', data)
-//     this.analyticsData = data;
-//     console.log('plz worrkkk', this.analyticsData)
-//     return data
-//   });
-// }
-
 getPythonAnalytics() {
   jquery.get(window.location.href + 'analytics', (data) => {
-    this.setState({analytics: data});
+    this.setState({analytics: data}, this.render);
+    this.props.dispatch(setAnalyticsForGraph(data))
   });
-  this.setState({ButtonText: 'Analytics'})
+  
 }
 
 componentWillMount() {
@@ -47,17 +42,32 @@ componentWillReceiveProps() {
   this.getPythonAnalytics();
 }
 
+renderGraphContainer() {
+  if(this.state.analytics) {
+    return <GraphContainer data={this.state.analytics}/>
+  }
+  else {
+    return <EmptyGraphContainer/>
+  }
+}
+
 
   render () {
-    console.log('DOES THIS WORK..?', this.state.analytics)
     return (
       <div>
         <div style={{height:'75vh', border:'1px solid black'}}>
         <div>
-          <GraphContainer data={this.state.analytics}/>
+          {this.renderGraphContainer()} 
+          
         </div>
       </div>
       </div>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  // analyticsForGraph: state.analyticsForGraph
+})
+
+export default connect(mapStateToProps)(Analytics)

@@ -27,6 +27,7 @@ constructor(props) {
       isSelectedBooleanArray: 'none'
     };
 
+    //doesn't need to be bound
     this.addReplayToGraph = this.addReplayToGraph.bind(this);
 
 }
@@ -35,12 +36,14 @@ constructor(props) {
 //replay options that have been selected and lighter for those not selected
 //@todo: FIX THIS FUNCTION! Need to fix the state.graphData to be accurate
 //before this can be fixed.
+//Name color constants
 setIsSelectedColor() {
   let selectedColorArray = this.state.isSelectedArray;
   if(selectedColorArray == 'none') {
     selectedColorArray = [] 
   }
   for(let i = 0; i < replayArray.length; i++) {
+    //change this to == and switch if and else for easier readability
     if(this.state.graphData[i] != 'not selected') {
       selectedColorArray[i] = "#551a8b";
     }
@@ -54,6 +57,7 @@ setIsSelectedColor() {
 //This will either render the metric table below the graph
 //or it will render an empty table if the data hasn't come in yet
 renderMetricSelector() {
+  //change the default values to boolean values or undefined
   if(this.props.data == 'No analytics to show') {
     return this.renderMetricSelectorWithoutData()
   }
@@ -153,6 +157,7 @@ setScrapedDataForGraph(metricName) {
   let listofAnalytics = this.getReplayDataArray();
   if(listofAnalytics != undefined) {
     let totalNumberOfReplaysToChooseFrom = Object.keys(this.props.data["test_folder"]).length;
+    //Just pass in the this.state.metricforgraph to the getSpecifiedMetricData
     if(this.state.numLinesForGraphing <= totalNumberOfReplaysToChooseFrom) {
       if(this.state.metricForGraph == 'CPUUtilization') {
         this.getSpecifiedMetricData("seconds", "cpuUtilization", listofAnalytics)
