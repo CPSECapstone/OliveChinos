@@ -65,7 +65,7 @@ class GraphContainer extends React.Component {
             let replayCaptureOptions = this.props.totalReplayCaptures;
             return (
                 replayCaptureOptions.map(uniqueName => (
-                    <tr onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
+                    <tr key={uniqueName} onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
                     <td 
                     style={{backgroundColor: this.getbackgroundColor(uniqueName)}}
                     key={uniqueName}>

@@ -118,7 +118,7 @@ class Graph extends Component {
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i] == true) {
                 let currKey = this.props.totalNames[i];
-                let line = <Line dataKey={currKey} stroke={this.getRandomColor(i)}/>
+                let line = <Line key={i} dataKey={currKey} stroke={this.getRandomColor(i)}/>
                 linesForGraphing.push(line)
             }
         }
