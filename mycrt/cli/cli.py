@@ -1,5 +1,6 @@
 import click
 import traceback
+from datetime import datetime
 import requests #rest api
 
 
@@ -26,16 +27,19 @@ def cli():
     """Tool to analyze database workloads"""
     pass
 
-def _get_default_name(category, db_name): 
-    date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
+def _get_default_name(category, db_name, date_time): 
     #todo: check if capture name exists
-    return category + '_' + db_name + "_" + date_time
+    return (category + '_' + db_name + "_" + date_time)
 
+
+'''-------------CAPTURE-------------'''
 def _start_capture(db_instance, capture_name): 
-    #todo: if default capture name was used, increment number 1
+
+    date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
+    start_time=date_time.split('_')[1]
 
     if not capture_name: #use default
-        capture_name = _get_default_capture_name(db_instance)
+        capture_name = _get_default_name('capture', db_instance, start_time)
 
     task = {"status": "started", 
             "db": db_instance, 
@@ -96,6 +100,8 @@ def capture(db_instance, capture_name, interactive, schedule, view_captures, sto
         click.echo('started catpure ' + capture_name)
 
 
+
+'''-------------REPLAY-------------'''
 @cli.command()
 @click.argument('db-instance')
 @click.option('--replay-name', 
@@ -104,16 +110,23 @@ def capture(db_instance, capture_name, interactive, schedule, view_captures, sto
         help='name of capture to replay')
 @click.option('-f', '--fast-mode', is_flag=True,
         help='skip over time periods with low activity while replaying')
-@click.option('-r', '--raw-mode', is_flag=True,
-        help='play capture as recorded')
 @click.option('--restore', is_flag=True,
         help='restore initial database state upon replay completion')
 #default = database_name + date/time started 
-def replay(db_instance, replay_name, capture_name): 
+def replay(db_instance, replay_name, capture_name, fast_mode, restore): 
     """-replay a database workload"""
-    click.echo('replaying')
+    if fast_mode: #remove periods of inactivity 
+        click.echo('replaying fast mode')
+
+    else: #raw mode
+        click.echo('replaying raw mode')
+
+    if restore: 
+        click.echo('restoring db')
+        #restore database to initial state
 
 
+'''-------------ANALYZE-------------'''
 # Compute the average of all the average metric data points 
 def get_average(metric_list): 
     average = 0
@@ -148,6 +161,12 @@ def analyze(replay_name, include_metric, time_frame, output_file, raw):
         click.echo(json_input)
     else :
         try:
+            '''Current bucket structure:
+               capture
+               |--> replay
+               |--> replay
+               ...
+            '''
             #Average of data points
             for folder in json_input: 
                 for replay_id in json_input[folder]: 
