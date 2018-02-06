@@ -17,9 +17,17 @@ class Graph extends Component {
 
     //function to get a random color from this array (feel free to change the color options in this array)
     //and return random color for each different line in the graph
-    getRandomColor() {
-        let colorValues = ["darkred", "blue", "darkolivegreen", "deepskyblue", "goldenrod", "grey", "lightsalmon", "peru" ];
-        return colorValues[Math.floor(Math.random() * colorValues.length)];
+    getRandomColor(index) {
+        let colorValues = ["deepskyblue", "lightsalmon", "darkolivegreen", "darkred", "blue", "goldenrod", "grey", "peru" ];
+        // return colorValues[Math.floor(Math.random() * colorValues.length)];
+        if(this.props.values.length < 8) {
+            return colorValues[index]
+        }
+        else {
+            alert('Maximum Lines For Graph Reached')
+            return 'white'
+        }
+        // console.log('here: ', this.props.values.length);
     }
 
     //this function gets the total points to be graphed and the values for
@@ -110,7 +118,7 @@ class Graph extends Component {
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i] == true) {
                 let currKey = this.props.totalNames[i];
-                let line = <Line dataKey={currKey} stroke={this.getRandomColor()}/>
+                let line = <Line dataKey={currKey} stroke={this.getRandomColor(i)}/>
                 linesForGraphing.push(line)
             }
         }
