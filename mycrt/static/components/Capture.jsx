@@ -18,7 +18,8 @@ class Capture extends React.Component {
       captureData: '',
       query: '',
       captureName: '',
-      captureDB: ''
+      captureDB: '',
+      inputHelpBlock: 'Optional. If not provided, name will be generated.'
     }
 
     //binding required for callback
@@ -61,12 +62,38 @@ class Capture extends React.Component {
     }
   }
 
+  getValidationState() {
+    var error = false;
+    var error = this.state.captureName.indexOf(' ') >= 0;
+    if (error) {
+      this.state.inputHelpBlock = 'No spaces allowed in name. Please try again';
+      return 'error';
+    }
+    else if (this.state.captureName.length > 0) {
+      this.state.inputHelpBlock = 'Looks great!';
+      return 'success';
+    }
+    else if (this.state.captureName.length == 0) {
+      this.state.inputHelpBlock = 'Optional. If not provided, name will be generated.';
+      return null;
+    }
+    else return null;
+  }
+
+  getHelpBlock() {
+
+  }
+
   handleQueryChange(event) {
     this.setState({ query: event.target.value })
   }
 
   handleCaptureNameChange(event) {
     this.setState({ captureName: event.target.value });
+  }
+
+  loadDatabaseInstances() {
+
   }
 
   sendQuery() {
@@ -108,20 +135,21 @@ class Capture extends React.Component {
         <form>
           <FormGroup
             controlId="formBasicText"
-          //validationState={this.getValidationState()}
+            validationState={this.getValidationState()}
           >
             <ControlLabel>Capture Name</ControlLabel>
             <FormControl
+              id='captureNameInput'
               type="text"
               value={this.state.captureName}
               placeholder="Enter name"
               onChange={this.handleCaptureNameChange}
             />
             <FormControl.Feedback />
-            <HelpBlock>Optional. If not provided, name will be generated.</HelpBlock>
+            <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
           </FormGroup>
           <FormGroup controlId="formControlsSelect">
-            <ControlLabel>Select</ControlLabel>
+            <ControlLabel>Database Instance</ControlLabel>
             <FormControl componentClass="select" placeholder="select">
               <option value="select">select</option>
               <option value="other">...</option>
