@@ -17,8 +17,7 @@ class GraphContainer extends React.Component {
           //all unique names of replay captures that user can choose from
           totalReplayCaptures: dataResult.totalReplayCaptures,
           //array of booleans for each replay/capture option: true if selected and false if not selected
-          rcBooleans: dataResult.rcBooleans,
-          totalOptions: dataResult.totalOptions
+          rcBooleans: dataResult.rcBooleans
         };
         
     }
@@ -38,7 +37,6 @@ class GraphContainer extends React.Component {
             }
             result.totalReplayCaptures = replayCaptureOptions;
             result.rcBooleans = arrayOfFalses;
-            result.totalOptions = count;
         }
         return result;
     }
@@ -46,20 +44,20 @@ class GraphContainer extends React.Component {
     //Empty metric selector for when data is still loading
     renderSelectorTable() {
         return (
-        <div>
-            <div className='col-xs-6' >
-            <table className="table table-hover">
-                <thead className="thead-dark">
-                <tr>
-                    <th scope="col">Replay/Capture Options</th>
-                </tr>
-                </thead>
-                    {this.displayCorrectReplayCaptures()}
-            </table>
-        </div>
-        <div className='col-xs-6'>
-            <MetricSelector  totalOptions={this.state.totalOptions}/>
-        </div>
+        <div className='row'>
+            <div className='col-xs-6' style={{width: '38vw'}} >
+                <table className="table table-hover">
+                    <thead className="thead-dark">
+                    <tr>
+                        <th scope="col">Replay/Capture Options</th>
+                    </tr>
+                    </thead>
+                        {this.displayCorrectReplayCaptures()}
+                </table>
+            </div>
+            <div className='col-xs-6' style={{width: '38vw'}}>
+                <MetricSelector />
+            </div>
         </div>
         );
     }
@@ -82,7 +80,6 @@ class GraphContainer extends React.Component {
     }
 
     getReplayCapturesWithData() {
-        // totalReplayCaptures={this.state.totalReplayCaptures} rcBooleans={this.state.rcBooleans}
         return (
             <CaptureReplaySelector totalReplayCaptures={this.state.totalReplayCaptures} rcBooleans={this.state.rcBooleans}/>
         );

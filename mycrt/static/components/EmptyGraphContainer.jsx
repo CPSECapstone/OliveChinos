@@ -13,8 +13,8 @@ export default class EmptyGraphContainer extends React.Component {
     //Empty metric selector for when data is still loading
     renderMetricSelector() {
         return (
-        <div>
-            <div className='col-xs-6' >
+        <div className='row'>
+            <div className='col-xs-6' style={{width: '38vw'}}>
             <table className="table table-hover">
                 <thead className="thead-dark">
                 <tr>
@@ -24,7 +24,7 @@ export default class EmptyGraphContainer extends React.Component {
                 <tbody><tr><td>...Loading Data...</td></tr></tbody>
             </table>
         </div>
-        <div className='col-xs-6'>
+        <div className='col-xs-6' style={{width: '38vw'}}>
             <MetricSelector/>
         </div>
         </div>
