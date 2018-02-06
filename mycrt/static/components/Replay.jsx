@@ -18,28 +18,35 @@ class Replay extends React.Component {
     }
 
     //binding required for callback
-    this.startReplay = this.startReplay.bind(this)
+    
     this.addReplay = this.addReplay.bind(this)
-  }
-
-  startReplay() {
-    this.setState({ replay: 'Replay Active' })
-    this.props.dispatch(setReplay())
-    jquery.post(window.location.href + 'replay', data => {
-      this.setState({ replay: 'Replay Inactive' })
-      this.props.dispatch(setReplay())
-      console.log(data)
-    })
   }
 
   addReplay() {
     this.setState({ replay: 'Replay Active' })
     this.props.dispatch(startNewReplay())
-    jquery.post(window.location.href + 'replay', data => {
-      this.setState({ replay: 'Replay Inactive' })
-      this.props.dispatch(stopReplay())
+    var postData = {
+      "db": "pi",
+      "captureName": "captureNameFrontend",
+      "replayName": "replayNameFrontend",
+      //"startTime": "now",
+      "fastMode": false,
+      "restoreDb": false
+    }
+    var that = this;
+    jquery.ajax({
+      url: window.location.href + 'replay',
+      type: 'POST',
+      data: JSON.stringify(postData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function(data) {
+      that.setState({ replay: 'Replay Inactive' })
+      that.props.dispatch(stopReplay())
       console.log(data)
+
     })
+    
   }
 
   displayReplays() {

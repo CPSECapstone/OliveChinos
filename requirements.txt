@@ -16,3 +16,4 @@ s3transfer>=0.1.11
 six>=1.11.0
 Werkzeug>=0.12.2
 flask>=0.12.2
+requests>=2.18.4
