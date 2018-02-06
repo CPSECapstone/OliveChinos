@@ -44,10 +44,13 @@ class GraphContainer extends React.Component {
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
+        console.log('color debugger: ', uniqueName)
+        console.log('***#### ', this.props)
         let captureReplaysSelected = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i]) {
-                let totalNames = this.props.replayCaptureNamesForGraph;
+                // let totalNames = this.props.replayCaptureNamesForGraph;
+                let totalNames = this.props.totalReplayCaptures
                 captureReplaysSelected.push(totalNames[i])
             }
         }
