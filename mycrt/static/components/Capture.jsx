@@ -34,7 +34,7 @@ class Capture extends React.Component {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
     var postData = {
-      "db": "pi", 
+      "db": "pi",
       "captureName": "captureNameFrontend"
       //"startTime": "now"
     }
@@ -44,10 +44,10 @@ class Capture extends React.Component {
       data: JSON.stringify(postData),
       contentType: 'application/json',
       dataType: 'json'
-    }).done(function(data) {
+    }).done(function (data) {
       console.log(data);
     })
-    
+
   }
 
   stopCapture() {
@@ -64,12 +64,12 @@ class Capture extends React.Component {
       data: JSON.stringify(postData),
       contentType: 'application/json',
       dataType: 'json'
-    }).done(function(data) {
+    }).done(function (data) {
       that.setState({ haveCaptureData: true })
       that.setState({ captureData: data })
 
     })
-    
+
   }
 
   renderCaptureData() {
@@ -116,7 +116,38 @@ class Capture extends React.Component {
     this.setState({ captureName: event.target.value });
   }
 
+  createDBInstancesSelect(data) {
+    var dbInstances = returnVal["databases"];
+    let dbList = [];
+    for (var i = 0; i < dbInstances.length; i++) {
+      var instance = <div>dbInstances[i]</div>;
+      var selectOption;
+      if (i == 0) {
+        var selectOption = (<option value="select">
+          {instance}
+        </option>)
+      }
+      else {
+        var selectOption = (<option value="other">
+          {instance}
+        </option>)
+
+      }
+      dbList.push(selectOption)
+    }
+    return dbList
+  }
+
   loadDatabaseInstances() {
+    jquery.ajax({
+      url: window.location.href + 'databaseInstances',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log(data)
+      createDBInstancesSelect(data)
+    })
 
   }
 
@@ -135,8 +166,6 @@ class Capture extends React.Component {
 
   displayCaptures() {
     let currentCaptures = []
-    console.log('display')
-    console.log(this.props.activeCaptures)
     for (var i = 0; i < this.props.activeCaptures; i++) {
       currentCaptures.push(
         <li>
@@ -175,8 +204,7 @@ class Capture extends React.Component {
           <FormGroup controlId="formControlsSelect">
             <ControlLabel>Database Instance</ControlLabel>
             <FormControl componentClass="select" placeholder="select">
-              <option value="select">select</option>
-              <option value="other">...</option>
+              {this.loadDatabaseInstances()}
             </FormControl>
           </FormGroup>
         </form>
