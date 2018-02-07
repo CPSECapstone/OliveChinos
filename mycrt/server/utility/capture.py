@@ -109,7 +109,7 @@ def end_capture(credentials, capture_name, db_id):
   bucket_id = "my-crt-test-bucket-olive-chinos"
   _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name))
 
-  return transactions
+  return (transactions, start_time[0])
 
 def testConnection(connection):
     
