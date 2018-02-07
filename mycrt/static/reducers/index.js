@@ -43,9 +43,23 @@ let initialState = {
   
 }
 
+function getNumLines(boolArray) {
+  let numLines = 0;
+  for(let i = 0; i < boolArray.length; i++) {
+    if(boolArray[i]) {
+      numLines++
+    }
+  }
+  return numLines
+}
+
+//function that is called whenever a user selects a replay or capture
+//to be graphed or to not be graphed, this function will return the list of datavalues
+//to put on the graph in their formatted way for the graph, and then return the number of lines
+//as well as the total names, boolean array and total names
 function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName) {
   let allAssignments = {}
-  if(metric != false && uniqueName != false) {
+  if(metric != false && uniqueName != false && analytics != undefined) {
     let newLinesToGraph = []
     for(let i = 0; i < booleanArray.length; i++) {
         if(booleanArray[i]) {
@@ -54,7 +68,7 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     }
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
-    let lineNum = numLines + 1;
+    let lineNum = getNumLines(booleanArray)
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
         if(analytics != false) {
@@ -103,6 +117,18 @@ function updateFinalJSONObject(newJsonElement, numLines, dataPoints) {
   }
   else
       return newJsonElement
+}
+
+function getBoolArray(dataArray) {
+  if(dataArray != false) {
+    let count = Object.keys(dataArray['text_folder']).length
+    let tmp = []
+    for (let i =0; i < count; i++) {
+      tmp.push(false)
+    }
+    return tmp
+  }
+  return false
 }
 
 function reducer(state = initialState, action) {
@@ -165,29 +191,10 @@ function reducer(state = initialState, action) {
         replay: 'Replay stopped'
       })
 
-    // case SET_DATA_POINTS_FOR_GRAPH:
-    //   return Object.assign({}, state, {
-    //     dataPointsForGraph: action.key
-    //   })
-    // case SET_VALUES_FOR_GRAPH:
-    //   return Object.assign({}, state, {
-    //     valuesForGraph: action.key
-    //   })
-
     case SET_METRIC_FOR_GRAPH:
       return Object.assign({}, state, {
         metricForGraph: action.key
       })
-
-    // case SET_NUM_LINES_FOR_GRAPH:
-    //   return Object.assign({}, state, {
-    //     numLinesForGraph: action.key
-    //   })
-    
-    // case SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH:
-    //   return Object.assign({}, state, {
-    //     replayCaptureNamesForGraph: action.key
-    //   })
 
     case SET_ANALYTICS_FOR_GRAPH:
       return Object.assign({}, state, {

@@ -59,7 +59,7 @@ class GraphContainer extends React.Component {
         }
     }
 
-
+    //renders all of the table rows that hold the values for all capture and replay options to graph
     getReplayCapturesWithData() {
         if(this.props.totalReplayCaptures != false) {
             let replayCaptureOptions = this.props.totalReplayCaptures;
@@ -77,25 +77,25 @@ class GraphContainer extends React.Component {
         }
         }
     
-
+    //callback function for onclick of something to graph or not graph
+    //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
+    //the number of lines, and the names for graph in the redux state
     setReplayCaptureAsTrueFalse(uniqueName, e) {
         if(this.props.metricForGraph != false) {
-            let newBooleans = this.props.rcBooleans;
-            let totalNameOptions = this.state.totalReplayCaptures;
+            let newBooleans = this.props.booleansForGraph;
+            let totalNameOptions = this.props.totalReplayCaptures;
             let addOrSubtractLine = 0;
-            for(let i = 0; i < totalNameOptions.length; i++) {
+            for(let i = 0; i < this.props.booleansForGraph.length; i++) {
                 if(totalNameOptions[i] == uniqueName) {
-                    if(newBooleans[i] == true) {
-                        addOrSubtractLine = -1;
-                    }
-                    else {
-                        addOrSubtractLine = 1;
-                    }
-                    newBooleans[i] = !newBooleans[i]
+                    newBooleans[i] = !(newBooleans[i])
                     
                 }
             }
-            this.props.dispatch(setBooleansForGraph(newBooleans, this.props.totalReplayCaptures, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName));
+            let dataPoints = this.props.dataPointsForGraph
+            if(dataPoints == undefined) {
+                dataPoints = false;
+            }
+            this.props.dispatch(setBooleansForGraph(newBooleans, this.props.totalReplayCaptures, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, dataPoints, uniqueName));
         }
         else {
             alert('Please select metric type')

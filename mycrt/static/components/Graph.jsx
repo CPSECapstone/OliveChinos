@@ -15,11 +15,10 @@ class Graph extends Component {
         };
     };
 
-    //function to get a random color from this array (feel free to change the color options in this array)
-    //and return random color for each different line in the graph
+    //function to get the correct colors for the lines being graphed (feel free to change the color options in this array)
+    //and return random color for each different line in the graph - max lines is 8, feel free to change that too
     getRandomColor(index) {
         let colorValues = ["deepskyblue", "lightsalmon", "darkolivegreen", "darkred", "blue", "goldenrod", "grey", "peru" ];
-        // return colorValues[Math.floor(Math.random() * colorValues.length)];
         if(this.props.values.length < 8) {
             return colorValues[index]
         }
@@ -27,7 +26,6 @@ class Graph extends Component {
             alert('Maximum Lines For Graph Reached')
             return 'white'
         }
-        // console.log('here: ', this.props.values.length);
     }
 
     //this function gets the total points to be graphed and the values for
@@ -39,17 +37,15 @@ class Graph extends Component {
         let dataMax = 0
         let listOfAnalytics = this.state.selectedData;
         let listOfTotalPoints = []
-        // if(this.props.metric == 'CPUUtilization') {
-            for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
-                let pointsValues = []
-                  for(let i = 0; i < listOfAnalytics[outer][this.props.metric].length; i++) {
-                    let currPoint = {value: `${i}`, metric: listOfAnalytics[outer][this.props.metric][i].Average}
-                    values.push(listOfAnalytics[outer][this.props.metric][i].Average)
-                    pointsValues.push(currPoint)
-                  }
-                  listOfTotalPoints.push(pointsValues)
+        for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
+            let pointsValues = []
+                for(let i = 0; i < listOfAnalytics[outer][this.props.metric].length; i++) {
+                let currPoint = {value: `${i}`, metric: listOfAnalytics[outer][this.props.metric][i].Average}
+                values.push(listOfAnalytics[outer][this.props.metric][i].Average)
+                pointsValues.push(currPoint)
                 }
-        // }
+                listOfTotalPoints.push(pointsValues)
+            }
         this.setState({totalValuesArray: values})
         return listOfTotalPoints;
     }
@@ -57,7 +53,6 @@ class Graph extends Component {
     //helper function to get minimum value of current total data being graphed
     //in ordder to scale the x axis
     getMin() {
-        // for(let i = 0; i < this.props.pointsArray[this.props.metric].length; i++)
         let totalValues = []
         for(let i = 0; i < this.props.pointsArray.length; i++) {
             totalValues.push(this.props.pointsArray[i][this.props.metric])
@@ -67,6 +62,7 @@ class Graph extends Component {
         });
         return Math.floor(dataMin)
     }
+
     //helper function to get maximum value of current total data being graphed
     getMax() {
         let totalValues = []
@@ -113,6 +109,8 @@ class Graph extends Component {
         );
     }
 
+    //helper function to get all of the 'line' objects to be graphed based on currently
+    //selected replays and captures for graphing
     getLines() {
         let linesForGraphing = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {

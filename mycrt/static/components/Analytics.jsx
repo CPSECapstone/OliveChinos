@@ -1,15 +1,10 @@
 import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button, PageHeader } from 'react-bootstrap';
-import GraphContainer from './GraphContainer-fixed';
+import GraphContainer from './GraphContainer';
 import EmptyGraphContainer from './EmptyGraphContainer';
 import { connect } from 'react-redux';
 import { setAnalyticsForGraph } from '../actions'
-// import '../node_modules/react-linechart/dist/styles.css';
-
-// var $ = require(jquery);
-
-/* Use this element as a reference when creating components*/
 
 class Analytics extends React.Component {
 
