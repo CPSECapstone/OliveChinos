@@ -11,7 +11,11 @@ class Graph extends Component {
             yLabel: '',
             metric: this.props.nameOfMetric,
             selectedData: this.props.selectedData,
-            title: ''
+            title: '',
+            minValues: ' ',
+            maxValues: '',
+            changableMin: '',
+            changableMax: ''
         };
     };
 
@@ -28,6 +32,16 @@ class Graph extends Component {
         }
     }
 
+    zoomIn() {
+      //this.setState({ maxValues: 50, minValues : 50})
+
+      this.setState({ maxValues: this.state.maxValues- 200, minValues : this.state.minValues - 200})
+  }
+  zoomOut() {
+    //this.setState({ maxValues: 50, minValues : 50})
+
+    this.setState({ maxValues:0 , minValues : 0})
+}
     //this function gets the total points to be graphed and the values for
     //the actual linechart. it also sets the state of the totalValuesArray for the linechart
     getTotalPoints() {
@@ -53,14 +67,14 @@ class Graph extends Component {
     //helper function to get minimum value of current total data being graphed
     //in ordder to scale the x axis
     getMin() {
-        let totalValues = []
+        let totalValues = [];
         for(let i = 0; i < this.props.pointsArray.length; i++) {
             totalValues.push(this.props.pointsArray[i][this.props.metric])
         }
         let dataMin = totalValues.reduce(function(a, b) {
             return Math.min(a, b);
         });
-        return Math.floor(dataMin)
+        return Math.floor(dataMin);
     }
 
     //helper function to get maximum value of current total data being graphed
@@ -72,10 +86,11 @@ class Graph extends Component {
         let dataMax = totalValues.reduce(function(a, b) {
             return Math.max(a, b);
         });
-        return Math.ceil(dataMax)
+
+        return Math.ceil(dataMax);
     }
 
-    //either graphs an empty graph if no replay or metric has been selected or 
+    //either graphs an empty graph if no replay or metric has been selected or
     //the lines that represent the replays that have been selected for that metric
     renderGraph() {
         if((!this.props.values) || (!this.props.pointsArray)) {
@@ -116,7 +131,7 @@ class Graph extends Component {
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i] == true) {
                 let currKey = this.props.totalNames[i];
-                let line = <Line key={i} dataKey={currKey} stroke={this.getRandomColor(i)}/>
+                let line = <Line key={i} dataKey={currKey} animationDuration={300} stroke={this.getRandomColor(i)}/>
                 linesForGraphing.push(line)
             }
         }
@@ -132,11 +147,11 @@ class Graph extends Component {
                 <div>
                     <div>
                     <h3 style={{marginLeft:'20px'}}>Metric: {this.props.metric}</h3>
-                <LineChart width={1400} height={400} data={this.props.pointsArray}
+                <LineChart width={1400 - this.state.minValues} height={400} data={this.props.pointsArray}
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis domain={[this.getMin(), this.getMax()]} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
+                        <XAxis allowDataOverflow={false} dataKey="name" padding={{left: this.state.minValues, right:this.state.maxValues}}  />
+                        <YAxis allowDataOverflow={false} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
                         <Tooltip />
                         <Legend />
                         {this.getLines().map(line => (
@@ -148,12 +163,14 @@ class Graph extends Component {
             </div>
             );
     }
-        
+
 
     render() {
         return(
             <div>
-                {this.renderGraph()}
+            <a href="javascript: void(0);" className="btn update" onClick={this.zoomOut.bind( this )}> Reset</a>
+            <a href="javascript: void(0);" className="btn update" onClick={this.zoomIn.bind( this )}> Zoom In</a>
+            {this.renderGraph()}
             </div>
         );
     }
