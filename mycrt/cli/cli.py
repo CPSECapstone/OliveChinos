@@ -4,32 +4,27 @@ from datetime import datetime
 import requests #rest api
 
 
-'''
-pubKey=''
-privateKey=''
-region=''
-config=configparser.ConfigParser()
-config.read('config.ini')
-if config['DEFAULT']:
-    default=config['DEFAULT']
-    pubKey=default['publicKey']
-    privateKey=default['privateKey']
-    region=default['region']
-
-credentials= {'aws_access_key_id': pubKey, 
-              'aws_secret_access_key': privateKey, 
-              'region_name': region
-}
-'''
-
 @click.group()
 def cli(): 
-    """Tool to analyze database workloads"""
+    '''Tool to analyze database workloads'''
     pass
 
-def _get_default_name(category, db_name, date_time): 
-    #todo: check if capture name exists
-    return (category + '_' + db_name + "_" + date_time)
+
+'''-------------VIEW-------------'''
+def _view_captures(db_instance): 
+    captures = requests.get('http://localhost:5000/capture/list')
+
+    if captures.status_code != 200: #there was an error
+        raise requests.HTTPError('GET /analytics/ {}'.format(captures.status_code))
+
+    json_input = captures.json()
+
+    click.echo(json_input)
+
+@cli.command()
+def view():
+    '''View previous capture and replay information'''
+    pass
 
 
 '''-------------CAPTURE-------------'''
@@ -38,40 +33,35 @@ def _start_capture(db_instance, capture_name):
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
-    if not capture_name: #use default
-        capture_name = _get_default_name('capture', db_instance, start_time)
-
-    task = {"status": "started", 
-            "db": db_instance, 
-            "captureName": capture_name, 
-            "startTime": start_time
+    task = {'db': db_instance, 
+            'startTime': start_time
     }
 
+    if capture_name: #use default
+        #TODO verify that this name is unique. return 403 if not? 
+        task['captureName'] = capture_name
+        
     resp = requests.post('http://localhost:5000/capture/start', json=task)
 
-    if resp.status_code != 201:
+    if resp.status_code != 200:
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
 
-'''def _stop_capture(db_instance, capture_name): 
+def _stop_capture(db_instance, capture_name): 
 
-    end_time = datetime.utcnow()
+    if not capture_name: 
+        #TODO throw error
+        pass
 
-    capture_detials, start_time = end_capture(credentials)
-
-    task = {"status": "ended", 
-            "db": db_instance, 
-            "captureName": capture_name, 
-            "captureDetails": capture_details, #todo: get these from end_capture
-            "startTime": start_time, #todo: also get this from end_capture
-            "endTime": end_time
+    task = {'db': db_instance, 
+            'captureName': capture_name, 
     }
 
     resp = requests.post('http://localhost:5000/capture/end', json=task)
 
-    if resp.status_code != 201: 
+    if resp.status_code != 200: 
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
-    '''
+
 
 @cli.command()
 @click.argument('db-instance')
@@ -81,27 +71,45 @@ def _start_capture(db_instance, capture_name):
         help='start capture in interactive mode, stop capture with "--stop" command')
 @click.option('-s', '--schedule', nargs=2, 
         help='schedule capture to start at specified time; input: start_time stop_time')
-@click.option('--view-captures', is_flag=True, 
-        help='view previously scheduled captures')
 @click.option('--stop', is_flag=True,
         help='stop specified capture in interactive mode; input: capture_name')
-def capture(db_instance, capture_name, interactive, schedule, view_captures, stop): 
-    """-capture a database workload"""
+def capture(db_instance, capture_name, interactive, schedule, stop): 
+    '''-capture a workload'''
     #todo: validate capture name and db instance
     if stop: 
         _stop_capture(db_instance, capture_name)
-        click.echo('stopped capture ' + capture_name)
-
-    elif view_captures: 
-        click.echo('viewing captures')
+        click.echo('stopped capture ')
 
     else: 
         _start_capture(db_instance, capture_name)
-        click.echo('started catpure ' + capture_name)
+        click.echo('started catpure ')
 
 
 
 '''-------------REPLAY-------------'''
+def _start_replay(db_instance, capture_name, replay_name, fast_mode): 
+
+    date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
+    start_time=date_time.split('_')[1]
+
+    #todo: handle fast mode in here
+
+    if not replay_name: #use default 
+        replay_name=_get_default_name('R', db_instance, date_time)
+
+    task={'status': 'started', 
+            'db': db_instance, 
+            'replayName': replay_name, 
+            'fastMode': fast_mode,
+            'restoreDb': restore,
+            'startTime': start_time
+    }
+
+    resp = requests.post('http://localhost:5000/replay', json=task)
+
+    if resp.status_code != 201:
+        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+
 @cli.command()
 @click.argument('db-instance')
 @click.option('--replay-name', 
@@ -114,16 +122,18 @@ def capture(db_instance, capture_name, interactive, schedule, view_captures, sto
         help='restore initial database state upon replay completion')
 #default = database_name + date/time started 
 def replay(db_instance, replay_name, capture_name, fast_mode, restore): 
-    """-replay a database workload"""
-    if fast_mode: #remove periods of inactivity 
-        click.echo('replaying fast mode')
+    '''-replay a database workload'''
+    if restore: 
+        click.echo('taking snapshot of db')
+        #take snapshot of current db state
 
-    else: #raw mode
-        click.echo('replaying raw mode')
+    _start_replay(db_instance, capture_name, replay_name, fast_mode)
+    click.echo('replaying raw mode')
 
     if restore: 
         click.echo('restoring db')
-        #restore database to initial state
+        #restore db
+
 
 
 '''-------------ANALYZE-------------'''
@@ -150,7 +160,7 @@ def get_average(metric_list):
 @click.option('--raw', '-r', is_flag = True,
         help='get raw json format')
 def analyze(replay_name, include_metric, time_frame, output_file, raw):
-    """-analyze database performance from historic replay"""
+    '''-analyze database performance from historic replay'''
 
     analytics = requests.get('http://localhost:5000/analytics')
     if analytics.status_code != 200: #there was an error
