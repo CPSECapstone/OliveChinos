@@ -21,7 +21,8 @@ class Capture extends React.Component {
       inputHelpBlock: 'Optional. If not provided, name will be generated.',
       databaseInstanceOptions: ["No instances available"],
       captureDBInstance: '',
-      activeCaptureObjects: []
+      activeCaptureObjects: [],
+      activeCaptureList: [null]
     }
 
     //binding required for callback
@@ -37,6 +38,7 @@ class Capture extends React.Component {
 
   componentDidMount() {
     this.loadDatabaseInstances()
+    this.displayCaptures()
   }
 
   startCapture() {
@@ -61,7 +63,7 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      displayCaptures()
+      that.displayCaptures()
     })
 
   }
@@ -81,7 +83,7 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      this.displayCaptures()
+      that.displayCaptures()
     })
 
   }
@@ -175,36 +177,36 @@ class Capture extends React.Component {
     })
   }
 
-  getCaptures() {
-    var that = this;
-    let returnList = []
-    jquery.ajax({
-      url: window.location.href + 'capture/list',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      var captureObjects; /* Access list of objects here */
-      that.setState({ activeCaptureObjects: that.state.activeCaptureObjects })
-    })
-  }
-
-  displayCaptures() {
-    this.getCaptures()
-    var currentCaptures;
+  getCaptures(data) {
+    var currentCaptures = [];
+    var current;
     for (var i = 0; i < this.props.activeCaptures; i++) {
+      current = data[i]
       currentCaptures.push(
-        <li key={'capture' + i}>
+        <li key={current.name + i}>
           <CaptureDetail
-            /*captureName={ Add name from capture data}*/
-            /*captureDB={/* Add db instance from capture data}*/
-            /*captureDate={/* Add date from capture data} */
+            captureName={current.captureName}
+            captureDB={current.db}
+            captureDate={current.startTime}
             stopCapture={this.stopCapture(captureName, captureDB)}
           />
         </li>
       )
     }
     return <ul>{currentCaptures}</ul>
+  }
+
+  displayCaptures() {
+    var that = this;
+    jquery.ajax({
+      url: window.location.href + 'capture/list',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      var resultList = that.getCaptures(data)
+      that.setState({ activeCaptureList: resultList })
+    })
   }
 
   render() {
@@ -262,7 +264,7 @@ class Capture extends React.Component {
         <h4 style={{ marginLeft: '20px' }}>{this.state.capture}</h4>
         {this.renderCaptureData()}
         <br />
-        <div>{this.displayCaptures()}</div>
+        <div>{this.state.activeCaptureList}</div>
       </div>
     )
   }
