@@ -65,11 +65,13 @@ def login():
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
     headers = request.headers
-    pubKey = headers["publicKey"] 
-    privateKey = headers["privateKey"] 
-    if pubKey is None or privateKey is None:
+    #TODO. Temporary: if public and private Key are not passed in headers, 
+    # default to config.ini values
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pKey is None or priKey is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    if verify_login(pKey, priKey):
         db_instances = list_databases(credentials)
         db_instances = list(db_instances.keys())
         return jsonify({
@@ -81,11 +83,13 @@ def databaseInstances():
 @application.route("/capture/list", methods=["GET"])
 def captureList():
     headers = request.headers
-    pubKey = headers["publicKey"] 
-    privateKey = headers["privateKey"] 
-    if pubKey is None or privateKey is None:
+    #TODO. Temporary: if public and private Key are not passed in headers, 
+    # default to config.ini values
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pKey is None or priKey is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    if verify_login(pKey, priKey):
         capture_list = get_capture_list(credentials)
         return jsonify({
             "captures" : capture_list
@@ -97,11 +101,13 @@ def captureList():
 def replayListForSpecificCapture():
     headers = request.headers
     capture_name = request.args.get("captureName")
-    pubKey = headers["publicKey"] 
-    privateKey = headers["privateKey"] 
-    if pubKey is None or privateKey is None:
+    #TODO. Temporary: if public and private Key are not passed in headers, 
+    # default to config.ini values
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pKey is None or priKey is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    if verify_login(pKey, priKey):
         replay_list = get_replays_for_capture(credentials, capture_name)
         return jsonify({
             "captureName": capture_name,
