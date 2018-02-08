@@ -18,25 +18,41 @@ class Capture extends React.Component {
       captureData: '',
       query: '',
       captureName: '',
-      captureDB: '',
-      inputHelpBlock: 'Optional. If not provided, name will be generated.'
+      inputHelpBlock: 'Optional. If not provided, name will be generated.',
+      databaseInstanceOptions: ["No instances available"],
+      captureDBInstance: '',
+      activeCaptureObjects: []
     }
 
     //binding required for callback
     this.startCapture = this.startCapture.bind(this)
     this.stopCapture = this.stopCapture.bind(this)
+    this.getCaptures = this.getCaptures.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
     this.sendQuery = this.sendQuery.bind(this)
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
+    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
+    this.updateCaptureDB = this.updateCaptureDB.bind(this)
+  }
+
+  componentDidMount() {
+    this.loadDatabaseInstances()
   }
 
   startCapture() {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
-    var postData = {
-      "db": "pi",
-      "captureName": "captureNameFrontend"
-      //"startTime": "now"
+    var postData;
+    if (this.state.captureName.length > 0) {
+      postData = {
+        "db": this.state.captureDBInstance,
+        "captureName": this.state.captureName
+      }
+    }
+    else {
+      postData = {
+        "db": this.state.captureDBInstance,
+      }
     }
     jquery.ajax({
       url: window.location.href + 'capture/start',
@@ -45,17 +61,17 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      console.log(data);
+      displayCaptures()
     })
 
   }
 
-  stopCapture() {
+  stopCapture(captureName, captureDB) {
     this.setState({ capture: 'Capture Stopped' })
     this.props.dispatch(stopCapture())
     var postData = {
-      "db": "pi",
-      "captureName": "captureNameFrontend"
+      "db": captureName,
+      "captureName": captureDB
     }
     var that = this;
     jquery.ajax({
@@ -65,9 +81,7 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      that.setState({ haveCaptureData: true })
-      that.setState({ captureData: data })
-
+      this.displayCaptures()
     })
 
   }
@@ -87,9 +101,7 @@ class Capture extends React.Component {
   }
 
   getValidationState() {
-    var error = false;
-    var error = this.state.captureName.indexOf(' ') >= 0;
-    if (error) {
+    if (this.state.captureName.indexOf(' ') >= 0) {
       this.state.inputHelpBlock = 'No spaces allowed in name. Please try again';
       return 'error';
     }
@@ -117,38 +129,37 @@ class Capture extends React.Component {
   }
 
   createDBInstancesSelect(data) {
-    var dbInstances = returnVal["databases"];
+    var dbInstances = data["databases"];
     let dbList = [];
     for (var i = 0; i < dbInstances.length; i++) {
-      var instance = <div>dbInstances[i]</div>;
-      var selectOption;
-      if (i == 0) {
-        var selectOption = (<option value="select">
-          {instance}
-        </option>)
-      }
-      else {
-        var selectOption = (<option value="other">
-          {instance}
-        </option>)
-
-      }
+      var instance = dbInstances[i];
+      var selectOption = (<option value={instance} key={i}>
+        {instance}
+      </option>)
       dbList.push(selectOption)
     }
     return dbList
   }
 
   loadDatabaseInstances() {
+    var that = this;
+    let returnList = []
     jquery.ajax({
       url: window.location.href + 'databaseInstances',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      console.log(data)
-      createDBInstancesSelect(data)
+      returnList = that.createDBInstancesSelect(data)
+      that.setState({
+        databaseInstanceOptions: returnList
+      })
+      that.setState({ captureDBInstance: returnList[0].props.value })
     })
+  }
 
+  updateCaptureDB(e) {
+    this.setState({ captureDBInstance: e.target.value });
   }
 
   sendQuery() {
@@ -164,16 +175,31 @@ class Capture extends React.Component {
     })
   }
 
+  getCaptures() {
+    var that = this;
+    let returnList = []
+    jquery.ajax({
+      url: window.location.href + 'capture/list',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      var captureObjects; /* Access list of objects here */
+      that.setState({ activeCaptureObjects: that.state.activeCaptureObjects })
+    })
+  }
+
   displayCaptures() {
-    let currentCaptures = []
+    this.getCaptures()
+    var currentCaptures;
     for (var i = 0; i < this.props.activeCaptures; i++) {
       currentCaptures.push(
-        <li>
+        <li key={'capture' + i}>
           <CaptureDetail
-            key={'capture' + i}
-            captureName={'Capture ' + (i + 1)}
-            captureDate={'Jan 25, 2018  '}
-            stopCapture={this.stopCapture}
+            /*captureName={ Add name from capture data}*/
+            /*captureDB={/* Add db instance from capture data}*/
+            /*captureDate={/* Add date from capture data} */
+            stopCapture={this.stopCapture(captureName, captureDB)}
           />
         </li>
       )
@@ -187,7 +213,7 @@ class Capture extends React.Component {
         <hr />
         <form>
           <FormGroup
-            controlId="formBasicText"
+            //controlId="formBasicText"
             validationState={this.getValidationState()}
           >
             <ControlLabel>Capture Name</ControlLabel>
@@ -203,8 +229,8 @@ class Capture extends React.Component {
           </FormGroup>
           <FormGroup controlId="formControlsSelect">
             <ControlLabel>Database Instance</ControlLabel>
-            <FormControl componentClass="select" placeholder="select">
-              {this.loadDatabaseInstances()}
+            <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
+              {this.state.databaseInstanceOptions}
             </FormControl>
           </FormGroup>
         </form>
@@ -224,13 +250,14 @@ class Capture extends React.Component {
         >
           Stop Capture
         </Button>*/}
-        <input
+        {/*         <input
           style={{ marginLeft: '20px' }}
           onChange={this.handleQueryChange}
         />
         <Button className="btn-md" onClick={this.sendQuery}>
           Send Query
         </Button>
+      */}
         <hr />
         <h4 style={{ marginLeft: '20px' }}>{this.state.capture}</h4>
         {this.renderCaptureData()}

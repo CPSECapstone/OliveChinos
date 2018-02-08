@@ -12,6 +12,7 @@ export default class CaptureDetail extends React.Component {
       <div style={{ width: '100%' }}>
         <span style={{ display: 'inline' }}>
           <h4>{this.props.captureName}</h4>
+          <p><span class="text-secondary">DB Instance: </span><span>{this.props.captureDB}</span></p>
           <p>{this.props.captureDate}</p>
         </span>
         <span style={{ display: 'inline' }}>
