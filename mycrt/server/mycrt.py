@@ -71,6 +71,7 @@ def databaseInstances():
         abort(400)
     if verify_login(pubKey, privateKey):
         db_instances = list_databases(credentials)
+        db_instances = list(db_instances.keys())
         return jsonify({
             "databases" : db_instances
         })
@@ -136,7 +137,7 @@ def capture_end():
     capture_name = data['captureName']
     end_time = convertDatetimeToString(datetime.utcnow())
     
-    capture_details, start_time = end_capture(credentials)
+    capture_details, start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
         "status": "ended",
