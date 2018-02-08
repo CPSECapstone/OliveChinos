@@ -56,6 +56,7 @@ class Capture extends React.Component {
         "db": this.state.captureDBInstance,
       }
     }
+    var that = this
     jquery.ajax({
       url: window.location.href + 'capture/start',
       type: 'POST',
@@ -72,8 +73,8 @@ class Capture extends React.Component {
     this.setState({ capture: 'Capture Stopped' })
     this.props.dispatch(stopCapture())
     var postData = {
-      "db": captureName,
-      "captureName": captureDB
+      "db": captureDB,
+      "captureName": captureName
     }
     var that = this;
     jquery.ajax({
@@ -180,15 +181,17 @@ class Capture extends React.Component {
   getCaptures(data) {
     var currentCaptures = [];
     var current;
-    for (var i = 0; i < this.props.activeCaptures; i++) {
-      current = data[i]
+    console.log("DATA\n", data)
+    for (var i = 0; i < data.captures.length; i++) {
+      current = data.captures[i]
+      console.log(current.captureName)
       currentCaptures.push(
-        <li key={current.name + i}>
+        <li key={current.captureName + i}>
           <CaptureDetail
             captureName={current.captureName}
             captureDB={current.db}
             captureDate={current.startTime}
-            stopCapture={this.stopCapture(captureName, captureDB)}
+            stopCapture={() => { this.stopCapture(current.captureName, current.db) }}
           />
         </li>
       )

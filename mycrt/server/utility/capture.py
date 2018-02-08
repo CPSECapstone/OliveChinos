@@ -33,7 +33,18 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
   connection.close()
   return results
 
-
+def get_all_capture_details():
+  # FIX LATER
+  query = '''
+    SELECT name from Captures
+    WHERE end_time is NULL
+  '''
+  results = execute_utility_query(query)
+  captures = []
+  for (capture_name,) in results:
+    captures.append(get_capture_details(capture_name))
+  return captures
+  
 def get_capture_details(capture_name):
   query = '''
     SELECT db, start_time, end_time FROM Captures
@@ -115,7 +126,10 @@ def end_capture(credentials, capture_name, db_id):
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query_res = execute_utility_query('''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name)) 
+  query = '''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name)
+  query_res = execute_utility_query(query) 
+  print(query, file=sys.stderr)
+  print(query_res, file=sys.stderr)
   start_time = query_res[0][0]
   print(query_res, file=sys.stderr)
   print('''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name), file=sys.stderr)
@@ -137,7 +151,7 @@ def end_capture(credentials, capture_name, db_id):
   bucket_id = "my-crt-test-bucket-olive-chinos"
   _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name))
 
-  return (transactions, start_time[0])
+  return (transactions, start_time)
 
 def testConnection(connection):
     
