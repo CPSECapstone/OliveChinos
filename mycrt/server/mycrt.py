@@ -73,6 +73,7 @@ def databaseInstances():
         abort(400)
     if verify_login(pKey, priKey):
         db_instances = list_databases(credentials)
+        db_instances = list(db_instances.keys())
         return jsonify({
             "databases" : db_instances
         })
@@ -82,19 +83,20 @@ def databaseInstances():
 @application.route("/capture/list", methods=["GET"])
 def captureList():
     headers = request.headers
-    #TODO. Temporary: if public and private Key are not passed in headers, 
-    # default to config.ini values
-    pKey = headers.get("publicKey", pubKey)
-    priKey = headers.get("privateKey", privateKey)
-    if pKey is None or priKey is None:
+    pubKey = headers["publicKey"]
+    privateKey = headers["privateKey"]
+    if pubKey is None or privateKey is None:
         abort(400)
-    if verify_login(pKey, priKey):
-        capture_list = get_capture_list(credentials)
+    if verify_login(pubKey, privateKey):
+        capture_names_list = get_capture_list(credentials)
+
+        capture_list = [get_capture_details(name) for name in capture_names_list]
+
         return jsonify({
             "captures" : capture_list
         })
-    else: 
-        abort(401) 
+    else:
+        abort(401)
 
 @application.route("/capture/replayList", methods=["GET"])
 def replayListForSpecificCapture():
@@ -142,7 +144,7 @@ def capture_end():
     capture_name = data['captureName']
     end_time = convertDatetimeToString(datetime.utcnow())
     
-    capture_details, start_time = end_capture(credentials)
+    capture_details, start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
         "status": "ended",
