@@ -4,7 +4,8 @@ import sys
 
 def get_capture_list(credentials):
   s3_client = boto3.client('s3', **credentials)
-  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents'] if key['Key'][-1] == "/"]
+  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents'] if "/" in key['Key']]
+  key_list = list(set(key.split("/")[0] for key in key_list)) # Ensure unique keys, but return in list format
   return key_list
 
 def get_replays_for_capture(credentials, capture_folder):

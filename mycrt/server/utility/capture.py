@@ -33,6 +33,34 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
   connection.close()
   return results
 
+
+def get_capture_details(capture_name):
+  query = '''
+    SELECT db, start_time, end_time FROM Captures
+    WHERE name = '{0}'
+  '''.format(capture_name)
+
+  results = execute_utility_query(query)
+  if len(results) == 1:
+    (db, start_time, end_time) = results[0] 
+    status = "started" if end_time is None else "completed"
+    start_time = start_time.strftime("%Y/%m/%d_%H:%M:%S")
+    end_time = "No end time.." if end_time is None else end_time.strftime("%Y/%m/%d_%H:%M:%S")
+  else:
+    db = "Unknown"
+    status = db
+    start_time = db
+    end_time = db
+
+  return {
+    "captureName" : capture_name,
+    "db" : db,
+    "endTime" : end_time,
+    "startTime" : start_time,
+    "status" : status
+  }  
+
+
 '''
 Returns true if the capture_name is valid
 '''
