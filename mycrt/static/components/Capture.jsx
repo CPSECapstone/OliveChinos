@@ -26,7 +26,7 @@ class Capture extends React.Component {
     }
 
     //binding required for callback
-    this.startCapture = this.startCapture.bind(this)
+    this.startNewCapture = this.startNewCapture.bind(this)
     this.stopCapture = this.stopCapture.bind(this)
     this.getCaptures = this.getCaptures.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
@@ -41,7 +41,7 @@ class Capture extends React.Component {
     this.displayCaptures()
   }
 
-  startCapture() {
+  startNewCapture() {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
     var postData;
@@ -243,7 +243,7 @@ class Capture extends React.Component {
           style={{ marginLeft: '20px' }}
           bsSize="large"
           bsStyle="success"
-          onClick={this.startCapture}
+          onClick={this.startNewCapture}
         >
           Start Capture
         </Button>

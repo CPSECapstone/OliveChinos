@@ -30,6 +30,7 @@ class GraphContainer extends React.Component {
             let replayCaptureOptions = [];
             let metricOptions = [];
             let arrayOfFalses = [];
+            console.log('THIS IS THE LIST OF ANALYTICS: ', this.props.data)
             var count = Object.keys(this.props.data["test_folder"]).length;
             let currentData = this.props.data["test_folder"]
             for(let i = 1; i < (count + 1); i++) {
