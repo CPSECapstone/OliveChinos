@@ -87,53 +87,41 @@ def capture(db_instance, capture_name, interactive, schedule, stop):
 
 
 '''-------------REPLAY-------------'''
-def _start_replay(db_instance, capture_name, replay_name, fast_mode): 
+def _start_replay(db_instance, capture_name, replay_name, fast_mode, restore): 
 
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
-    #todo: handle fast mode in here
-
-    if not replay_name: #use default 
-        replay_name=_get_default_name('R', db_instance, date_time)
-
-    task={'status': 'started', 
-            'db': db_instance, 
-            'replayName': replay_name, 
+    task={'db': db_instance, 
+            'captureName': capture_name,
             'fastMode': fast_mode,
             'restoreDb': restore,
             'startTime': start_time
     }
 
+    if replay_name: 
+        task['replayName'] = replay_name
+
     resp = requests.post('http://localhost:5000/replay', json=task)
 
-    if resp.status_code != 201:
+    if resp.status_code != 200:
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
 @cli.command()
 @click.argument('db-instance')
+@click.argument('capture-name')
 @click.option('--replay-name', 
         help='nickname for replay')
-@click.option('--capture-name', 
-        help='name of capture to replay')
 @click.option('-f', '--fast-mode', is_flag=True,
         help='skip over time periods with low activity while replaying')
 @click.option('--restore', is_flag=True,
         help='restore initial database state upon replay completion')
 #default = database_name + date/time started 
-def replay(db_instance, replay_name, capture_name, fast_mode, restore): 
+def replay(db_instance, capture_name, replay_name, fast_mode, restore): 
     '''-replay a database workload'''
-    if restore: 
-        click.echo('taking snapshot of db')
-        #take snapshot of current db state
 
-    _start_replay(db_instance, capture_name, replay_name, fast_mode)
+    _start_replay(db_instance, capture_name, replay_name, fast_mode, restore)
     click.echo('replaying raw mode')
-
-    if restore: 
-        click.echo('restoring db')
-        #restore db
-
 
 
 '''-------------ANALYZE-------------'''
