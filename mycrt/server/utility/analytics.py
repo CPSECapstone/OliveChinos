@@ -4,7 +4,8 @@ import sys
 
 def get_capture_list(credentials):
   s3_client = boto3.client('s3', **credentials)
-  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents'] if key['Key'][-1] == "/"]
+  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents'] if "/" in key['Key']]
+  key_list = list(set(key.split("/")[0] for key in key_list)) # Ensure unique keys, but return in list format
   return key_list
 
 def get_replays_for_capture(credentials, capture_folder):
@@ -23,7 +24,7 @@ def get_analytics(credentials):
   capture_list = get_capture_list(credentials)
   for capture in capture_list:
     replay_list = get_replays_for_capture(credentials, capture)
-    metrics[capture[:-1]] = {replay.replace(capture, "") : retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
+    metrics[capture] = {replay.replace(capture, "").replace("/", "") : retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
   
   return metrics
 
