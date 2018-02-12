@@ -1,4 +1,4 @@
-//in e2e/tests/homepage.js
+//in static/tests/homepage.js
 const webdriver = require('selenium-webdriver');
 
 const driver = new webdriver.Builder()
