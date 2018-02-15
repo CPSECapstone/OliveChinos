@@ -55,8 +55,8 @@ def get_capture_details(capture_name):
   if len(results) == 1:
     (db, start_time, end_time) = results[0] 
     status = "started" if end_time is None else "completed"
-    start_time = start_time.strftime("%Y/%m/%d_%H:%M:%S")
-    end_time = "No end time.." if end_time is None else end_time.strftime("%Y/%m/%d_%H:%M:%S")
+    start_time = start_time.strftime("%Y-%m-%d_%H:%M:%S")
+    end_time = "No end time.." if end_time is None else end_time.strftime("%Y-%m-%d_%H:%M:%S")
   else:
     db = "Unknown"
     status = db
