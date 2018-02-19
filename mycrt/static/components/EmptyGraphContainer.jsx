@@ -18,10 +18,10 @@ export default class EmptyGraphContainer extends React.Component {
             <table className="table table-hover">
                 <thead className="thead-dark">
                 <tr>
-                    <th scope="col">Replay/Capture Options</th>
+                    <th scope="col">Capture Options</th>
                 </tr>
                 </thead>
-                <tbody><tr><td>...Loading Data...</td></tr></tbody>
+                <tbody><tr><td>...Loading Capture Data...</td></tr></tbody>
             </table>
         </div>
         <div className='col-xs-6' style={{width: '38vw'}}>

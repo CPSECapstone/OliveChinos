@@ -33,7 +33,7 @@ credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey,
 print (credentials, file=sys.stderr)
 
 def convertDatetimeToString(dTime):
-    return dTime.strftime('%Y/%m/%d_%H:%M:%S')
+    return dTime.strftime('%Y-%m-%d_%H:%M:%S')
 
 def createCaptureName(dbName, formattedTime):
     return 'C_' + dbName + '_' + formattedTime
