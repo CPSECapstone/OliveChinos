@@ -61,9 +61,7 @@ function getNumLines(boolArray) {
 //as well as the total names, boolean array and total names
 function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let allAssignments = {}
-  console.log('boolarray, totalNames, metric, numLines, analytics, datapoints, unique name, capture name', booleanArray, totalNames, metric, numLines, analytics, dataPoints,uniqueName, captureName)
   if(metric != false && uniqueName != false && analytics != undefined) {
-    console.log('COMING HEREEEE1')
     let newLinesToGraph = []
     for(let i = 0; i < booleanArray.length; i++) {
         if(booleanArray[i]) {
@@ -73,15 +71,11 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
     let lineNum = getNumLines(booleanArray)
-    console.log('$*#@(#$*: LINE NUM!!!', lineNum)
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
         if(analytics != false) {
-          console.log('COMING HEREEEE2')
             let totalNumberOfOptionsToChooseFrom = Object.keys(analytics[captureName]).length
-            console.log('OKAY THIS IS THE PROB: ', Object.keys(analytics[captureName]).length);
             if((lineNum <= totalNumberOfOptionsToChooseFrom) && (lineNum > 0)) {
-              console.log('COMING HEREEEE3')
                 allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName)
             }
         }
@@ -93,14 +87,12 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.numLinesForGraph = 0;
     allAssignments.totalNames = totalNames;
   }
-  console.log('**** SANITY CHECK: ', allAssignments.dataPointsForGraph)
   return allAssignments
 }
 
 function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let currMetric = metric;
   let listOfAnalytics = analytics[captureName];
-  console.log('Whats happening here?', listOfAnalytics)
   if(booleanArray != false) {
     for (let outer = 0; outer < booleanArray.length; outer++) {
       let pointsValues = []

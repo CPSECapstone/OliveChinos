@@ -62,16 +62,12 @@ class CaptureOptions extends React.Component {
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
     setCaptureName(uniqueName, e) {
-        console.log('#### K HERE: ', this.props)
         var count = Object.keys(this.props.data[uniqueName]).length
-        console.log('wait a minute...', Object.keys(this.props.data[uniqueName]).length)
-        console.log('the count is: ', count)
         let arrayOfFalses = []
         for(let i = 0; i < count; i++) {
             arrayOfFalses.push(false)
         }
-        console.log('ABOUT TO SET THE ARRAY OF FALSES TO BE: ', arrayOfFalses)
-        this.props.dispatch(setBooleansForGraph(arrayOfFalses))
+        this.props.dispatch(setBooleansForGraph(arrayOfFalses));
         this.props.dispatch(setCaptureNameForGraph(uniqueName));
     }
 

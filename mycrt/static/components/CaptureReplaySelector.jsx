@@ -45,7 +45,6 @@ class CaptureReplaySelector extends React.Component {
         let captureReplaysSelected = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i]) {
-                // let totalNames = this.props.replayCaptureNamesForGraph;
                 let totalNames = this.props.totalReplayCaptures
                 captureReplaysSelected.push(totalNames[i])
             }
@@ -59,7 +58,14 @@ class CaptureReplaySelector extends React.Component {
 
     //renders all of the table rows that hold the values for all capture and replay options to graph
     getReplayCapturesWithData() {
-        if(this.props.totalReplayCaptures != false) {
+        if(this.props.totalReplayCaptures.length == 0) {
+            return (
+                <tr>
+                    <td>No Replays Recorded For This Capture Yet.</td>
+                </tr>
+            )
+        }
+        else if(this.props.totalReplayCaptures != false) {
             let replayCaptureOptions = this.props.totalReplayCaptures;
             return (
                 replayCaptureOptions.map(uniqueName => (
@@ -103,6 +109,7 @@ class CaptureReplaySelector extends React.Component {
     render() {
         return(
             <tbody style={{overflowY: 'scroll'}}>
+                <tr style={{height:'50px'}}></tr>
                 {this.getReplayCapturesWithData()}
             </tbody>
         );

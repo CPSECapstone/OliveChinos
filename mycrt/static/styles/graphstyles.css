@@ -30,3 +30,18 @@
     background-color: "#ADD8E6";
     cursor: pointer;
 }
+
+.btn-custom {
+    margin-right:20px;
+    background-color: #fff;
+    border-color: #000;
+    color: #333333;
+    padding: 0;
+    height: 20px;
+    /* width:20px; */
+  }
+  .btn-custom:hover {
+  background-color: #e5e5e5;
+    border-color: #000;
+    color: #333333;
+      }
