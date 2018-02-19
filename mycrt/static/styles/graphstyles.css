@@ -25,3 +25,8 @@
     padding-right: 0;
     padding-left: 0;
 }
+
+#captureOption:hover {
+    background-color: "#ADD8E6";
+    cursor: pointer;
+}

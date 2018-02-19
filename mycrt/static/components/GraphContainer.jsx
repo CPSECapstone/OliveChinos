@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
 import { setBooleansForGraph } from '../actions/index';
+import CaptureOptions from './CaptureOptions';
 
 var selectedColor = "#ADD8E6";
 
@@ -30,17 +31,26 @@ class GraphContainer extends React.Component {
             let replayCaptureOptions = [];
             let metricOptions = [];
             let arrayOfFalses = [];
-            console.log('THIS IS THE LIST OF ANALYTICS: ', this.props.data)
-            var count = Object.keys(this.props.data["test_folder"]).length;
-            let currentData = this.props.data["test_folder"]
-            for(let i = 1; i < (count + 1); i++) {
-                let title = "test-metrics"+i
-                replayCaptureOptions.push(title)
-                arrayOfFalses.push(false)
-            }
-            result.totalReplayCaptures = replayCaptureOptions;
-            result.rcBooleans = arrayOfFalses;
-            this.props.dispatch(setBooleansForGraph(arrayOfFalses))
+            // var count = Object.keys(this.props.data).length;
+            var count;
+            // if(this.props.currentCaptureForGraph != 'Capture Options') {
+            //     console.log('*** WE HAVE A CURR CAPTURE SELECTED:')
+            //     count = this.props.data[this.props.currentCaptureForGraph].length
+            //     console.log('count: ', count)
+            // }
+            // else {
+            //     count = 1;
+            // }
+            // let currentData = this.props.data;
+            // for(let i = 0; i < count; i++) {
+            //     let title = Object.keys(this.props.data)[i]
+            //     replayCaptureOptions.push(title)
+            //     arrayOfFalses.push(false)
+            // }
+            // result.totalReplayCaptures = replayCaptureOptions;
+            result.totalReplayCaptures = Object.keys(this.props.data)
+            // result.rcBooleans = arrayOfFalses;
+            // this.props.dispatch(setBooleansForGraph(arrayOfFalses))
         }
         return result;
     }
@@ -48,18 +58,18 @@ class GraphContainer extends React.Component {
     //Renders the table below the graph
     renderSelectorTable() {
         return (
-        <div className='row'>
+        <div className='row' style={{height: '24vh', overflowY: 'scroll'}}>
             <div className='col-xs-6' style={{width: '38vw'}} >
                 <table className="table table-hover">
-                    <thead className="thead-dark">
+                    <thead className="thead-dark" style={{position: 'absolute', width: '38vw'}}>
                     <tr>
-                        <th scope="col">Replay/Capture Options</th>
+                        <th scope="col">{this.props.currentCaptureForGraph}</th>
                     </tr>
-                    </thead>
+                    </thead >
                         {this.displayCorrectReplayCaptures()}
                 </table>
             </div>
-            <div className='col-xs-6' style={{width: '38vw'}}>
+            <div className='col-xs-6' style={{width: '38vw', position: 'absolute', right:'26'}}>
                 <MetricSelector />
             </div>
         </div>
@@ -84,9 +94,17 @@ class GraphContainer extends React.Component {
     }
 
     getReplayCapturesWithData() {
-        return (
-            <CaptureReplaySelector totalReplayCaptures={this.state.totalReplayCaptures} rcBooleans={this.state.rcBooleans}/>
-        );
+        if(this.props.currentCaptureForGraph == 'Capture Options') {
+            return (
+                <CaptureOptions data={this.props.data} totalReplayCaptures={this.state.totalReplayCaptures}/>
+            );
+        }
+        else {
+            return (
+                <CaptureReplaySelector totalReplayCaptures={Object.keys(this.props.data[this.props.currentCaptureForGraph])}/>
+
+            )
+        }
     }
     
 
@@ -123,7 +141,8 @@ const mapStateToProps = state => ({
     metricForGraph: state.metricForGraph,
     numLinesForGraph: state.numLinesForGraph,
     booleansForGraph: state.booleansForGraph,
-    replayCaptureNamesForGraph: state.replayCaptureNamesForGraph
+    replayCaptureNamesForGraph: state.replayCaptureNamesForGraph,
+    currentCaptureForGraph: state.currentCaptureForGraph
   })
   
   export default connect(mapStateToProps)(GraphContainer)

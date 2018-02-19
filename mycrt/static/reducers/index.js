@@ -17,7 +17,8 @@ import {
   SET_NUM_LINES_FOR_GRAPH,
   SET_BOOLEANS_FOR_GRAPH,
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
-  SET_ANALYTICS_FOR_GRAPH
+  SET_ANALYTICS_FOR_GRAPH,
+  SET_CAPTURE_NAME_FOR_GRAPH
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -39,7 +40,8 @@ let initialState = {
   booleansForGraph: false,
   replayCaptureNamesForGraph: false,
   analyticsForGraph: false,
-  totalNames: false
+  totalNames: false,
+  currentCaptureForGraph: 'Capture Options'
   
 }
 
@@ -57,9 +59,11 @@ function getNumLines(boolArray) {
 //to be graphed or to not be graphed, this function will return the list of datavalues
 //to put on the graph in their formatted way for the graph, and then return the number of lines
 //as well as the total names, boolean array and total names
-function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName) {
+function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let allAssignments = {}
+  console.log('boolarray, totalNames, metric, numLines, analytics, datapoints, unique name, capture name', booleanArray, totalNames, metric, numLines, analytics, dataPoints,uniqueName, captureName)
   if(metric != false && uniqueName != false && analytics != undefined) {
+    console.log('COMING HEREEEE1')
     let newLinesToGraph = []
     for(let i = 0; i < booleanArray.length; i++) {
         if(booleanArray[i]) {
@@ -69,12 +73,16 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
     let lineNum = getNumLines(booleanArray)
+    console.log('$*#@(#$*: LINE NUM!!!', lineNum)
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
         if(analytics != false) {
-            let totalNumberOfOptionsToChooseFrom = Object.keys(analytics["test_folder"]).length;
+          console.log('COMING HEREEEE2')
+            let totalNumberOfOptionsToChooseFrom = Object.keys(analytics[captureName]).length
+            console.log('OKAY THIS IS THE PROB: ', Object.keys(analytics[captureName]).length);
             if((lineNum <= totalNumberOfOptionsToChooseFrom) && (lineNum > 0)) {
-                allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName)
+              console.log('COMING HEREEEE3')
+                allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName)
             }
         }
   }
@@ -85,17 +93,19 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.numLinesForGraph = 0;
     allAssignments.totalNames = totalNames;
   }
+  console.log('**** SANITY CHECK: ', allAssignments.dataPointsForGraph)
   return allAssignments
 }
 
-function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName) {
+function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let currMetric = metric;
-  let listOfAnalytics = analytics["test_folder"];
+  let listOfAnalytics = analytics[captureName];
+  console.log('Whats happening here?', listOfAnalytics)
   if(booleanArray != false) {
     for (let outer = 0; outer < booleanArray.length; outer++) {
       let pointsValues = []
       if(booleanArray[outer]) {
-          let currIndex = `${uniqueName}.replay`
+          let currIndex = `${uniqueName}`
           for(let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
               let currPoint = {seconds: `${i}`}
               currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
@@ -108,7 +118,7 @@ function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, anal
   }
 }
 
-function updateFinalJSONObject(newJsonElement, numLines, dataPoints) {
+function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
   if(numLines > 0) {
       let oldJsonElement = dataPoints;
       alasql.fn.extend = alasql.utils.extend;
@@ -119,22 +129,10 @@ function updateFinalJSONObject(newJsonElement, numLines, dataPoints) {
       return newJsonElement
 }
 
-function getBoolArray(dataArray) {
-  if(dataArray != false) {
-    let count = Object.keys(dataArray['text_folder']).length
-    let tmp = []
-    for (let i =0; i < count; i++) {
-      tmp.push(false)
-    }
-    return tmp
-  }
-  return false
-}
-
 function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
-    let allAssignments = getAssignments(action.booleanArray, action.totalNameArray , action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName);
+    let allAssignments = getAssignments(action.booleanArray, action.totalNameArray , action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
       return Object.assign({}, state, {
         booleansForGraph: allAssignments.booleanArrayForGraph,
         replayCaptureNamesForGraph: allAssignments.replayCaptureNamesForGraph,
@@ -199,6 +197,11 @@ function reducer(state = initialState, action) {
     case SET_ANALYTICS_FOR_GRAPH:
       return Object.assign({}, state, {
         analyticsForGraph: action.key
+      })
+    
+    case SET_CAPTURE_NAME_FOR_GRAPH:
+      return Object.assign({}, state, {
+        currentCaptureForGraph: action.key
       })
 
     default:
