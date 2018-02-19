@@ -10,12 +10,12 @@ export default class CaptureDetail extends React.Component {
   render() {
     return (
       <div style={{ width: '100%' }}>
-        <span style={{ display: 'inline' }}>
+        <span style={{ display: 'inline', float: 'left' }}>
           <h4>{this.props.captureName}</h4>
-          <p><span className="text-secondary">DB Instance: </span><span>{this.props.captureDB}</span></p>
-          <p>{this.props.captureDate}</p>
+          <div><span className="text-secondary">DB Instance: </span><span>{this.props.captureDB}</span></div>
+          <div>{this.props.captureDate}</div>
         </span>
-        <span style={{ display: 'inline' }}>
+        <span style={{ display: 'inline', float: 'right' }}>
           <Button
             style={{ marginLeft: '20px' }}
             bsSize="large"

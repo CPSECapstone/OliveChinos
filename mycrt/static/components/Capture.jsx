@@ -188,6 +188,7 @@ class Capture extends React.Component {
       currentCaptures.push(
         <li key={current.captureName + i}>
           <CaptureDetail
+            className="captureDetail"
             captureName={current.captureName}
             captureDB={current.db}
             captureDate={current.startTime}
@@ -243,6 +244,7 @@ class Capture extends React.Component {
           style={{ marginLeft: '20px' }}
           bsSize="large"
           bsStyle="success"
+          id="startCaptureButton"
           onClick={this.startCapture}
         >
           Start Capture
@@ -266,6 +268,15 @@ class Capture extends React.Component {
         <hr />
         <h4 style={{ marginLeft: '20px' }}>{this.state.capture}</h4>
         {this.renderCaptureData()}
+        <div>
+          <CaptureDetail
+            className="captureDetail"
+            captureName='Test Name'
+            captureDB='current.db'
+            captureDate='2/15/18'
+          //stopCapture={() => { this.stopCapture(current.captureName, current.db) }}
+          />
+        </div>
         <br />
         <div>{this.state.activeCaptureList}</div>
       </div>
