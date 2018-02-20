@@ -182,7 +182,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db)
     return jsonify({
         "status": "started",
         "db": db_name,
