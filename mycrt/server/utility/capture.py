@@ -15,6 +15,8 @@ credentials = {
 }
 '''
 
+# Default utility connection credentials
+# TODO: Remove later
 #db_id = "pi"
 hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
 username = "olive"
@@ -22,10 +24,22 @@ password = "olivechinos"
 database = "CRDB"
 region = "us-east-2"
 
-'''
-This runs a query on the utility database by default 
-'''
 def execute_utility_query(query, hostname = hostname, username = username, password = password, database = database):
+  """Executes a query on the utiltity database by default.
+
+  Args:
+    query: A SQL query to commit
+    hostname: The address/endpoint for the database to connect to
+    username: The database username to connect with
+    password: The database password to connect with
+    database: The database name to connect witheh 
+
+  Returns:
+    A list of tuples containing the results of the query. Each element
+    in the list is a tuple representing one row and each element of the
+    tuple is a value for one column. 
+  """
+
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database, autocommit = True)
   cur = connection.cursor()
   cur.execute(query)
@@ -33,8 +47,23 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
   connection.close()
   return results
 
-def get_all_capture_details():
-  # FIX LATER
+def get_all_ongoing_capture_details():
+  """Get all ongoing capture details from utility database.
+
+  Returns:
+    A list containing details of captures that are ongoing.
+    These details are represented by a dictionary. The dictionary
+    will have the following format:
+      {
+        "captureName" : String,
+        "db" : String,
+        "endTime" : None,
+        "startTime" : String,
+        "status" : Boolean
+      } 
+  """
+
+  # FIX LATER (is inefficient)
   query = '''
     SELECT name from Captures
     WHERE end_time is NULL
@@ -46,6 +75,21 @@ def get_all_capture_details():
   return captures
   
 def get_capture_details(capture_name):
+  """Returns the details of a single capture.
+
+  Returns:
+    A dictionary containing the details of a capture with the 
+    following format:
+      {
+        "captureName" : String,
+        "db" : String,
+        "endTime" : None,
+        "startTime" : String,
+        "status" : Boolean
+      } 
+  """  
+
+
   query = '''
     SELECT db, start_time, end_time FROM Captures
     WHERE name = '{0}'
@@ -72,15 +116,30 @@ def get_capture_details(capture_name):
   }  
 
 
-'''
-Returns true if the capture_name is valid
-'''
-def verify_capture_name(name):
+def check_if_capture_name_is_unique(name):
+  """Checks if a capture name is unique
+
+  Returns:
+    A True if the name is unqiue, False otherwise
+  """
   query = '''select * from Captures where capture_name = '{0}' '''
   results = execute_utility_query(query)
   return len(results) == 0
 
 def list_databases(credentials, rds_client = None, close_client = False):
+  """Find all databases and create a mapping between the id and endpoints
+
+  Args:
+    credentials: A dictionary following the format seen at the top of file
+    rds_client: An optional arg that is an opened rds client from Boto3
+    close_client: An optional arg that determines if the client will be 
+      closed at end of function call
+
+  Returns:
+    A dictionary where the keys are the database instance ids available to the user 
+    and the values are the associated endpoints.
+  """
+
   if rds_client is None:
     rds_client = boto3.client('rds', **credentials)
   
@@ -90,6 +149,14 @@ def list_databases(credentials, rds_client = None, close_client = False):
   
 
 def _create_bucket(s3_client):
+  """Creates an S3 bucket to hold captures and metrics.
+
+  TODO: buckets need to be unique and so we should parameterize this for future users 
+
+  Args:
+    s3_client: An opened S3 client from Boto3
+  """
+
   bucket_id = "my-crt-test-bucket-olive-chinos"
   try:
     # Ensure only one bucket exists
@@ -105,6 +172,14 @@ def _create_bucket(s3_client):
   return bucket_id
 
 def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
+  """Puts information into a bucket
+
+  Args:
+    s3_client: An opened S3 client from Boto3
+    data: Information to be serialized and stored into the bucket
+    bucket_id: The id of the bucket to place the data into
+    log_key: The name to give the data once it is inside the bucket
+  """
 
   byte_log = pickle.dumps(data)
 
@@ -115,24 +190,36 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
   )
 
 def start_capture(capture_name, db_id):
+  """Starts a capture.
+
+  No real work is done by this function for now other than marking 
+  when a capture was started.
+
+  Args:
+    capture_name: Name to give a capture. Assumed to be unqiue
+    db_id: Database identifier
+  """
+
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''INSERT INTO Captures (db, name, start_time, end_time) 
                VALUES ('{0}', '{1}', '{2}', NULL)'''.format(db_id, capture_name, start_time)
-  print(query, file=sys.stderr)
   execute_utility_query(query)
-  print (start_time, file=sys.stderr)
 
 def end_capture(credentials, capture_name, db_id):
+  """Ends a specified capture.
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexistint capture name
+    db_id: Database identifier
+  """
+
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
   query = '''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name)
   query_res = execute_utility_query(query) 
-  print(query, file=sys.stderr)
-  print(query_res, file=sys.stderr)
   start_time = query_res[0][0]
-  print(query_res, file=sys.stderr)
-  print('''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name), file=sys.stderr)
   s3_client = boto3.client('s3', **credentials)
   
   databases = list_databases(credentials)
@@ -153,25 +240,3 @@ def end_capture(credentials, capture_name, db_id):
 
   return (transactions, start_time)
 
-def testConnection(connection):
-    
-  cur = connection.cursor()
-  flag = True
-  while (flag):
-    command = input("Give command : ")  
-    if (command == "exit"):
-      break
-    
-    cur.execute(command)
-
-    for line in cur.fetchall():
-      print(line)
-
-#myConnection = sql.connect(host = hostname, user = username, passwd = password, db = database)
-#testConnection(myConnection)
-#myConnection.close()
-#bucket_obj = s3_client.get_object(
-#  Bucket = bucket_id,
-#  Key = log_key
-#)
-#new_byte_log = pickle.loads(bucket_obj["Body"].read())
