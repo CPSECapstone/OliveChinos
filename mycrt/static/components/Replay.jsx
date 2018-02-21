@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { startReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
@@ -21,7 +21,7 @@ class Replay extends React.Component {
       replayDBInstance: '',
       captureToReplay: '',
       databaseInstanceOptions: ["No instances available"],
-      activeReplayList: [null]
+      completedReplayList: [null]
 
     }
 
@@ -31,9 +31,11 @@ class Replay extends React.Component {
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
+    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
   }
 
   componentDidMount() {
+    this.loadDatabaseInstances()
     this.loadCapturesToReplay()
     this.displayReplays()
   }
@@ -60,7 +62,7 @@ class Replay extends React.Component {
 
 
   createCapturesSelect(data) {
-    var captures = data["databases"];
+    var captures = data["captures"];
     let captureList = [];
     for (var i = 0; i < captures.length; i++) {
       var instance = captures[i];
@@ -154,34 +156,38 @@ class Replay extends React.Component {
 
 
   getReplays(data) {
-    var currentReplays = [];
+    var completedReplays = [];
     var current;
-    for (var i = 0; i < this.props.activeReplays; i++) {
-      current = data[i]
-      currentReplays.push(
-        <li key={current.name + i}>
+    console.log("DATA\n", data)
+    for (var i = 0; i < data.replays.length; i++) {
+      current = data.replays[i]
+      console.log('replay item ', i, ": ", current.replayName)
+      var that = this
+      completedReplays.push((function (current, i, that) {
+        return (<ListGroupItem style={{ height: '150px' }} key={current.replayName + i}>
           <ReplayDetail
-            captureName={current.replayName}
-            captureDB={current.db}
-            captureDate={current.startTime}
+            className="replayDetail"
+            replayName={current.replayName}
+            replayDB={current.db}
+            replayDate={current.date}
+          //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
           />
-        </li>
-      )
+        </ListGroupItem>)
+      }(current, i, that)))
     }
-    return <ul>{currentReplays}</ul>
+    return <ListGroup>{completedReplays}</ListGroup>
   }
 
   displayReplays() {
     var that = this;
     jquery.ajax({
-      // TODO: Add route for current replays
       url: window.location.href + 'replays/list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
       var resultList = that.getReplays(data)
-      that.setState({ activeReplayList: resultList })
+      that.setState({ completedReplayList: resultList })
     })
   }
 
@@ -228,8 +234,11 @@ class Replay extends React.Component {
           Start Replay
         </Button>
         <hr />
-        <h4 style={{ marginLeft: '20px' }}>{this.state.replay}</h4>
-        <div>{this.displayReplays()}</div>
+        <div>
+          <h4 style={{ marginLeft: '20px' }}>Completed Replays</h4>
+          <br />
+          <div>{this.state.completedReplayList}</div>
+        </div>
       </div>
     )
   }
