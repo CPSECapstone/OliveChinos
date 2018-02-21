@@ -192,6 +192,11 @@ def replay():
         "startTime": start_time
     })
 
+@application.route("/replay/list", methods=["GET"])
+def get_all_replays():
+  capture_replays = get_capture_replay_dict(credentials)    
+  return jsonify(capture_replays)
+
 @application.route("/analytics", methods=["GET"])
 def analytics():
     #analyticsNumber = request.args.get('id')
