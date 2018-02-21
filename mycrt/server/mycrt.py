@@ -89,7 +89,7 @@ def captureList():
         abort(400)
     if verify_login(pubKey, privateKey):
         #capture_names_list = get_capture_list(credentials)
-        capture_list = get_all_capture_details()
+        capture_list = get_all_ongoing_capture_details()
         #capture_list = [get_capture_details(name) for name in capture_names_list]
 
         return jsonify({
