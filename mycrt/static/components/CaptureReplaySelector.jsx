@@ -1,40 +1,15 @@
-import React, { Component } from 'react'
-import Graph from './Graph'
-import alasql from 'alasql'
-require('../styles/graphstyles.css')
-import { connect } from 'react-redux'
+import React, { Component } from 'react';
+import Graph from './Graph';
+import alasql from 'alasql';
+require('../styles/graphstyles.css');
+import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import {
-  setDataPointsForGraph,
-  setValuesForGraph,
-  setNumLinesForGraph,
-  setBooleansForGraph,
-  setReplayCaptureNamesForGraph
-} from '../actions'
+import { setDataPointsForGraph, setValuesForGraph, setNumLinesForGraph, setBooleansForGraph, setReplayCaptureNamesForGraph } from '../actions'
 
 // var Loader = require('react-loader');
 
-var selectedColor = '#ADD8E6'
+var selectedColor = "#ADD8E6";
 
-<<<<<<< HEAD
-class GraphContainer extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      //used to be graphData, currently selected replay/captures:
-      selectedReplayCaptureNames: [],
-      //all unique names of replay captures that user can choose from
-      totalReplayCaptures: this.props.totalReplayCaptures,
-      //array of booleans for each replay/capture option: true if selected and false if not selected
-      rcBooleans: this.props.rcBooleans,
-      //Final JSON object to be sent to Graph component
-      listOfTotalPointsForGraph: [],
-      //List of x values for a specified metric
-      valuesForGraph: [],
-      //number of current lines on graph
-      numLinesForGraphing: 0,
-      currUniqueNames: []
-=======
 class CaptureReplaySelector extends React.Component {
     constructor(props) {
         super(props);
@@ -50,40 +25,20 @@ class CaptureReplaySelector extends React.Component {
           //number of current lines on graph
           numLinesForGraphing: 0,
           currUniqueNames: []
-        };    
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
+        };
     }
-  }
 
-  //helper function to see if a list contains an object
-  contains(obj, l) {
-    var i = l.length
-    while (i--) {
-      if (l[i] === obj) {
-        return true
-      }
+    //helper function to see if a list contains an object
+    contains(obj, l) {
+        var i = l.length;
+        while (i--) {
+            if (l[i] === obj) {
+                return true;
+            }
+        }
+        return false;
     }
-<<<<<<< HEAD
-    return false
-  }
 
-  //this is a helper function to change the background color of the metric
-  //that has been selected for the user to see
-  getbackgroundColor(uniqueName) {
-    let captureReplaysSelected = []
-    for (let i = 0; i < this.props.booleansForGraph.length; i++) {
-      if (this.props.booleansForGraph[i]) {
-        // let totalNames = this.props.replayCaptureNamesForGraph;
-        let totalNames = this.props.totalReplayCaptures
-        captureReplaysSelected.push(totalNames[i])
-      }
-    }
-    if (this.contains(uniqueName, captureReplaysSelected)) {
-      return selectedColor
-    } else {
-      return 'white'
-=======
-  
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
@@ -99,29 +54,8 @@ class CaptureReplaySelector extends React.Component {
         } else {
             return "white";
         }
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
     }
-  }
 
-<<<<<<< HEAD
-  //renders all of the table rows that hold the values for all capture and replay options to graph
-  getReplayCapturesWithData() {
-    if (this.props.totalReplayCaptures != false) {
-      let replayCaptureOptions = this.props.totalReplayCaptures
-      return replayCaptureOptions.map(uniqueName => (
-        <tr
-          key={uniqueName}
-          onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}
-        >
-          <td
-            style={{ backgroundColor: this.getbackgroundColor(uniqueName) }}
-            key={uniqueName}
-          >
-            {uniqueName}
-          </td>
-        </tr>
-      ))
-=======
     //renders all of the table rows that hold the values for all capture and replay options to graph
     getReplayCapturesWithData() {
         if(this.props.totalReplayCaptures.length == 0) {
@@ -136,7 +70,7 @@ class CaptureReplaySelector extends React.Component {
             return (
                 replayCaptureOptions.map(uniqueName => (
                     <tr key={uniqueName} onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
-                    <td 
+                    <td
                     style={{backgroundColor: this.getbackgroundColor(uniqueName)}}
                     key={uniqueName}>
                     {uniqueName}
@@ -146,7 +80,7 @@ class CaptureReplaySelector extends React.Component {
             );
         }
         }
-    
+
     //callback function for onclick of something to graph or not graph
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
@@ -158,7 +92,7 @@ class CaptureReplaySelector extends React.Component {
             for(let i = 0; i < this.props.booleansForGraph.length; i++) {
                 if(totalNameOptions[i] == uniqueName) {
                     newBooleans[i] = !(newBooleans[i])
-                    
+
                 }
             }
             let dataPoints = this.props.dataPointsForGraph
@@ -170,42 +104,8 @@ class CaptureReplaySelector extends React.Component {
         else {
             alert('Please select metric type')
         }
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
     }
-  }
 
-<<<<<<< HEAD
-  //callback function for onclick of something to graph or not graph
-  //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
-  //the number of lines, and the names for graph in the redux state
-  setReplayCaptureAsTrueFalse(uniqueName, e) {
-    if (this.props.metricForGraph != false) {
-      let newBooleans = this.props.booleansForGraph
-      let totalNameOptions = this.props.totalReplayCaptures
-      let addOrSubtractLine = 0
-      for (let i = 0; i < this.props.booleansForGraph.length; i++) {
-        if (totalNameOptions[i] == uniqueName) {
-          newBooleans[i] = !newBooleans[i]
-        }
-      }
-      let dataPoints = this.props.dataPointsForGraph
-      if (dataPoints == undefined) {
-        dataPoints = false
-      }
-      this.props.dispatch(
-        setBooleansForGraph(
-          newBooleans,
-          this.props.totalReplayCaptures,
-          this.props.metricForGraph,
-          this.props.numLinesForGraph,
-          this.props.analyticsForGraph,
-          dataPoints,
-          uniqueName,
-        )
-      )
-    } else {
-      alert('Please select metric type')
-=======
     render() {
         return(
             <tbody style={{overflowY: 'scroll'}}>
@@ -213,29 +113,11 @@ class CaptureReplaySelector extends React.Component {
                 {this.getReplayCapturesWithData()}
             </tbody>
         );
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
     }
-  }
 
-  render() {
-    return <tbody>{this.getReplayCapturesWithData()}</tbody>
-  }
 }
 
 const mapStateToProps = state => ({
-<<<<<<< HEAD
-  dataPointsForGraph: state.dataPointsForGraph,
-  valuesForGraph: state.valuesForGraph,
-  metricForGraph: state.metricForGraph,
-  numLinesForGraph: state.numLinesForGraph,
-  booleansForGraph: state.booleansForGraph,
-  replayCaptureNamesForGraph: state.replayCaptureNamesForGraph,
-  analyticsForGraph: state.analyticsForGraph,
-  funnyTest: state.setReplayCaptureAsTrueFalse
-})
-
-export default connect(mapStateToProps)(GraphContainer)
-=======
     dataPointsForGraph: state.dataPointsForGraph,
     valuesForGraph: state.valuesForGraph,
     metricForGraph: state.metricForGraph,
@@ -245,6 +127,5 @@ export default connect(mapStateToProps)(GraphContainer)
     analyticsForGraph: state.analyticsForGraph,
     currentCaptureForGraph: state.currentCaptureForGraph
   })
-  
+
   export default connect(mapStateToProps)(CaptureReplaySelector)
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9

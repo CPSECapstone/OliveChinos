@@ -18,14 +18,10 @@ import {
   SET_BOOLEANS_FOR_GRAPH,
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
-<<<<<<< HEAD
-  SET_PREVIOUS_METRC
-=======
   SET_CAPTURE_NAME_FOR_GRAPH
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
 } from '../actions/constants'
 
-import alasql from 'alasql'
+import alasql from 'alasql';
 
 let initialState = {
   name: '',
@@ -44,19 +40,15 @@ let initialState = {
   booleansForGraph: false,
   replayCaptureNamesForGraph: false,
   analyticsForGraph: false,
-<<<<<<< HEAD
-  totalNames: false
-=======
   totalNames: false,
   currentCaptureForGraph: 'Capture Options'
-  
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
+
 }
 
 function getNumLines(boolArray) {
-  let numLines = 0
-  for (let i = 0; i < boolArray.length; i++) {
-    if (boolArray[i]) {
+  let numLines = 0;
+  for(let i = 0; i < boolArray.length; i++) {
+    if(boolArray[i]) {
       numLines++
     }
   }
@@ -67,61 +59,18 @@ function getNumLines(boolArray) {
 //to be graphed or to not be graphed, this function will return the list of datavalues
 //to put on the graph in their formatted way for the graph, and then return the number of lines
 //as well as the total names, boolean array and total names
-<<<<<<< HEAD
-function getAssignments(
-  booleanArray,
-  totalNames,
-  metric,
-  numLines,
-  analytics,
-  dataPoints,
-  uniqueName
-) {
-=======
 function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
   let allAssignments = {}
-  if (metric != false && uniqueName != false && analytics != undefined) {
+  if(metric != false && uniqueName != false && analytics != undefined) {
     let newLinesToGraph = []
-    for (let i = 0; i < booleanArray.length; i++) {
-      if (booleanArray[i]) {
-        newLinesToGraph.push(totalNames[i])
-      }
+    for(let i = 0; i < booleanArray.length; i++) {
+        if(booleanArray[i]) {
+            newLinesToGraph.push(totalNames[i])
+        }
     }
-
-    //MetricSelector --> Dispatch Action and send in the previous metric and the new metric, and if the two metrics dont equal, then you wanna regraph
-    //Recalculate all the x and y values
-    //STUFF OFR YENG TO DO NEXT WEEK
-
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
     let lineNum = getNumLines(booleanArray)
-<<<<<<< HEAD
-    allAssignments.numLinesForGraph = lineNum
-    allAssignments.totalNames = totalNames
-    if (analytics != false) {
-      let totalNumberOfOptionsToChooseFrom = Object.keys(
-        analytics['test_folder']
-      ).length
-      if (lineNum <= totalNumberOfOptionsToChooseFrom && lineNum > 0) {
-        allAssignments.dataPointsForGraph = getSpecifiedMetricData(
-          booleanArray,
-          totalNames,
-          metric,
-          numLines,
-          analytics,
-          dataPoints,
-          uniqueName
-        )
-      }
-    }
-  } else {
-    allAssignments.booleanArrayForGraph = booleanArray
-    allAssignments.replayCaptureNamesForGraph = false
-    allAssignments.dataPointsForGraph = false
-    allAssignments.numLinesForGraph = 0
-    allAssignments.totalNames = totalNames
-=======
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
         if(analytics != false) {
@@ -137,45 +86,10 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
     allAssignments.dataPointsForGraph = false;
     allAssignments.numLinesForGraph = 0;
     allAssignments.totalNames = totalNames;
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
   }
   return allAssignments
 }
 
-<<<<<<< HEAD
-function getSpecifiedMetricData(
-  booleanArray,
-  totalNames,
-  metric,
-  numLines,
-  analytics,
-  dataPoints,
-  uniqueName
-) {
-  let currMetric = metric
-  let listOfAnalytics = analytics['test_folder']
-  if (booleanArray != false) {
-    for (let outer = 0; outer < booleanArray.length; outer++) {
-      let pointsValues = []
-      if (booleanArray[outer]) {
-        let currIndex = `${uniqueName}.replay`
-        for (
-          let i = 0;
-          i < listOfAnalytics[currIndex][currMetric].length;
-          i++
-        ) {
-          let currPoint = { seconds: `${i}` }
-          currPoint[uniqueName] =
-            listOfAnalytics[currIndex][currMetric][i].Average
-          pointsValues.push(currPoint)
-        }
-        let formattedPoints = updateFinalJSONObject(
-          pointsValues,
-          numLines,
-          dataPoints
-        )
-        return formattedPoints
-=======
 function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let currMetric = metric;
   let listOfAnalytics = analytics[captureName];
@@ -191,50 +105,11 @@ function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, anal
           }
           let formattedPoints = updateFinalJSONObject(pointsValues, numLines, dataPoints)
           return formattedPoints
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
       }
     }
   }
 }
 
-<<<<<<< HEAD
-function updateFinalJSONObject(newJsonElement, numLines, dataPoints) {
-  if (numLines > 0) {
-    let oldJsonElement = dataPoints
-    alasql.fn.extend = alasql.utils.extend
-    var res = alasql(
-      'SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds',
-      [newJsonElement, oldJsonElement]
-    )
-    return res
-  } else return newJsonElement
-}
-
-function getBoolArray(dataArray) {
-  if (dataArray != false) {
-    let count = Object.keys(dataArray['text_folder']).length
-    let tmp = []
-    for (let i = 0; i < count; i++) {
-      tmp.push(false)
-    }
-    return tmp
-  }
-  return false
-}
-
-function reducer(state = initialState, action) {
-  switch (action.type) {
-    case SET_BOOLEANS_FOR_GRAPH:
-      let allAssignments = getAssignments(
-        action.booleanArray,
-        action.totalNameArray,
-        action.metric,
-        action.numLines,
-        action.analytics,
-        action.dataPoints,
-        action.uniqueName
-      )
-=======
 function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
   if(numLines > 0) {
       let oldJsonElement = dataPoints;
@@ -250,18 +125,12 @@ function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
     let allAssignments = getAssignments(action.booleanArray, action.totalNameArray , action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
->>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
       return Object.assign({}, state, {
         booleansForGraph: allAssignments.booleanArrayForGraph,
         replayCaptureNamesForGraph: allAssignments.replayCaptureNamesForGraph,
         dataPointsForGraph: allAssignments.dataPointsForGraph,
         numLinesForGraph: allAssignments.numLinesForGraph,
         totalNames: allAssignments.totalNames
-      })
-
-    case SET_PREVIOUS_METRC:
-      return Object.assing({}, state, {
-        callFunction: action.key
       })
     case SET_PUBLIC_KEY:
       return Object.assign({}, state, {
@@ -321,7 +190,7 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         analyticsForGraph: action.key
       })
-    
+
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {
         currentCaptureForGraph: action.key
