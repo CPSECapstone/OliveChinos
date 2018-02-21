@@ -57,6 +57,7 @@ class MetricSelector extends React.Component {
     }
   }
 
+<<<<<<< HEAD
   render() {
     return (
       <table
@@ -90,6 +91,21 @@ class MetricSelector extends React.Component {
                   CPU <br />Utilization
                 </strong>
               </div>
+=======
+    render() {
+        return(
+            <table className="table table-hover" style={{borderLeft:'1px solid black'}}>
+            <thead className="thead-dark">
+            <tr>
+                <th scope="col" colSpan="4">Cloudwatch Metrics</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr style={{cursor:'pointer'}}>
+            <td style={{width:'25%', textAlign:'center', backgroundColor: this.getbackgroundColor("CPUUtilization")}} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
+                <img src="https://cdn4.iconfinder.com/data/icons/computer-hardware-line-icons-1/48/08-512.png" width="50px" height="50px"/>
+                <div><strong>CPU <br/>Utilization</strong></div>
+>>>>>>> 2e1fd130dac83b710d849f2eeeb3dcefa17330a9
             </td>
             <td
               style={{
