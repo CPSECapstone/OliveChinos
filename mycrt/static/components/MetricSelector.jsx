@@ -46,7 +46,7 @@ class MetricSelector extends React.Component {
             </tr>
             </thead>
             <tbody>
-            <tr>
+            <tr style={{cursor:'pointer'}}>
             <td style={{width:'25%', textAlign:'center', backgroundColor: this.getbackgroundColor("CPUUtilization")}} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
                 <img src="https://cdn4.iconfinder.com/data/icons/computer-hardware-line-icons-1/48/08-512.png" width="50px" height="50px"/>
                 <div><strong>CPU <br/>Utilization</strong></div>
@@ -79,6 +79,6 @@ const mapStateToProps = state => ({
     analyticsForGraph: state.analyticsForGraph,
     booleansForGraph: state.booleansForGraph
   })
-  
+
   export default connect(mapStateToProps)(MetricSelector)
   
