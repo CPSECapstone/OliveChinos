@@ -36,11 +36,4 @@ def retrieve_analytics(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos",
   new_byte_log = bucket_obj["Body"].read()
   metrics = pickle.loads(new_byte_log)
 
-  print ("\n\n\n\n", file=sys.stderr)
-
-  
-
-  print (metrics, file=sys.stderr)
-
-
   return metrics
