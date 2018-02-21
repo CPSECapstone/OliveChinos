@@ -118,6 +118,7 @@ def start_capture(capture_name, db_id):
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''INSERT INTO Captures (db, name, start_time, end_time) 
                VALUES ('{0}', '{1}', '{2}', NULL)'''.format(db_id, capture_name, start_time)
+
   print(query, file=sys.stderr)
   execute_utility_query(query)
   print (start_time, file=sys.stderr)

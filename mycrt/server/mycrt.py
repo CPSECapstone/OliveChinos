@@ -3,6 +3,7 @@ import sys
 import configparser
 import json
 from flask import Flask, render_template, request, abort, jsonify
+from multiprocessing import Process
 
 try:
     from .utility.capture import *
@@ -121,14 +122,27 @@ def replayListForSpecificCapture():
 def capture_start():
     data = request.get_json()
     db_name = data['db'] 
-    start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
+
+    now = convertDatetimeToString(datetime.utcnow())
+    start_time = data.get('startTime', now)
     
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(db_name, start_time))
     
     end_time = data.get('endTime', 'No end time..')
     
-    start_capture(capture_name, db_name)
+    capture_process = Process(target=start_capture, args=(capture_name, db_name))
+
+    if start_time==now: 
+        #acquire lock? 
+        capture_process.start()
+        capture_process.join() #make sure parent waits
+
+    else: 
+        #schedule capture_process
+        #schedule end_capture_process
+        schedule_capture(credentials, capture_name, db_name, start_time, end_time)
+    
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -144,6 +158,8 @@ def capture_end():
     capture_name = data['captureName']
     end_time = convertDatetimeToString(datetime.utcnow())
     
+    #if capture was scheduled, make sure to end process
+    #start up a new process for end capture rather than just running function
     capture_details, start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
@@ -204,3 +220,5 @@ def analytics():
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
+    while True: 
+        capture_scheduler.run()
