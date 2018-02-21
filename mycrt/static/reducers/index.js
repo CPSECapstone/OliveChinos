@@ -42,7 +42,7 @@ let initialState = {
   analyticsForGraph: false,
   totalNames: false,
   currentCaptureForGraph: 'Capture Options'
-  
+
 }
 
 function getNumLines(boolArray) {
@@ -190,7 +190,7 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         analyticsForGraph: action.key
       })
-    
+
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {
         currentCaptureForGraph: action.key

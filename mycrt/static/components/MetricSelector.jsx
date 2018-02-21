@@ -79,6 +79,6 @@ const mapStateToProps = state => ({
     analyticsForGraph: state.analyticsForGraph,
     booleansForGraph: state.booleansForGraph
   })
-  
+
   export default connect(mapStateToProps)(MetricSelector)
   

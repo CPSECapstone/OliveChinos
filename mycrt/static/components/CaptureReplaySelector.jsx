@@ -25,7 +25,7 @@ class CaptureReplaySelector extends React.Component {
           //number of current lines on graph
           numLinesForGraphing: 0,
           currUniqueNames: []
-        };    
+        };
     }
 
     //helper function to see if a list contains an object
@@ -38,7 +38,7 @@ class CaptureReplaySelector extends React.Component {
         }
         return false;
     }
-  
+
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
@@ -70,7 +70,7 @@ class CaptureReplaySelector extends React.Component {
             return (
                 replayCaptureOptions.map(uniqueName => (
                     <tr key={uniqueName} onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
-                    <td 
+                    <td
                     style={{backgroundColor: this.getbackgroundColor(uniqueName)}}
                     key={uniqueName}>
                     {uniqueName}
@@ -80,7 +80,7 @@ class CaptureReplaySelector extends React.Component {
             );
         }
         }
-    
+
     //callback function for onclick of something to graph or not graph
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
@@ -92,7 +92,7 @@ class CaptureReplaySelector extends React.Component {
             for(let i = 0; i < this.props.booleansForGraph.length; i++) {
                 if(totalNameOptions[i] == uniqueName) {
                     newBooleans[i] = !(newBooleans[i])
-                    
+
                 }
             }
             let dataPoints = this.props.dataPointsForGraph
@@ -127,5 +127,5 @@ const mapStateToProps = state => ({
     analyticsForGraph: state.analyticsForGraph,
     currentCaptureForGraph: state.currentCaptureForGraph
   })
-  
+
   export default connect(mapStateToProps)(CaptureReplaySelector)
