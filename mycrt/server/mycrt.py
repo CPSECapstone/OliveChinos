@@ -176,6 +176,11 @@ def query_execute():
                 "query" : query
             })
 
+@application.route("/capture/completed_list", methods=["GET"])
+def get_all_captures():
+  captures = get_capture_list(credentials)    
+  return jsonify(captures)
+
 @application.route("/replay", methods=["POST"])
 def replay():
     data = request.get_json()
@@ -183,6 +188,10 @@ def replay():
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
 
     replay_name = data.get('replayName', createReplayName(db_name, start_time))
+    if replay_name == "":
+        replay_name = createReplayName(db_name, start_time)
+
+
     capture_name = data['captureName']
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
@@ -199,7 +208,7 @@ def replay():
 
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
-  capture_replays = get_capture_replay_dict(credentials)    
+  capture_replays = get_capture_replay_list(credentials)    
   return jsonify(capture_replays)
 
 @application.route("/analytics", methods=["GET"])
