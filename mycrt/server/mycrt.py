@@ -122,10 +122,15 @@ def capture_start():
     data = request.get_json()
     db_name = data['db'] 
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
-    
+       
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(db_name, start_time))
-    
+    if capture_name == "":
+      capture_name = createCaptureName(db_name, start_time)
+
+    if check_if_capture_name_is_unique(capture_name):
+      abort(400)
+
     end_time = data.get('endTime', 'No end time..')
     
     start_capture(capture_name, db_name)
