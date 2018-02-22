@@ -89,7 +89,7 @@ def captureList():
         abort(400)
     if verify_login(pubKey, privateKey):
         #capture_names_list = get_capture_list(credentials)
-        capture_list = get_all_capture_details()
+        capture_list = get_all_ongoing_capture_details()
         #capture_list = [get_capture_details(name) for name in capture_names_list]
 
         return jsonify({
@@ -182,7 +182,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db)
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -191,6 +191,11 @@ def replay():
         "restoreDb": restore_db,
         "startTime": start_time
     })
+
+@application.route("/replay/list", methods=["GET"])
+def get_all_replays():
+  capture_replays = get_capture_replay_list(credentials)    
+  return jsonify(capture_replays)
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
