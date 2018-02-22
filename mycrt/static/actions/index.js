@@ -87,5 +87,5 @@ export function setAnalyticsForGraph(key) {
 }
 
 export function setCaptureNameForGraph(key) {
-  return { type: SET_CAPTURE_NAME_FOR_GRAPH, key }
+  return {type: SET_CAPTURE_NAME_FOR_GRAPH, key}
 }

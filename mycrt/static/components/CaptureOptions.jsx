@@ -27,7 +27,7 @@ class CaptureOptions extends React.Component {
           //number of current lines on graph
           numLinesForGraphing: 0,
           currUniqueNames: []
-        };    
+        };
     }
 
     //helper function to see if a list contains an object
@@ -48,7 +48,7 @@ class CaptureOptions extends React.Component {
             return (
                 replayCaptureOptions.map(uniqueName => (
                     <tr id="captureOption" key={uniqueName} onClick={this.setCaptureName.bind(this, uniqueName)}>
-                    <td 
+                    <td
                     key={uniqueName}>
                     {uniqueName}
                     </td>
@@ -57,7 +57,7 @@ class CaptureOptions extends React.Component {
             );
         }
         }
-    
+
     //callback function for onclick of something to graph or not graph
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
@@ -90,5 +90,5 @@ const mapStateToProps = state => ({
     replayCaptureNamesForGraph: state.replayCaptureNamesForGraph,
     analyticsForGraph: state.analyticsForGraph
   })
-  
+
   export default connect(mapStateToProps)(CaptureOptions)
