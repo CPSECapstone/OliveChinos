@@ -56,6 +56,7 @@ class Capture extends React.Component {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
     var postData;
+    console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
       postData = {
         "db": this.state.captureDBInstance,
@@ -149,7 +150,7 @@ class Capture extends React.Component {
   }
 
   handleModeChange(event) {
-    this.setState({ captureMode: event.target.value })
+    this.setState({ captureMode: event })
   }
 
   createDBInstancesSelect(data) {

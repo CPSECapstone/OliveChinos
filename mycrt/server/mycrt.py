@@ -128,7 +128,7 @@ def capture_start():
     if capture_name == "":
       capture_name = createCaptureName(db_name, start_time)
 
-    if check_if_capture_name_is_unique(capture_name):
+    if not check_if_capture_name_is_unique(capture_name):
       abort(400)
 
     end_time = data.get('endTime', 'No end time..')
