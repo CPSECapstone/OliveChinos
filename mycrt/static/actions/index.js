@@ -7,6 +7,7 @@ import {
   CHANGE_KEYS,
   SET_AUTH,
   START_CAPTURE,
+  SET_CAPTURE_COUNT,
   STOP_CAPTURE,
   SET_REPLAY,
   START_NEW_REPLAY,
@@ -22,13 +23,13 @@ import {
 } from './constants'
 
 export function setReplayCaptureNamesForGraph(key) {
-  return {type: SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH, key}
+  return { type: SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH, key }
 }
 export function setBooleansForGraph(booleans, totalNames, metric1, numLines1, analytics1, dataPoints1, uniqueName1, captureName1) {
-  return {type: SET_BOOLEANS_FOR_GRAPH, booleanArray: booleans, totalNameArray: totalNames, metric: metric1, numLines: numLines1, analytics: analytics1, dataPoints: dataPoints1, uniqueName: uniqueName1, captureName: captureName1}
+  return { type: SET_BOOLEANS_FOR_GRAPH, booleanArray: booleans, totalNameArray: totalNames, metric: metric1, numLines: numLines1, analytics: analytics1, dataPoints: dataPoints1, uniqueName: uniqueName1, captureName: captureName1 }
 }
 export function setNumLinesForGraph(key) {
-  return {type: SET_NUM_LINES_FOR_GRAPH, key}
+  return { type: SET_NUM_LINES_FOR_GRAPH, key }
 }
 export function setPublicKey(key) {
   return { type: SET_PUBLIC_KEY, key }
@@ -50,6 +51,10 @@ export function startCapture() {
   return { type: START_CAPTURE }
 }
 
+export function setCaptureCount(count) {
+  return { type: SET_CAPTURE_COUNT, count }
+}
+
 export function stopCapture() {
   return { type: STOP_CAPTURE }
 }
@@ -66,19 +71,19 @@ export function stopReplay() {
 }
 
 export function setDataPointsForGraph(key) {
-  return {type: SET_DATA_POINTS_FOR_GRAPH, key}
+  return { type: SET_DATA_POINTS_FOR_GRAPH, key }
 }
 
 export function setValuesForGraph(key) {
-  return {type: SET_VALUES_FOR_GRAPH, key}
+  return { type: SET_VALUES_FOR_GRAPH, key }
 }
 
 export function setMetricForGraph(key) {
-  return {type: SET_METRIC_FOR_GRAPH, key}
+  return { type: SET_METRIC_FOR_GRAPH, key }
 }
 
 export function setAnalyticsForGraph(key) {
-  return {type: SET_ANALYTICS_FOR_GRAPH, key}
+  return { type: SET_ANALYTICS_FOR_GRAPH, key }
 }
 
 export function setCaptureNameForGraph(key) {

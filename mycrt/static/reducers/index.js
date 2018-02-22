@@ -7,6 +7,7 @@ import {
   CHANGE_KEYS,
   SET_AUTH,
   START_CAPTURE,
+  SET_CAPTURE_COUNT,
   STOP_CAPTURE,
   SET_REPLAY,
   START_NEW_REPLAY,
@@ -47,8 +48,8 @@ let initialState = {
 
 function getNumLines(boolArray) {
   let numLines = 0;
-  for(let i = 0; i < boolArray.length; i++) {
-    if(boolArray[i]) {
+  for (let i = 0; i < boolArray.length; i++) {
+    if (boolArray[i]) {
       numLines++
     }
   }
@@ -61,24 +62,24 @@ function getNumLines(boolArray) {
 //as well as the total names, boolean array and total names
 function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let allAssignments = {}
-  if(metric != false && uniqueName != false && analytics != undefined) {
+  if (metric != false && uniqueName != false && analytics != undefined) {
     let newLinesToGraph = []
-    for(let i = 0; i < booleanArray.length; i++) {
-        if(booleanArray[i]) {
-            newLinesToGraph.push(totalNames[i])
-        }
+    for (let i = 0; i < booleanArray.length; i++) {
+      if (booleanArray[i]) {
+        newLinesToGraph.push(totalNames[i])
+      }
     }
     allAssignments.booleanArrayForGraph = booleanArray
     allAssignments.replayCaptureNamesForGraph = newLinesToGraph
     let lineNum = getNumLines(booleanArray)
     allAssignments.numLinesForGraph = lineNum;
     allAssignments.totalNames = totalNames;
-        if(analytics != false) {
-            let totalNumberOfOptionsToChooseFrom = Object.keys(analytics[captureName]).length
-            if((lineNum <= totalNumberOfOptionsToChooseFrom) && (lineNum > 0)) {
-                allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName)
-            }
-        }
+    if (analytics != false) {
+      let totalNumberOfOptionsToChooseFrom = Object.keys(analytics[captureName]).length
+      if ((lineNum <= totalNumberOfOptionsToChooseFrom) && (lineNum > 0)) {
+        allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName)
+      }
+    }
   }
   else {
     allAssignments.booleanArrayForGraph = booleanArray;
@@ -93,38 +94,42 @@ function getAssignments(booleanArray, totalNames, metric, numLines, analytics, d
 function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
   let currMetric = metric;
   let listOfAnalytics = analytics[captureName];
-  if(booleanArray != false) {
+  if (booleanArray != false) {
     for (let outer = 0; outer < booleanArray.length; outer++) {
       let pointsValues = []
-      if(booleanArray[outer]) {
-          let currIndex = `${uniqueName}`
-          for(let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
-              let currPoint = {seconds: `${i}`}
-              currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
-              pointsValues.push(currPoint)
-          }
-          let formattedPoints = updateFinalJSONObject(pointsValues, numLines, dataPoints)
-          return formattedPoints
+      if (booleanArray[outer]) {
+        let currIndex = `${uniqueName}`
+        for (let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
+          let currPoint = { seconds: `${i}` }
+          currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
+          pointsValues.push(currPoint)
+        }
+        let formattedPoints = updateFinalJSONObject(pointsValues, numLines, dataPoints)
+        return formattedPoints
       }
     }
   }
 }
 
 function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
-  if(numLines > 0) {
-      let oldJsonElement = dataPoints;
-      alasql.fn.extend = alasql.utils.extend;
-      var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
-      return res
+  if (numLines > 0) {
+    let oldJsonElement = dataPoints;
+    alasql.fn.extend = alasql.utils.extend;
+    var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
+    return res
   }
   else
-      return newJsonElement
+    return newJsonElement
+}
+
+function setCaptureCount(count) {
+  return
 }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
-    let allAssignments = getAssignments(action.booleanArray, action.totalNameArray , action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
+      let allAssignments = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
       return Object.assign({}, state, {
         booleansForGraph: allAssignments.booleanArrayForGraph,
         replayCaptureNamesForGraph: allAssignments.replayCaptureNamesForGraph,
@@ -155,6 +160,11 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         activeCaptures: state.activeCaptures + 1,
         capture: 'Capture Active'
+      })
+
+    case SET_CAPTURE_COUNT:
+      return Object.assign({}, state, {
+        activeCaptures: action.count
       })
 
     case STOP_CAPTURE:

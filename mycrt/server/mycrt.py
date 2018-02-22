@@ -89,7 +89,7 @@ def captureList():
         abort(400)
     if verify_login(pubKey, privateKey):
         #capture_names_list = get_capture_list(credentials)
-        capture_list = get_all_capture_details()
+        capture_list = get_all_ongoing_capture_details()
         #capture_list = [get_capture_details(name) for name in capture_names_list]
 
         return jsonify({
@@ -122,10 +122,15 @@ def capture_start():
     data = request.get_json()
     db_name = data['db'] 
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
-    
+       
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(db_name, start_time))
-    
+    if capture_name == "":
+      capture_name = createCaptureName(db_name, start_time)
+
+    if not check_if_capture_name_is_unique(capture_name):
+      abort(400)
+
     end_time = data.get('endTime', 'No end time..')
     
     start_capture(capture_name, db_name)
@@ -182,7 +187,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db)
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -191,6 +196,11 @@ def replay():
         "restoreDb": restore_db,
         "startTime": start_time
     })
+
+@application.route("/replay/list", methods=["GET"])
+def get_all_replays():
+  capture_replays = get_capture_replay_dict(credentials)    
+  return jsonify(capture_replays)
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
