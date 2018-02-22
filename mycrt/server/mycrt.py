@@ -194,7 +194,7 @@ def replay():
 
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
-  capture_replays = get_capture_replay_dict(credentials)    
+  capture_replays = get_capture_replay_list(credentials)    
   return jsonify(capture_replays)
 
 @application.route("/analytics", methods=["GET"])

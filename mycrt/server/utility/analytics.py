@@ -16,13 +16,15 @@ def get_replays_for_capture(credentials, capture_folder):
   replay_list = [key for key in general_capture_list if ".replay" == key[-len(".replay"):]] 
   return replay_list
 
-def get_capture_replay_dict(credentials):
-  ret_dict = {}
+def get_capture_replay_list(credentials):
+  ret_list = []
   capture_list = get_capture_list(credentials)
   for capture in capture_list:
-    ret_dict[capture] = [replay.replace(capture, "").replace("/", "") for replay in get_replays_for_capture(credentials, capture)]
+    replays = [replay.replace(capture, "").replace("/", "") for replay in get_replays_for_capture(credentials, capture)]
+    if len(replays) > 0:
+      ret_list.append((capture, replays))
 
-  return ret_dict
+  return ret_list
 
 def get_analytics(credentials):
   analytics = "Pretend this is some analytics Data"
