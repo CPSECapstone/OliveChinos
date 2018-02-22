@@ -7,7 +7,8 @@ import '../styles/capturestyles.css'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { startCapture, stopCapture } from '../actions'
+import { setCaptureCount, startCapture, stopCapture } from '../actions'
+
 import CaptureDetail from './CaptureDetail'
 
 /* Use this element as a reference when creating components*/
@@ -29,7 +30,7 @@ class Capture extends React.Component {
       activeCaptureObjects: [],
       activeCaptureList: [null],
       startTime: new Date(),
-      endTime: null,
+      endTime: new Date(),
       captureMode: 'interactive'
     }
 
@@ -55,10 +56,10 @@ class Capture extends React.Component {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
     var postData;
-    if (this.state.captureMode == 'schedule') {
+    if (this.state.captureMode === 'schedule') {
       postData = {
         "db": this.state.captureDBInstance,
-        //"captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
+        "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "startTime": this.state.startTime,
         "endTime": this.state.endTime
       }
@@ -66,7 +67,7 @@ class Capture extends React.Component {
     else {
       postData = {
         "db": this.state.captureDBInstance,
-        //"captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
+        "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
       }
     }
     var that = this
@@ -83,9 +84,9 @@ class Capture extends React.Component {
   }
 
   stopCapture(captureName, captureDB, index) {
-    console.log("Capture stopped: ", captureName, " at index ", index)
-    this.setState({ capture: 'Capture Stopped' })
-    console.log('capture ended: ', captureName)
+    //console.log("Capture stopped: ", captureName, " at index ", index)
+    //this.setState({ capture: 'Capture Stopped' })
+    //console.log('capture ended: ', captureName)
     this.props.dispatch(stopCapture())
     var postData = {
       "db": captureDB,
@@ -99,7 +100,7 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      console.log(data)
+      //console.log(data)
       that.displayCaptures()
     })
 
@@ -148,7 +149,7 @@ class Capture extends React.Component {
   }
 
   handleModeChange(event) {
-    this.setState({ captureMode: event })
+    this.setState({ captureMode: event.target.value })
   }
 
   createDBInstancesSelect(data) {
@@ -232,6 +233,8 @@ class Capture extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       var resultList = that.getCaptures(data)
+      that.props.dispatch(setCaptureCount(data.captures.length))
+      //that.setState({ activeCaptures: data.captures.length })
       that.setState({ activeCaptureList: resultList })
     })
   }
@@ -268,11 +271,11 @@ class Capture extends React.Component {
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
                 value={this.state.startTime}
-                onChange={date => { this.setState({ date }) }} /></td>
+                onChange={date => { this.setState({ startTime }) }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
                   value={this.state.endTime}
-                  onChange={date => { this.setState({ date }) }} /></td></tr>
+                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>
