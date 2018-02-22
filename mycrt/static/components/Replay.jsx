@@ -29,6 +29,7 @@ class Replay extends React.Component {
 
     this.addReplay = this.addReplay.bind(this)
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
+    this.displayReplays = this.displayReplays.bind(this)
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
@@ -65,7 +66,7 @@ class Replay extends React.Component {
     var captures = data["captures"];
     let captureList = [];
     for (var i = 0; i < captures.length; i++) {
-      var instance = captures[i];
+      var instance = captures[i].captureName;
       var selectOption = (<option value={instance} key={i}>
         {instance}
       </option>)
@@ -157,23 +158,33 @@ class Replay extends React.Component {
 
   getReplays(data) {
     var completedReplays = [];
-    var current;
+    var currentTup;
+    var currentCapture;
+    var currentReplayArr;
+    var currentReplay;
     console.log("DATA\n", data)
-    for (var i = 0; i < data.replays.length; i++) {
-      current = data.replays[i]
-      console.log('replay item ', i, ": ", current.replayName)
+    // List of replays is list of tuples : Each tuple is structured (Capture, Listof Replay)
+    for (var i = 1; i < data.length; i++) {
+      currentTup = data[i]
+      currentCapture = currentTup[0]
+      currentReplayArr = currentTup[1]
+      // console.log('replay item ', i, ": ", current.replayName)
       var that = this
-      completedReplays.push((function (current, i, that) {
-        return (<ListGroupItem style={{ height: '150px' }} key={current.replayName + i}>
-          <ReplayDetail
-            className="replayDetail"
-            replayName={current.replayName}
-            replayDB={current.db}
-            replayDate={current.date}
-          //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
-          />
-        </ListGroupItem>)
-      }(current, i, that)))
+      for (var j = 0; j < currentReplayArr.length; j++) {
+        currentReplay = currentReplayArr[j]
+        completedReplays.push((function (currentReplay, i, j, that) {
+          return (<ListGroupItem style={{ height: '150px' }} key={currentReplay.replayName + i + "-" + j}>
+            <ReplayDetail
+              className="replayDetail"
+              replayCapture={currentCapture}
+              replayName={currentReplay}
+            // replayDB={currentReplay.db}
+            // replayDate={currentReplay.date}
+            //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
+            />
+          </ListGroupItem>)
+        }(currentReplay, i, j, that)))
+      }
     }
     return <ListGroup>{completedReplays}</ListGroup>
   }
@@ -181,7 +192,7 @@ class Replay extends React.Component {
   displayReplays() {
     var that = this;
     jquery.ajax({
-      url: window.location.href + 'replays/list',
+      url: window.location.href + 'replay/list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
