@@ -260,9 +260,9 @@ class Graph extends Component {
     //console.log(this.props);
     var jsonObject = Object.keys(this.props.pointsArray);
     var testArray = [];
-    console.log(this.state.reset);
+    testArray = this.props.pointsArray;
+
     if (this.state.reset == 'true') {
-      testArray = this.props.pointsArray;
     }
     else  {
     console.log(jsonObject);
