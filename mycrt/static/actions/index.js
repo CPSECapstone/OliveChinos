@@ -19,7 +19,8 @@ import {
   SET_BOOLEANS_FOR_GRAPH,
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
-  SET_CAPTURE_NAME_FOR_GRAPH
+  SET_CAPTURE_NAME_FOR_GRAPH,
+  SET_TOTAL_NAMES_FOR_GRAPH
 } from './constants'
 
 export function setReplayCaptureNamesForGraph(key) {
@@ -84,6 +85,10 @@ export function setMetricForGraph(key) {
 
 export function setAnalyticsForGraph(key) {
   return { type: SET_ANALYTICS_FOR_GRAPH, key }
+}
+
+export function setTotalNamesForGraph(key) {
+  return { type: SET_TOTAL_NAMES_FOR_GRAPH, key }
 }
 
 export function setCaptureNameForGraph(key) {

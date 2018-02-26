@@ -4,9 +4,7 @@ import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setDataPointsForGraph, setValuesForGraph, setNumLinesForGraph, setBooleansForGraph, setReplayCaptureNamesForGraph } from '../actions'
-
-// var Loader = require('react-loader');
+import { setBooleansForGraph} from '../actions'
 
 var selectedColor = "#ADD8E6";
 
@@ -14,17 +12,8 @@ class CaptureReplaySelector extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-          //used to be graphData, currently selected replay/captures:
-          selectedReplayCaptureNames: [],
-          //all unique names of replay captures that user can choose from
-          totalReplayCaptures: this.props.totalReplayCaptures,
-          //Final JSON object to be sent to Graph component
-          listOfTotalPointsForGraph: [],
-          //List of x values for a specified metric
-          valuesForGraph: [],
-          //number of current lines on graph
-          numLinesForGraphing: 0,
-          currUniqueNames: []
+        //list of the total replay names of the currently selected capture that will be displayed
+        totalReplayNames: Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph])
         };
     }
 
@@ -45,7 +34,7 @@ class CaptureReplaySelector extends React.Component {
         let captureReplaysSelected = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i]) {
-                let totalNames = this.props.totalReplayCaptures
+                let totalNames = this.state.totalReplayNames
                 captureReplaysSelected.push(totalNames[i])
             }
         }
@@ -58,15 +47,15 @@ class CaptureReplaySelector extends React.Component {
 
     //renders all of the table rows that hold the values for all capture and replay options to graph
     getReplayCapturesWithData() {
-        if(this.props.totalReplayCaptures.length == 0) {
+        if(this.state.totalReplayNames.length == 0) {
             return (
                 <tr>
                     <td>No Replays Recorded For This Capture Yet.</td>
                 </tr>
             )
         }
-        else if(this.props.totalReplayCaptures != false) {
-            let replayCaptureOptions = this.props.totalReplayCaptures;
+        else if(this.state.totalReplayNames != false) {
+            let replayCaptureOptions = this.state.totalReplayNames;
             return (
                 replayCaptureOptions.map(uniqueName => (
                     <tr key={uniqueName} onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
@@ -85,25 +74,22 @@ class CaptureReplaySelector extends React.Component {
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
     setReplayCaptureAsTrueFalse(uniqueName, e) {
-        if(this.props.metricForGraph != false) {
-            let newBooleans = this.props.booleansForGraph;
-            let totalNameOptions = this.props.totalReplayCaptures;
-            let addOrSubtractLine = 0;
-            for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-                if(totalNameOptions[i] == uniqueName) {
-                    newBooleans[i] = !(newBooleans[i])
+        let newBooleans = this.props.booleansForGraph;
+        let totalNameOptions = this.state.totalReplayNames;
+        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
+            if(totalNameOptions[i] == uniqueName) {
+                newBooleans[i] = !(newBooleans[i])
+            }
+        }
 
-                }
-            }
-            let dataPoints = this.props.dataPointsForGraph
-            if(dataPoints == undefined) {
-                dataPoints = false;
-            }
-            this.props.dispatch(setBooleansForGraph(newBooleans, this.props.totalReplayCaptures, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, dataPoints, uniqueName, this.props.currentCaptureForGraph));
+        //leaving fornow but we should fix this
+        let dataPoints = this.props.dataPointsForGraph
+        if(dataPoints == undefined) {
+            dataPoints = false;
         }
-        else {
-            alert('Please select metric type')
-        }
+
+        //fix the setBooleansForGraph function in the redux state
+        this.props.dispatch(setBooleansForGraph(newBooleans, this.state.totalReplayNames, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, dataPoints, uniqueName, this.props.currentCaptureForGraph));
     }
 
     render() {

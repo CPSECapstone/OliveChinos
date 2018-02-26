@@ -16,13 +16,13 @@ class MetricSelector extends React.Component {
     //helper function that sets the state's current metric to the one that
     //the user selected
     selectMetricForGraph(metric, e) {
-        if((this.props.metricForGraph != metric) || (this.props.metricForGraph == false)) {
-            let arrayOfFalses = []
-            for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-                arrayOfFalses.push(false)
-            }
-            this.props.dispatch(setBooleansForGraph(arrayOfFalses, this.props.totalReplayCaptures, metric, this.props.numLinesForGraph, this.props.analyticsForGraph, false, false))
-        }
+        // if((this.props.metricForGraph != metric) || (this.props.metricForGraph == false)) {
+        //     let arrayOfFalses = []
+        //     for(let i = 0; i < this.props.booleansForGraph.length; i++) {
+        //         arrayOfFalses.push(false)
+        //     }
+        //     this.props.dispatch(setBooleansForGraph(arrayOfFalses, this.props.totalReplayCaptures, metric, this.props.numLinesForGraph, this.props.analyticsForGraph, false, false))
+        // }
         this.props.dispatch(setMetricForGraph(metric));
     }
 
@@ -71,14 +71,8 @@ class MetricSelector extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    dataPointsForGraph: state.dataPointsForGraph,
-    valuesForGraph: state.valuesForGraph,
-    metricForGraph: state.metricForGraph,
-    numLinesForGraph: state.numLinesForGraph,
-    totalReplayCaptures: state.totalReplayCaptures,
-    analyticsForGraph: state.analyticsForGraph,
-    booleansForGraph: state.booleansForGraph
-  })
+    metricForGraph: state.metricForGraph
+})
 
   export default connect(mapStateToProps)(MetricSelector)
   

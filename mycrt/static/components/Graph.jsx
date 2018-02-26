@@ -16,7 +16,6 @@ import { connect } from 'react-redux'
 class Graph extends Component {
   constructor(props) {
     super(props)
-
     this.state = {
       xLabel: '',
       yLabel: '',
@@ -40,6 +39,16 @@ class Graph extends Component {
     }
   }
 
+  getValues() {
+    let values;
+    for(let i = 0; i < this.props.booleansForGraph.length; i++) {
+      if(this.props.booleansForGraph[i]) {
+        values.push(this.props.totalNames[i])
+      }
+    }
+    return values;
+  }
+
   //function to get the correct colors for the lines being graphed (feel free to change the color options in this array)
   //and return random color for each different line in the graph - max lines is 8, feel free to change that too
   getRandomColor(index) {
@@ -53,7 +62,7 @@ class Graph extends Component {
       'grey',
       'peru'
     ]
-    if (this.props.values.length < 8) {
+    if (this.getValues().length < 8) {
       return colorValues[index]
     } else {
       alert('Maximum Lines For Graph Reached')
@@ -136,14 +145,14 @@ class Graph extends Component {
       let pointsValues = []
       for (
         let i = 0;
-        i < listOfAnalytics[outer][this.props.metric].length;
+        i < listOfAnalytics[outer][this.props.metricForGraph].length;
         i++
       ) {
         let currPoint = {
           value: `${i}`,
-          metric: listOfAnalytics[outer][this.props.metric][i].Average
+          metric: listOfAnalytics[outer][this.props.metricForGraph][i].Average
         }
-        values.push(listOfAnalytics[outer][this.props.metric][i].Average)
+        values.push(listOfAnalytics[outer][this.props.metricForGraph][i].Average)
         pointsValues.push(currPoint)
       }
       listOfTotalPoints.push(pointsValues)
@@ -157,7 +166,7 @@ class Graph extends Component {
   getMin() {
     let totalValues = []
     for (let i = 0; i < this.props.pointsArray.length; i++) {
-      totalValues.push(this.props.pointsArray[i][this.props.metric])
+      totalValues.push(this.props.pointsArray[i][this.props.metricForGraph])
     }
     let dataMin = totalValues.reduce(function(a, b) {
       return Math.min(a, b)
@@ -169,7 +178,7 @@ class Graph extends Component {
   getMax() {
     let totalValues = []
     for (let i = 0; i < this.props.pointsArray.length; i++) {
-      totalValues.push(this.props.pointsArray[i][this.props.metric])
+      totalValues.push(this.props.pointsArray[i][this.props.metricForGraph])
     }
     let dataMax = totalValues.reduce(function(a, b) {
       return Math.max(a, b)
@@ -195,8 +204,6 @@ class Graph extends Component {
     }
 
     if (
-      !this.props.values ||
-      !this.props.pointsArray ||
       !this.props.booleansForGraph
     ) {
       return <div>{this.emptyGraph()}</div>
@@ -277,7 +284,7 @@ class Graph extends Component {
       <div>
         <div>
           <div>
-            <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metric}</h3>
+            <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
             <LineChart
               width={1400 - this.state.minValues}
               height={400}
@@ -346,7 +353,8 @@ class Graph extends Component {
 const mapStateToProps = state => ({
   booleansForGraph: state.booleansForGraph,
   totalNames: state.totalNames,
-  setPreviousMetric: state.setPreviousMetric
+  setPreviousMetric: state.setPreviousMetric,
+  metricForGraph: state.metricForGraph
 })
 
 export default connect(mapStateToProps)(Graph)

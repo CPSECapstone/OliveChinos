@@ -19,7 +19,8 @@ import {
   SET_BOOLEANS_FOR_GRAPH,
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
-  SET_CAPTURE_NAME_FOR_GRAPH
+  SET_CAPTURE_NAME_FOR_GRAPH,
+  SET_TOTAL_NAMES_FOR_GRAPH
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -197,9 +198,20 @@ function reducer(state = initialState, action) {
       })
 
     case SET_ANALYTICS_FOR_GRAPH:
+    let arrayOfFalses = [];
+    let falsesLength = Object.keys(action.key).length;
+    for(let i = 0; i < falsesLength; i++) {
+      arrayOfFalses.push(false);
+    }
       return Object.assign({}, state, {
-        analyticsForGraph: action.key
+        analyticsForGraph: action.key,
+        booleansForGraph: arrayOfFalses
       })
+
+    case SET_TOTAL_NAMES_FOR_GRAPH:
+    return Object.assign({}, state, {
+      totalNames: action.key
+    })
 
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {

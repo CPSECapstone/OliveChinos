@@ -6,7 +6,7 @@ import { Button, Glyphicon} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
-import { setBooleansForGraph, setCaptureNameForGraph } from '../actions/index';
+import { setCaptureNameForGraph } from '../actions/index';
 import CaptureOptions from './CaptureOptions';
 
 var selectedColor = "#ADD8E6";
@@ -14,33 +14,16 @@ var selectedColor = "#ADD8E6";
 class GraphContainer extends React.Component {
     constructor(props) {
         super(props);
-    
-        let dataResult = this.setData();
-        this.state = {
-          //all unique names of replay captures that user can choose from
-          totalReplayCaptures: dataResult.totalReplayCaptures,
-        };
         
     }
 
-    //function that is called on initial render of the graph container to set the intial redux state elements
-    setData() {
-        let result = {};
-        if(this.props.data){
-            let replayCaptureOptions = [];
-            let metricOptions = [];
-            let arrayOfFalses = [];
-            var count;
-            result.totalReplayCaptures = Object.keys(this.props.data)
-        }
-        return result;
-    }
-
-    rerenderCaptures()
+    //reRenders the capture options by dispatching this action when back button is clicked
+    rerenderCapturesOnBackButton()
     {
         this.props.dispatch(setCaptureNameForGraph("Capture Options"));
     }
 
+    //either renders Capture Options in table header or renders the current capture name if one is selected
     getCaptureReplayHeader() {
         if(this.props.currentCaptureForGraph == "Capture Options") {
             return(
@@ -50,7 +33,7 @@ class GraphContainer extends React.Component {
         else {
             return (
             <th scope="col">
-            <Button onClick={this.rerenderCaptures.bind(this)} className="btn-custom" bsSize="small">
+            <Button onClick={this.rerenderCapturesOnBackButton.bind(this)} className="btn-custom" bsSize="small">
             <Glyphicon glyph="chevron-left" />
             BACK
             </Button>
@@ -84,7 +67,7 @@ class GraphContainer extends React.Component {
     //This will either render the metric table below the graph with data
     //or it will render 'loading data' if the data hasn't come in yet
     displayCorrectReplayCaptures() {
-        if(!this.props.data) {
+        if(!this.props.analyticsForGraph) {
             return this.getReplayCapturesWithoutData()
         }
         else {
@@ -101,12 +84,12 @@ class GraphContainer extends React.Component {
     getReplayCapturesWithData() {
         if(this.props.currentCaptureForGraph == 'Capture Options') {
             return (
-                <CaptureOptions data={this.props.data} totalReplayCaptures={this.state.totalReplayCaptures}/>
+                <CaptureOptions />
             );
         }
         else {
             return (
-                <CaptureReplaySelector totalReplayCaptures={Object.keys(this.props.data[this.props.currentCaptureForGraph])}/>
+                <CaptureReplaySelector />
 
             )
         }
@@ -117,7 +100,7 @@ class GraphContainer extends React.Component {
     //all specified data into it
     renderConfigurableGraph() {
         return (
-            <Graph metric={this.props.metricForGraph} values={this.props.replayCaptureNamesForGraph} pointsArray={this.props.dataPointsForGraph} numLines={this.props.numLinesForGraph}/>
+            <Graph values={this.props.replayCaptureNamesForGraph} pointsArray={this.props.dataPointsForGraph} numLines={this.props.numLinesForGraph}/>
         );
     }
 
@@ -147,7 +130,8 @@ const mapStateToProps = state => ({
     numLinesForGraph: state.numLinesForGraph,
     booleansForGraph: state.booleansForGraph,
     replayCaptureNamesForGraph: state.replayCaptureNamesForGraph,
-    currentCaptureForGraph: state.currentCaptureForGraph
+    currentCaptureForGraph: state.currentCaptureForGraph,
+    analyticsForGraph: state.analyticsForGraph
   })
   
   export default connect(mapStateToProps)(GraphContainer)
