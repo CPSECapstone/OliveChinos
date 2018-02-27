@@ -100,13 +100,14 @@ class GraphContainer extends React.Component {
     //all specified data into it
     renderConfigurableGraph() {
         return (
-            <Graph values={this.props.replayCaptureNamesForGraph} pointsArray={this.props.dataPointsForGraph} numLines={this.props.numLinesForGraph}/>
+            <Graph values={this.props.replayCaptureNamesForGraph} numLines={this.props.numLinesForGraph}/>
         );
     }
 
 
 
     render() {
+        console.log('IN THE GRAPH CONTAINER: ', this.props.booleansForGraph)
         return(
             <div>
             <div>

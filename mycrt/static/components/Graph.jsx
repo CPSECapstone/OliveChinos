@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { setBooleansForGraph} from '../actions'
+import { setDataPointsForGraph } from '../actions'
+import Async from 'react-promise'
 import {
   LineChart,
   AreaChart,
@@ -165,8 +166,8 @@ class Graph extends Component {
   //in ordder to scale the x axis
   getMin() {
     let totalValues = []
-    for (let i = 0; i < this.props.pointsArray.length; i++) {
-      totalValues.push(this.props.pointsArray[i][this.props.metricForGraph])
+    for (let i = 0; i < this.props.dataPointsForGraph.length; i++) {
+      totalValues.push(this.props.dataPointsForGraph[i][this.props.metricForGraph])
     }
     let dataMin = totalValues.reduce(function(a, b) {
       return Math.min(a, b)
@@ -177,8 +178,8 @@ class Graph extends Component {
   //helper function to get maximum value of current total data being graphed
   getMax() {
     let totalValues = []
-    for (let i = 0; i < this.props.pointsArray.length; i++) {
-      totalValues.push(this.props.pointsArray[i][this.props.metricForGraph])
+    for (let i = 0; i < this.props.dataPointsForGraph.length; i++) {
+      totalValues.push(this.props.dataPointsForGraph[i][this.props.metricForGraph])
     }
     let dataMax = totalValues.reduce(function(a, b) {
       return Math.max(a, b)
@@ -204,7 +205,7 @@ class Graph extends Component {
     }
 
     if (
-      !this.props.booleansForGraph
+      !this.props.dataPointsForGraph
     ) {
       return <div>{this.emptyGraph()}</div>
     } else {
@@ -240,7 +241,6 @@ class Graph extends Component {
   //helper function to get all of the 'line' objects to be graphed based on currently
   //selected replays and captures for graphing
   getLines() {
-
     let linesForGraphing = []
     for (let i = 0; i < this.props.booleansForGraph.length; i++) {
       if (this.props.booleansForGraph[i] == true) {
@@ -259,24 +259,50 @@ class Graph extends Component {
     return linesForGraphing
   }
 
+  // createPromisesFromArray() {
+  //   let totalResults = [];
+  //   let uniqueName = false;
+  //   let numLines = 0;
+  //   for(let i = 0; i < this.props.booleansForGraph.length; i ++) {
+  //     if(this.props.booleansForGraph[i]) {
+  //       if(uniqueName == false) {
+  //         uniqueName = this.props.totalNames[i]
+  //       }
+  //       numLines++;
+  //     }
+  //   }
+  //   let prom = this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
+  //   for(let i = 0; i < numLines; i++) {
+  //     prom = prom.then(results => {
+  //       totalResults = totalResults.concat(results);
+  //       return this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
+  //     })
+  //   }
+  //   return prom.then( results => totalResults.concat(results));
+  // }
+
   //returns the graph with the accurate data represented by lines on the linechart
   //when there is replay data passed in from the graphContainer
   getGraphLines() {
-    let linecharts = [];
+    console.log('RUNNING THE GET GRAPH LINES!')
+    //dispatch action to set the data points for graph!!!
+    this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph))
 
+
+    let linecharts = [];
     //console.log(this.props);
-    var jsonObject = Object.keys(this.props.pointsArray);
+    var jsonObject = Object.keys(this.props.dataPointsForGraph);
     var testArray = [];
-    testArray = this.props.pointsArray;
+    testArray = this.props.dataPointsForGraph;
 
     if (this.state.reset == 'true') {
     }
     else  {
     console.log(jsonObject);
-    //console.log(this.props.pointsArray[1]);
+    //console.log(this.props.dataPointsForGraph[1]);
        for (var i = 0; i < jsonObject.length; i++) {
          if (jsonObject[i] <= this.state.rightRange && jsonObject[i] >= this.state.leftRange) {
-            testArray.push(this.props.pointsArray[i]);
+            testArray.push(this.props.dataPointsForGraph[i]);
          }
       }
     }
@@ -354,7 +380,11 @@ const mapStateToProps = state => ({
   booleansForGraph: state.booleansForGraph,
   totalNames: state.totalNames,
   setPreviousMetric: state.setPreviousMetric,
-  metricForGraph: state.metricForGraph
+  metricForGraph: state.metricForGraph,
+  dataPointsForGraph: state.dataPointsForGraph,
+  currentCaptureForGraph: state.currentCaptureForGraph,
+  analyticsForGraph: state.analyticsForGraph,
+
 })
 
 export default connect(mapStateToProps)(Graph)

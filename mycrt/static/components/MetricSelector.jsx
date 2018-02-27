@@ -3,7 +3,7 @@ import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
-import { setDataPointsForGraph, setValuesForGraph, setMetricForGraph, setBooleansForGraph, setNumLinesForGraph, setReplayCaptureNamesForGraph } from '../actions'
+import { setMetricForGraph } from '../actions'
 
 var selectedColor = "#ADD8E6";
 var nonSelectedColor = "white";
@@ -16,13 +16,6 @@ class MetricSelector extends React.Component {
     //helper function that sets the state's current metric to the one that
     //the user selected
     selectMetricForGraph(metric, e) {
-        // if((this.props.metricForGraph != metric) || (this.props.metricForGraph == false)) {
-        //     let arrayOfFalses = []
-        //     for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-        //         arrayOfFalses.push(false)
-        //     }
-        //     this.props.dispatch(setBooleansForGraph(arrayOfFalses, this.props.totalReplayCaptures, metric, this.props.numLinesForGraph, this.props.analyticsForGraph, false, false))
-        // }
         this.props.dispatch(setMetricForGraph(metric));
     }
 

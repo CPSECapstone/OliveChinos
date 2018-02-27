@@ -20,7 +20,7 @@ import {
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
-  SET_TOTAL_NAMES_FOR_GRAPH
+  SET_TOTAL_NAMES_FOR_GRAPH,
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -47,49 +47,56 @@ let initialState = {
 
 }
 
-function getNumLines(boolArray) {
-  let numLines = 0;
-  for (let i = 0; i < boolArray.length; i++) {
-    if (boolArray[i]) {
-      numLines++
-    }
-  }
-  return numLines
-}
+// function getNumLines(boolArray) {
+//   let numLines = 0;
+//   for (let i = 0; i < boolArray.length; i++) {
+//     if (boolArray[i]) {
+//       numLines++
+//     }
+//   }
+//   return numLines
+// }
 
 //function that is called whenever a user selects a replay or capture
 //to be graphed or to not be graphed, this function will return the list of datavalues
 //to put on the graph in their formatted way for the graph, and then return the number of lines
 //as well as the total names, boolean array and total names
-function getAssignments(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
+function getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
   let allAssignments = {}
-  if (metric != false && uniqueName != false && analytics != undefined) {
+  // if (metric != false && uniqueName != false && analytics != undefined) {
     let newLinesToGraph = []
     for (let i = 0; i < booleanArray.length; i++) {
       if (booleanArray[i]) {
         newLinesToGraph.push(totalNames[i])
       }
-    }
-    allAssignments.booleanArrayForGraph = booleanArray
-    allAssignments.replayCaptureNamesForGraph = newLinesToGraph
-    let lineNum = getNumLines(booleanArray)
-    allAssignments.numLinesForGraph = lineNum;
-    allAssignments.totalNames = totalNames;
+    // }
+    // allAssignments.booleanArrayForGraph = booleanArray
+    // allAssignments.replayCaptureNamesForGraph = newLinesToGraph
+    let numberOfSelectedReplays = newLinesToGraph.length
+    // allAssignments.numLinesForGraph = numberOfSelectedReplays;
+    // allAssignments.totalNames = totalNames;
     if (analytics != false) {
       let totalNumberOfOptionsToChooseFrom = Object.keys(analytics[captureName]).length
-      if ((lineNum <= totalNumberOfOptionsToChooseFrom) && (lineNum > 0)) {
-        allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName)
+      if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
+        // allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
+        //get first json element
+        let firstJSON = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
+        let arrayOfDataJSONS = [firstJSON]
+        for(let i = 1; i < numberOfSelectedReplays; i++) {
+          arrayOfDataJSONS[i] = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
+        }
       }
     }
   }
-  else {
-    allAssignments.booleanArrayForGraph = booleanArray;
-    allAssignments.replayCaptureNamesForGraph = false;
-    allAssignments.dataPointsForGraph = false;
-    allAssignments.numLinesForGraph = 0;
-    allAssignments.totalNames = totalNames;
-  }
-  return allAssignments
+  // else {
+  //   allAssignments.booleanArrayForGraph = booleanArray;
+  //   allAssignments.replayCaptureNamesForGraph = false;
+  //   allAssignments.dataPointsForGraph = false;
+  //   allAssignments.numLinesForGraph = 0;
+  //   allAssignments.totalNames = totalNames;
+  // }
+  // return allAssignments
+  return arrayOfDataJSONS[arrayOfDataJSONS.length];
 }
 
 function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
@@ -130,14 +137,17 @@ function setCaptureCount(count) {
 function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
-      let allAssignments = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.numLines, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
+    console.log('SETTING THE BOOLEANS FOR GRAPH IN THE REDUCER TO ', action.key)
       return Object.assign({}, state, {
-        booleansForGraph: allAssignments.booleanArrayForGraph,
-        replayCaptureNamesForGraph: allAssignments.replayCaptureNamesForGraph,
-        dataPointsForGraph: allAssignments.dataPointsForGraph,
-        numLinesForGraph: allAssignments.numLinesForGraph,
-        totalNames: allAssignments.totalNames
+        booleansForGraph: action.key
       })
+
+    case SET_DATA_POINTS_FOR_GRAPH:
+      let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
+      return Object.assign({}, state, {
+        dataPointsForGraph: dataPoints
+      })
+
     case SET_PUBLIC_KEY:
       return Object.assign({}, state, {
         publicKey: action.key
@@ -198,19 +208,19 @@ function reducer(state = initialState, action) {
       })
 
     case SET_ANALYTICS_FOR_GRAPH:
+      return Object.assign({}, state, {
+        analyticsForGraph: action.key
+      })
+
+    case SET_TOTAL_NAMES_FOR_GRAPH:
     let arrayOfFalses = [];
     let falsesLength = Object.keys(action.key).length;
     for(let i = 0; i < falsesLength; i++) {
       arrayOfFalses.push(false);
     }
-      return Object.assign({}, state, {
-        analyticsForGraph: action.key,
-        booleansForGraph: arrayOfFalses
-      })
-
-    case SET_TOTAL_NAMES_FOR_GRAPH:
     return Object.assign({}, state, {
-      totalNames: action.key
+      totalNames: action.key,
+      booleansForGraph: arrayOfFalses
     })
 
     case SET_CAPTURE_NAME_FOR_GRAPH:

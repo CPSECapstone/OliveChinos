@@ -20,14 +20,14 @@ import {
   SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
-  SET_TOTAL_NAMES_FOR_GRAPH
+  SET_TOTAL_NAMES_FOR_GRAPH,
 } from './constants'
 
 export function setReplayCaptureNamesForGraph(key) {
   return { type: SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH, key }
 }
-export function setBooleansForGraph(booleans, totalNames, metric1, numLines1, analytics1, dataPoints1, uniqueName1, captureName1) {
-  return { type: SET_BOOLEANS_FOR_GRAPH, booleanArray: booleans, totalNameArray: totalNames, metric: metric1, numLines: numLines1, analytics: analytics1, dataPoints: dataPoints1, uniqueName: uniqueName1, captureName: captureName1 }
+export function setBooleansForGraph(key) {
+  return { type: SET_BOOLEANS_FOR_GRAPH, key }
 }
 export function setNumLinesForGraph(key) {
   return { type: SET_NUM_LINES_FOR_GRAPH, key }
@@ -71,8 +71,8 @@ export function stopReplay() {
   return { type: STOP_REPLAY }
 }
 
-export function setDataPointsForGraph(key) {
-  return { type: SET_DATA_POINTS_FOR_GRAPH, key }
+export function setDataPointsForGraph(booleans, totalNames, metric1, analytics1, dataPoints1, captureName1) {
+  return { type: SET_DATA_POINTS_FOR_GRAPH, booleanArray: booleans, totalNameArray: totalNames, metric: metric1, analytics: analytics1, dataPoints: dataPoints1, captureName: captureName1 }
 }
 
 export function setValuesForGraph(key) {

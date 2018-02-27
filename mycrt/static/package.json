@@ -57,6 +57,7 @@
     "react-faux-dom": "^4.1.0",
     "react-flatpickr": "^3.6.3",
     "react-linechart": "^1.1.12",
+    "react-promise": "^2.0.1",
     "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
     "react-sidebar": "^2.3.2",
