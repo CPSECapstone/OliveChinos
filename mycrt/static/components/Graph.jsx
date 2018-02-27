@@ -21,7 +21,7 @@ class Graph extends Component {
     this.state = {
       xLabel: '',
       yLabel: '',
-      metric: this.props.nameOfMetric,
+      metric: this.props.metricForGraph,
       selectedData: this.props.selectedData,
       title: '',
       minValues: ' ',
@@ -136,34 +136,6 @@ class Graph extends Component {
 
     this.setState({ maxValues: 0, minValues: 0 ,refAreaLeft : '',
     refAreaRight : '', reset: 'true'})
-  }
-  //this function gets the total points to be graphed and the values for
-  //the actual linechart. it also sets the state of the totalValuesArray for the linechart
-  getTotalPoints() {
-    let pointsValues = []
-    let values = []
-    let dataMin = 0
-    let dataMax = 0
-    let listOfAnalytics = this.state.selectedData
-    let listOfTotalPoints = []
-    for (var outer = 0; outer < listOfAnalytics.length; outer++) {
-      let pointsValues = []
-      for (
-        let i = 0;
-        i < listOfAnalytics[outer][this.props.metricForGraph].length;
-        i++
-      ) {
-        let currPoint = {
-          value: `${i}`,
-          metric: listOfAnalytics[outer][this.props.metricForGraph][i].Average
-        }
-        values.push(listOfAnalytics[outer][this.props.metricForGraph][i].Average)
-        pointsValues.push(currPoint)
-      }
-      listOfTotalPoints.push(pointsValues)
-    }
-    this.setState({ totalValuesArray: values })
-    return listOfTotalPoints
   }
 
   //helper function to get minimum value of current total data being graphed
@@ -285,77 +257,92 @@ class Graph extends Component {
   //   return prom.then( results => totalResults.concat(results));
   // }
 
+
+  componentWillMount() {
+    //dispatch action to set the data points for graph
+  this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph));
+  }
+
+  componentWillReceiveProps() {
+    //dispatch action to set the data points for graph
+  this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph));
+
+  }
+
+
   //returns the graph with the accurate data represented by lines on the linechart
   //when there is replay data passed in from the graphContainer
   getGraphLines() {
-    console.log('RUNNING THE GET GRAPH LINES!')
-    //dispatch action to set the data points for graph!!!
-    this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph))
 
+    //COMMENTING THIS OUT RIGHT NOW TO NOT BREAK CHROME
+    // this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph));
 
-    let linecharts = [];
-    //console.log(this.props);
-    var jsonObject = Object.keys(this.props.dataPointsForGraph);
-    var testArray = [];
-    testArray = this.props.dataPointsForGraph;
+    if(this.props.dataPointsForGraph != false && this.props.dataPointsForGraph != undefined) {
+      let linecharts = [];
+      var jsonObject = Object.keys(this.props.dataPointsForGraph);
+      var testArray = [];
+      testArray = this.props.dataPointsForGraph;
 
-    if (this.state.reset == 'true') {
-    }
-    else  {
-    console.log(jsonObject);
-    //console.log(this.props.dataPointsForGraph[1]);
-       for (var i = 0; i < jsonObject.length; i++) {
-         if (jsonObject[i] <= this.state.rightRange && jsonObject[i] >= this.state.leftRange) {
-            testArray.push(this.props.dataPointsForGraph[i]);
-         }
+      if (this.state.reset == 'true') {
       }
-    }
-    return (
-      <div>
+      else  {
+      console.log(jsonObject);
+      //console.log(this.props.dataPointsForGraph[1]);
+        for (var i = 0; i < jsonObject.length; i++) {
+          if (jsonObject[i] <= this.state.rightRange && jsonObject[i] >= this.state.leftRange) {
+              testArray.push(this.props.dataPointsForGraph[i]);
+          }
+        }
+      }
+      return (
         <div>
           <div>
-            <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
-            <LineChart
-              width={1400 - this.state.minValues}
-              height={400}
-              data={testArray}
-              margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-              onMouseDown = { (e) => this.setState({refAreaLeft:e.activeLabel}) }
-              onMouseMove = { (e) => this.state.refAreaLeft && this.setState({refAreaRight:e.activeLabel}) }
-              onMouseUp = { this.zoomIn.bind( this ) }
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                allowDataOverflow={false}
-                dataKey="seconds"
-                padding={{
-                  left: this.state.minValues,
-                  right: this.state.maxValues
-                }}
-              />
-              <YAxis
-                allowDataOverflow={false}
-                label={{
-                  value: this.props.yLabel,
-                  angle: -90,
-                  position: 'insideLeft'
-                }}
-              />
-              <Tooltip />
-              <Legend />
-              {
-              (this.state.refAreaLeft && this.state.refAreaRight) ? (
-                 <ReferenceArea x1={this.state.refAreaLeft} x2={this.state.refAreaRight}  strokeOpacity={0.3} /> ) : null
-               }
-              {this.getLines().map(line => line)}
-            </LineChart>
+            <div>
+              <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
+              <LineChart
+                width={1400 - this.state.minValues}
+                height={400}
+                data={testArray}
+                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                onMouseDown = { (e) => this.setState({refAreaLeft:e.activeLabel}) }
+                onMouseMove = { (e) => this.state.refAreaLeft && this.setState({refAreaRight:e.activeLabel}) }
+                onMouseUp = { this.zoomIn.bind( this ) }
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  allowDataOverflow={false}
+                  dataKey="seconds"
+                  padding={{
+                    left: this.state.minValues,
+                    right: this.state.maxValues
+                  }}
+                />
+                <YAxis
+                  allowDataOverflow={false}
+                  label={{
+                    value: this.props.yLabel,
+                    angle: -90,
+                    position: 'insideLeft'
+                  }}
+                />
+                <Tooltip />
+                <Legend />
+                {
+                (this.state.refAreaLeft && this.state.refAreaRight) ? (
+                  <ReferenceArea x1={this.state.refAreaLeft} x2={this.state.refAreaRight}  strokeOpacity={0.3} /> ) : null
+                }
+                {this.getLines().map(line => line)}
+              </LineChart>
+            </div>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 
   render() {
+    
+    console.log('RENDERING GRAPH, THE PROPS ARE: ', this.props)
     return (
       <div>
         <a
@@ -388,7 +375,7 @@ const mapStateToProps = state => ({
   dataPointsForGraph: state.dataPointsForGraph,
   currentCaptureForGraph: state.currentCaptureForGraph,
   analyticsForGraph: state.analyticsForGraph,
-  totalValues: state.totalValues
+  totalNames: state.totalNames
 
 })
 
