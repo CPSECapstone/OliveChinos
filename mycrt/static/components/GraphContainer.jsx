@@ -94,26 +94,16 @@ class GraphContainer extends React.Component {
             )
         }
     }
-    
-
-    //This function renders the graph object and passes
-    //all specified data into it
-    renderConfigurableGraph() {
-        return (
-            <Graph values={this.props.replayCaptureNamesForGraph} numLines={this.props.numLinesForGraph}/>
-        );
-    }
 
 
 
     render() {
-        console.log('IN THE GRAPH CONTAINER: ', this.props.booleansForGraph)
         return(
             <div>
             <div>
             <div style={{height:'50vh', border:'1px solid black', overflowY:'scroll'}}>
             <div>
-                {this.renderConfigurableGraph()}
+                <Graph />
             </div>
             </div>
             </div>
@@ -125,12 +115,6 @@ class GraphContainer extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    dataPointsForGraph: state.dataPointsForGraph,
-    valuesForGraph: state.valuesForGraph,
-    metricForGraph: state.metricForGraph,
-    numLinesForGraph: state.numLinesForGraph,
-    booleansForGraph: state.booleansForGraph,
-    replayCaptureNamesForGraph: state.replayCaptureNamesForGraph,
     currentCaptureForGraph: state.currentCaptureForGraph,
     analyticsForGraph: state.analyticsForGraph
   })

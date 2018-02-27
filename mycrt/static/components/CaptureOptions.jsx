@@ -13,17 +13,6 @@ class CaptureOptions extends React.Component {
         super(props);
     }
 
-    //helper function to see if a list contains an object
-    contains(obj, l) {
-        var i = l.length;
-        while (i--) {
-            if (l[i] === obj) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     //renders all of the table rows that hold the values for all capture options to graph
     getCapturesWithData() {
             let replayCaptureOptions = Object.keys(this.props.analyticsForGraph);
@@ -40,7 +29,7 @@ class CaptureOptions extends React.Component {
         }
 
     //callback function for onclick of something to graph or not graph
-    //dispatches an action that updates the curentCapture name and the totalReplays for that capture in the redux state
+    //dispatches an action that updates the curentCapture name and the totalReplay names for that capture in the redux state
     setCaptureName(uniqueName, e) {
         this.props.dispatch(setCaptureNameForGraph(uniqueName));
         let totalReplayNames = Object.keys(this.props.analyticsForGraph[uniqueName]);

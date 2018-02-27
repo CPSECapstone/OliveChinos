@@ -47,16 +47,6 @@ let initialState = {
 
 }
 
-// function getNumLines(boolArray) {
-//   let numLines = 0;
-//   for (let i = 0; i < boolArray.length; i++) {
-//     if (boolArray[i]) {
-//       numLines++
-//     }
-//   }
-//   return numLines
-// }
-
 //function that is called whenever a user selects a replay or capture
 //to be graphed or to not be graphed, this function will return the list of datavalues
 //to put on the graph in their formatted way for the graph, and then return the number of lines
@@ -65,6 +55,7 @@ function getAssignments(booleanArray, totalNames, metric, analytics, dataPoints,
   let allAssignments = {}
   // if (metric != false && uniqueName != false && analytics != undefined) {
     let newLinesToGraph = []
+    let arrayOfDataJSONS = dataPoints;
     for (let i = 0; i < booleanArray.length; i++) {
       if (booleanArray[i]) {
         newLinesToGraph.push(totalNames[i])
@@ -80,23 +71,22 @@ function getAssignments(booleanArray, totalNames, metric, analytics, dataPoints,
       if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
         // allAssignments.dataPointsForGraph = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
         //get first json element
+        let uniqueName = newLinesToGraph[0]
         let firstJSON = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
-        let arrayOfDataJSONS = [firstJSON]
+        arrayOfDataJSONS = [firstJSON]
         for(let i = 1; i < numberOfSelectedReplays; i++) {
+          uniqueName = newLinesToGraph[i - 1]
           arrayOfDataJSONS[i] = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
         }
       }
     }
   }
-  // else {
-  //   allAssignments.booleanArrayForGraph = booleanArray;
-  //   allAssignments.replayCaptureNamesForGraph = false;
-  //   allAssignments.dataPointsForGraph = false;
-  //   allAssignments.numLinesForGraph = 0;
-  //   allAssignments.totalNames = totalNames;
-  // }
-  // return allAssignments
-  return arrayOfDataJSONS[arrayOfDataJSONS.length];
+  if(arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
+    return false;
+  }
+  else {
+    return arrayOfDataJSONS[arrayOfDataJSONS.length];
+  }
 }
 
 function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
@@ -130,20 +120,19 @@ function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName
     return newJsonElement
 }
 
-function setCaptureCount(count) {
-  return
-}
+// function setCaptureCount(count) {
+//   return
+// }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_BOOLEANS_FOR_GRAPH:
-    console.log('SETTING THE BOOLEANS FOR GRAPH IN THE REDUCER TO ', action.key)
       return Object.assign({}, state, {
         booleansForGraph: action.key
       })
 
     case SET_DATA_POINTS_FOR_GRAPH:
-      let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.uniqueName, action.captureName);
+      let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.captureName);
       return Object.assign({}, state, {
         dataPointsForGraph: dataPoints
       })
@@ -224,6 +213,7 @@ function reducer(state = initialState, action) {
     })
 
     case SET_CAPTURE_NAME_FOR_GRAPH:
+    console.log('setting the capture name to ', action.key)
       return Object.assign({}, state, {
         currentCaptureForGraph: action.key
       })

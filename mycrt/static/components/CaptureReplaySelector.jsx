@@ -31,7 +31,6 @@ class CaptureReplaySelector extends React.Component {
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
-        console.log('REDUX BOOL ARRAY:', this.props.booleansForGraph)
         let captureReplaysSelected = []
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(this.props.booleansForGraph[i]) {
@@ -75,27 +74,17 @@ class CaptureReplaySelector extends React.Component {
     //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
     //the number of lines, and the names for graph in the redux state
     setReplayCaptureAsTrueFalse(uniqueName, e) {
-        let newBooleans = this.props.booleansForGraph;
+        let newBooleans = this.props.booleansForGraph.slice();
         let totalNameOptions = this.state.totalReplayNames;
         for(let i = 0; i < this.props.booleansForGraph.length; i++) {
             if(totalNameOptions[i] == uniqueName) {
                 newBooleans[i] = !(newBooleans[i])
             }
         }
-
-        //leaving fornow but we should fix this
-        // let dataPoints = this.props.dataPointsForGraph
-        // if(dataPoints == undefined) {
-        //     dataPoints = false;
-        // }
-
-        //fix the setBooleansForGraph function in the redux state
-        // this.props.dispatch(setBooleansForGraph(newBooleans, this.state.totalReplayNames, this.props.metricForGraph, this.props.numLinesForGraph, this.props.analyticsForGraph, dataPoints, uniqueName, this.props.currentCaptureForGraph));
         this.props.dispatch(setBooleansForGraph(newBooleans));
     }
 
     render() {
-        console.log('THESS IS THE REDUX BOOLS IN RENDER:', this.props.booleansForGraph)
         return(
             <tbody style={{overflowY: 'scroll'}}>
                 <tr style={{height:'50px'}}></tr>
@@ -107,10 +96,6 @@ class CaptureReplaySelector extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    dataPointsForGraph: state.dataPointsForGraph,
-    valuesForGraph: state.valuesForGraph,
-    metricForGraph: state.metricForGraph,
-    numLinesForGraph: state.numLinesForGraph,
     booleansForGraph: state.booleansForGraph,
     analyticsForGraph: state.analyticsForGraph,
     currentCaptureForGraph: state.currentCaptureForGraph

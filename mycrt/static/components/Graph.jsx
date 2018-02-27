@@ -17,6 +17,7 @@ import { connect } from 'react-redux'
 class Graph extends Component {
   constructor(props) {
     super(props)
+    let valueArray = this.getValues();
     this.state = {
       xLabel: '',
       yLabel: '',
@@ -36,14 +37,17 @@ class Graph extends Component {
       animation : true,
       leftRange: '',
       rightRange: '',
-      reset: ''
+      reset: '',
+      values: valueArray
     }
   }
 
+
   getValues() {
-    let values;
+    let values = [];
     for(let i = 0; i < this.props.booleansForGraph.length; i++) {
       if(this.props.booleansForGraph[i]) {
+        // debugger;
         values.push(this.props.totalNames[i])
       }
     }
@@ -205,7 +209,7 @@ class Graph extends Component {
     }
 
     if (
-      !this.props.dataPointsForGraph
+      !this.props.booleansForGraph
     ) {
       return <div>{this.emptyGraph()}</div>
     } else {
@@ -384,6 +388,7 @@ const mapStateToProps = state => ({
   dataPointsForGraph: state.dataPointsForGraph,
   currentCaptureForGraph: state.currentCaptureForGraph,
   analyticsForGraph: state.analyticsForGraph,
+  totalValues: state.totalValues
 
 })
 
