@@ -240,3 +240,6 @@ def end_capture(credentials, capture_name, db_id):
 
   return (transactions, start_time)
 
+def delete_capture(credentials, capture_name):
+  s3_client = boto3.client('s3', **credentials)
+  
