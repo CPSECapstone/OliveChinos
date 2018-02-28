@@ -252,7 +252,7 @@ def delete_capture(credentials, capture_name):
 
   s3_resource = boto3.resource('s3', **credentials)
   bucket_id = "my-crt-test-bucket-olive-chinos"
-  bucket = s3_resource.bucket(bucket_id)  
+  bucket = s3_resource.Bucket(bucket_id)  
 
   objects_to_delete = []
   for obj in bucket.objects.filter(Prefix = capture_name + '/'):
