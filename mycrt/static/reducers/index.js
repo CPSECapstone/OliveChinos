@@ -13,11 +13,8 @@ import {
   START_NEW_REPLAY,
   STOP_REPLAY,
   SET_DATA_POINTS_FOR_GRAPH,
-  SET_VALUES_FOR_GRAPH,
   SET_METRIC_FOR_GRAPH,
-  SET_NUM_LINES_FOR_GRAPH,
   SET_BOOLEANS_FOR_GRAPH,
-  SET_REPLAY_CAPTURE_NAMES_FOR_GRAPH,
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
@@ -47,72 +44,72 @@ let initialState = {
 
 }
 
-//function that is called from the graph component, it passes in all of the currently selected
-//values and then creates the data JSON to be graphed and stores it in the dataPointsForGraph redux state
-function getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
-    let newLinesToGraph = []
-    let arrayOfDataJSONS = dataPoints;
-    for (let i = 0; i < booleanArray.length; i++) {
-      if (booleanArray[i]) {
-        newLinesToGraph.push(totalNames[i])
-      }
-    }
-    let numberOfSelectedReplays = newLinesToGraph.length
-    if (analytics != false) {
-      let totalNumberOfOptionsToChooseFrom = totalNames.length
-      if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
-        let uniqueName = newLinesToGraph[0]
-        let firstJSON = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
-        arrayOfDataJSONS = [numberOfSelectedReplays]
-        arrayOfDataJSONS[0] = firstJSON
-        for(let i = 1; i < numberOfSelectedReplays; i++) {
-          uniqueName = newLinesToGraph[i]
-          arrayOfDataJSONS[i] = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
-        }
-      }
-    }
-  if(arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
-    return false;
-  }
-  else {
-    return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
-  }
-}
+// //function that is called from the graph component, it passes in all of the currently selected
+// //values and then creates the data JSON to be graphed and stores it in the dataPointsForGraph redux state
+// function getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
+//     let newLinesToGraph = []
+//     let arrayOfDataJSONS = dataPoints;
+//     for (let i = 0; i < booleanArray.length; i++) {
+//       if (booleanArray[i]) {
+//         newLinesToGraph.push(totalNames[i])
+//       }
+//     }
+//     let numberOfSelectedReplays = newLinesToGraph.length
+//     if (analytics != false) {
+//       let totalNumberOfOptionsToChooseFrom = totalNames.length
+//       if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
+//         let uniqueName = newLinesToGraph[0]
+//         let firstJSON = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
+//         arrayOfDataJSONS = [numberOfSelectedReplays]
+//         arrayOfDataJSONS[0] = firstJSON
+//         for(let i = 1; i < numberOfSelectedReplays; i++) {
+//           uniqueName = newLinesToGraph[i]
+//           arrayOfDataJSONS[i] = getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
+//         }
+//       }
+//     }
+//   if(arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
+//     return false;
+//   }
+//   else {
+//     return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
+//   }
+// }
 
-function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
-  let currMetric = metric;
-  let listOfAnalytics = analytics[captureName];
-  if (booleanArray != false && currMetric != false) {
-    for (let outer = 0; outer < booleanArray.length; outer++) {
-      let pointsValues = []
-      if (booleanArray[outer]) {
-        let currIndex = `${uniqueName}`
-        for (let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
-          let currPoint = { seconds: `${i}` }
-          currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
-          pointsValues.push(currPoint)
-        }
-        if(dataPoints != false && dataPoints != undefined ) {
-          return updateFinalJSONObject(pointsValues, numLines, dataPoints, captureName)
-        }
-        else {
-          return pointsValues
-        }
-      }
-    }
-  }
-}
+// function getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
+//   let currMetric = metric;
+//   let listOfAnalytics = analytics[captureName];
+//   if (booleanArray != false && currMetric != false) {
+//     for (let outer = 0; outer < booleanArray.length; outer++) {
+//       let pointsValues = []
+//       if (booleanArray[outer]) {
+//         let currIndex = `${uniqueName}`
+//         for (let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
+//           let currPoint = { seconds: `${i}` }
+//           currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
+//           pointsValues.push(currPoint)
+//         }
+//         if(dataPoints != false && dataPoints != undefined ) {
+//           return updateFinalJSONObject(pointsValues, numLines, dataPoints, captureName)
+//         }
+//         else {
+//           return pointsValues
+//         }
+//       }
+//     }
+//   }
+// }
 
-function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
-  if (numLines > 0) {
-    let oldJsonElement = dataPoints;
-    alasql.fn.extend = alasql.utils.extend;
-    var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
-    return res
-  }
-  else
-    return newJsonElement
-}
+// function updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
+//   if (numLines > 0) {
+//     let oldJsonElement = dataPoints;
+//     alasql.fn.extend = alasql.utils.extend;
+//     var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
+//     return res
+//   }
+//   else
+//     return newJsonElement
+// }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
@@ -122,9 +119,9 @@ function reducer(state = initialState, action) {
       })
 
     case SET_DATA_POINTS_FOR_GRAPH:
-      let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.captureName);
+      // let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.captureName);
       return Object.assign({}, state, {
-        dataPointsForGraph: dataPoints,
+        dataPointsForGraph: action.key,
 
       })
 
