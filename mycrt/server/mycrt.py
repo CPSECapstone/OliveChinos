@@ -208,8 +208,25 @@ def replay():
 
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
-  capture_replays = get_capture_replay_list(credentials)    
-  return jsonify(capture_replays)
+    capture_replays = get_capture_replay_list(credentials)    
+    return jsonify(capture_replays)
+
+@application.route("/replay/delete", methods=["DELETE"])
+def delete_replay_http():
+    #Need a capture name and replay name in order to delete replay
+    data = request.get_json()
+    capture_name = data['capture'] 
+    replay_name = data['replay']
+    delete_replay(credentials, capture_name, replay_name)
+    return ('', 200)
+
+@application.route("/capture/delete", methods=["DELETE"])
+def delete_capture_http():
+    data = request.get_json()
+    capture_name = data['capture'] 
+    
+    delete_capture(credentials, capture_name)
+    return ('', 200)
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
