@@ -10,6 +10,7 @@ import { connect } from 'react-redux'
 import { setCaptureCount, startCapture, stopCapture } from '../actions'
 
 import CaptureDetail from './CaptureDetail'
+import CaptureList from './CaptureList'
 
 /* Use this element as a reference when creating components*/
 
@@ -36,7 +37,7 @@ class Capture extends React.Component {
 
     //binding required for callback
     this.startNewCapture = this.startNewCapture.bind(this)
-    this.stopCapture = this.stopCapture.bind(this)
+    this.editCapture = this.editCapture.bind(this)
     this.getCaptures = this.getCaptures.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
     this.sendQuery = this.sendQuery.bind(this)
@@ -49,7 +50,7 @@ class Capture extends React.Component {
 
   componentDidMount() {
     this.loadDatabaseInstances()
-    this.displayCaptures()
+    this.displayAllCaptures()
   }
 
   startNewCapture() {
@@ -79,16 +80,45 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      that.displayCaptures()
+      that.displayAllCaptures()
     })
 
   }
 
-  stopCapture(captureName, captureDB, index) {
+  editCapture(captureName, captureDB, action) {
     //console.log("Capture stopped: ", captureName, " at index ", index)
     //this.setState({ capture: 'Capture Stopped' })
     //console.log('capture ended: ', captureName)
+    let editAction;
+    if (action === 'STOP') {
+      editAction = 'end'
+    }
+    else if (action === 'CANCEL') {
+      editAction = 'cancel'
+    }
+    else {
+      editAction = 'delete'
+    }
     this.props.dispatch(stopCapture())
+    var postData = {
+      "db": captureDB,
+      "captureName": captureName
+    }
+    var that = this;
+    jquery.ajax({
+      url: window.location.href + 'capture/' + editAction,
+      type: 'POST',
+      data: JSON.stringify(postData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      //console.log(data)
+      that.displayAllCaptures()
+    })
+
+  }
+
+  cancelCapture(captureName, captureDB) {
     var postData = {
       "db": captureDB,
       "captureName": captureName
@@ -102,7 +132,7 @@ class Capture extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       //console.log(data)
-      that.displayCaptures()
+      that.displayAllCaptures()
     })
 
   }
@@ -200,9 +230,20 @@ class Capture extends React.Component {
     })
   }
 
-  getCaptures(data) {
+  getCaptures(data, captureState) {
     var currentCaptures = [];
     var current;
+    var captureEditAction;
+    if (captureState === 'active') {
+      captureEditAction = 'STOP'
+    }
+    else if (captureState === 'scheduled') {
+      captureEditAction = 'CANCEL'
+    }
+    else {
+      captureEditAction = 'DELETE'
+
+    }
     console.log("DATA\n", data)
     for (var i = 0; i < data.captures.length; i++) {
       current = data.captures[i]
@@ -216,7 +257,9 @@ class Capture extends React.Component {
             captureDB={current.db}
             captureStartTime={current.startTime}
             captureEndTime={current.endTime}
-            stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
+            captureType={captureState}
+            captureEditAction={captureEditAction}
+            editCapture={() => { that.editCapture(current.captureName, current.db, captureEditAction) }}
           />
         </ListGroupItem>)
       }(current, i, that)))
@@ -225,20 +268,46 @@ class Capture extends React.Component {
     return <ListGroup>{currentCaptures}</ListGroup>
   }
 
-  displayCaptures() {
+  displayCaptures(captureType) {
+    let captureRoute;
+    if (captureType === 'active') {
+      captureRoute = 'capture/list'
+    }
+    else if (captureType === 'scheduled') {
+      captureRoute = 'capture/scheduled'
+    }
+    else {
+      captureRoute = 'capture/completed_list'
+    }
+
     var that = this;
     jquery.ajax({
-      url: window.location.href + 'capture/list',
+      url: window.location.href + captureRoute,
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      var resultList = that.getCaptures(data)
-      that.props.dispatch(setCaptureCount(data.captures.length))
-      //that.setState({ activeCaptures: data.captures.length })
-      that.setState({ activeCaptureList: resultList })
+      var resultList = that.getCaptures(data, captureType)
+      if (captureType === 'active') {
+        that.props.dispatch(setCaptureCount(data.captures.length))
+        that.setState({ activeCaptureList: resultList })
+      }
+      else if (captureType === 'scheduled') {
+        that.setState({ scheduledCaptureList: resultList })
+      }
+      else {
+        that.setState({ pastCaptureList: resultList })
+      }
     })
   }
+
+  displayAllCaptures() {
+    this.displayCaptures('active')
+    //displayCaptures('scheduled')
+    //this.displayCaptures('past')
+  }
+
+
 
   displayCaptureScheduler() {
     var displayForm;
@@ -338,6 +407,7 @@ class Capture extends React.Component {
           <h4 style={{ marginLeft: '20px' }}>Active Captures</h4>
           <br />
           <div>{this.state.activeCaptureList}</div>
+          <CaptureList activeCaptures={this.state.activeCaptureList} />
         </div>
       </div >
     )

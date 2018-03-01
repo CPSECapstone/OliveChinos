@@ -1,0 +1,13 @@
+.captureListGroup {
+    display: inline-block;
+    width:30%;
+}
+
+.captureListHeader {
+    text-align: center;
+}
+
+#scheduledCaptureList {
+    margin-left: 10px;
+    margin-right: 10px;
+}
