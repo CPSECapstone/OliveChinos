@@ -39,7 +39,15 @@ class Graph extends Component {
       leftRange: '',
       rightRange: '',
       reset: '',
-      values: valueArray
+      values: valueArray,
+      dataPointsForGraph: false
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(this.props != nextProps) {
+      this.props = nextProps;
+      this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph);
     }
   }
 
@@ -69,10 +77,14 @@ getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureN
     }
   }
 if(arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
-  return false;
+  this.setState({
+    dataPointsForGraph: false
+  })
 }
 else {
-  return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
+  this.setState({
+    dataPointsForGraph: arrayOfDataJSONS[arrayOfDataJSONS.length - 1]
+  })
 }
 }
 
@@ -155,8 +167,6 @@ else
      }) );
      return;
     }
-    console.log("refAreaLeft" , refAreaLeft);
-    console.log("refAreaRight", refAreaRight);
 
     if ( refAreaLeft > refAreaRight )
     		[ refAreaLeft, refAreaRight ] = [ refAreaRight, refAreaLeft ];
@@ -263,30 +273,30 @@ else
     //I thought this would fix the problem, but it is not unfortunately, run it in the browser and check the console to see what I mean.
     // - Jessie
 
-    if (!hasTrue || this.props.currentCaptureForGraph == "Capture Options") {
+    if (!hasTrue) {
       return <div>{this.emptyGraph()}</div>
     } else {
-      let prevPoints = this.props.dataPointsForGraph
-      let newPoints = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph)
-      console.log('THE NEW POINTS TO GRAPH:', newPoints);
-      console.log('THE OLD POINTS TO GRAPH: ', prevPoints);
-      if(prevPoints == false) {
-        console.log('DISPATCHING the action here (***first time graphing***)')
-        this.props.dispatch(setDataPointsForGraph(newPoints));
-      }
-      else {
-        this.setState({
-              dataPointsForGraph: newPoints
-        })
-        if(JSON.stringify(newPoints) != JSON.stringify(prevPoints)) {
-          console.log('THEY ARE NOT EQUAL, WILL DISPATCH ACTION')
-          this.props.dispatch(setDataPointsForGraph(newPoints));
-        }
-        else {
-          console.log('THEY WERE EQUAL, DIDNT DISPATCH ACTION')
-        }
+      // let prevPoints = this.state.dataPointsForGraph
+      // let newPoints = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+      // console.log('THE NEW POINTS TO GRAPH:', newPoints);
+      // console.log('THE OLD POINTS TO GRAPH: ', prevPoints);
+      // if(prevPoints == false) {
+      //   console.log('DISPATCHING the action here (***first time graphing***)')
+      //   this.props.dispatch(setDataPointsForGraph(newPoints));
+      // }
+      // else {
+      //   this.setState({
+      //         dataPointsForGraph: newPoints
+      //   })
+      //   if(JSON.stringify(newPoints) != JSON.stringify(prevPoints)) {
+      //     console.log('THEY ARE NOT EQUAL, WILL DISPATCH ACTION')
+      //     this.props.dispatch(setDataPointsForGraph(newPoints));
+      //   }
+      //   else {
+      //     console.log('THEY WERE EQUAL, DIDNT DISPATCH ACTION')
+      //   }
         return <div>{this.getGraphLines()}</div>
-      }
+      // }
     }
   }
 
@@ -348,11 +358,11 @@ else
   //       numLines++;
   //     }
   //   }
-  //   let prom = this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
+  //   let prom = this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
   //   for(let i = 0; i < numLines; i++) {
   //     prom = prom.then(results => {
   //       totalResults = totalResults.concat(results);
-  //       return this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
+  //       return this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, uniqueName,this.props.currentCaptureForGraph))
   //     })
   //   }
   //   return prom.then( results => totalResults.concat(results));
@@ -364,9 +374,11 @@ else
   getGraphLines() {
 
     //COMMENTING THIS OUT RIGHT NOW TO NOT BREAK CHROME
-    // this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.props.dataPointsForGraph, this.props.currentCaptureForGraph));
-
-    if(this.state.dataPointsForGraph != false && this.state.dataPointsForGraph != undefined) {
+    // this.props.dispatch(setDataPointsForGraph(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph));
+    console.log('IN THE GET GRAPH LINES, THE DATAPOINTS ARE: ', this.state.dataPointsForGraph)
+    if(this.state.dataPointsForGraph == false) {
+      this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+    }
       let linecharts = [];
       var jsonObject = Object.keys(this.state.dataPointsForGraph);
       var testArray = [];
@@ -375,8 +387,7 @@ else
       if (this.state.reset == 'true') {
       }
       else  {
-      console.log(jsonObject);
-      //console.log(this.props.dataPointsForGraph[1]);
+      //console.log(this.state.dataPointsForGraph[1]);
         for (var i = 0; i < jsonObject.length; i++) {
           if (jsonObject[i] <= this.state.rightRange && jsonObject[i] >= this.state.leftRange) {
               testArray.push(this.state.dataPointsForGraph[i]);
@@ -426,12 +437,10 @@ else
           </div>
         </div>
       )
-    }
+    // } 
   }
 
   render() {
-    
-    console.log('RENDERING GRAPH, THE PROPS ARE: ', this.props)
     return (
       <div>
         <a
@@ -461,7 +470,7 @@ const mapStateToProps = state => ({
   totalNames: state.totalNames,
   setPreviousMetric: state.setPreviousMetric,
   metricForGraph: state.metricForGraph,
-  dataPointsForGraph: state.dataPointsForGraph,
+  // dataPointsForGraph: state.dataPointsForGraph,
   currentCaptureForGraph: state.currentCaptureForGraph,
   analyticsForGraph: state.analyticsForGraph,
   totalNames: state.totalNames
