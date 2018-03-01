@@ -252,7 +252,7 @@ def delete_replay_http():
     capture_name = data['capture'] 
     replay_name = data['replay']
     delete_replay(credentials, capture_name, replay_name)
-    return ('', 200)
+    return jsonify({'status': 'complete'})
 
 @application.route("/capture/delete", methods=["DELETE"])
 def delete_capture_http():
@@ -260,7 +260,7 @@ def delete_capture_http():
     capture_name = data['capture'] 
     
     delete_capture(credentials, capture_name)
-    return ('', 200)
+    return jsonify({'status': 'complete'})
 
 @application.route("/capture/get_past", methods=["GET"])
 
