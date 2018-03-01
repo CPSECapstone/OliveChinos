@@ -47,7 +47,7 @@ class Graph extends Component {
   componentWillReceiveProps(nextProps) {
     console.log('previous chicken ', this.props);
     console.log("new chicken", nextProps);
-    if(this.props != nextProps) {
+    if(this.props != nextProps && (nextProps.currentCaptureForGraph != "Capture Options")) {
       if(this.props.metricForGraph != nextProps.metricForGraph) {
         this.props = nextProps;
         this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, false, this.props.currentCaptureForGraph);
