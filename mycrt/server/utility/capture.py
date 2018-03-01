@@ -210,7 +210,7 @@ def end_capture(credentials, capture_name, db_id):
 
   Args:
     credentials: A dictionary resembling the structure at the top of the file
-    capture_name: A preexistint capture name
+    capture_name: A preexisting capture name
     db_id: Database identifier
   """
 
@@ -241,5 +241,28 @@ def end_capture(credentials, capture_name, db_id):
   return (transactions, start_time)
 
 def delete_capture(credentials, capture_name):
-  s3_client = boto3.client('s3', **credentials)
-  
+  '''Remove all traces of a capture in both S3 and the utility db.
+
+  Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexisting capture name
+  '''
+
+  s3_resource = boto3.resource('s3', **credentials)
+  bucket_id = "my-crt-test-bucket-olive-chinos"
+  bucket = s3_resource.Bucket(bucket_id)  
+
+  objects_to_delete = []
+  for obj in bucket.objects.filter(Prefix = capture_name + '/'):
+    objects_to_delete.append({'Key': obj.key})
+
+  bucket.delete_objects(
+    Delete = {
+        'Objects': objects_to_delete
+    }
+  )
+
+  query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  execute_utility_query(query)
