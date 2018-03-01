@@ -5,6 +5,9 @@ import { startReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
 import ReplayDetail from './ReplayDetail'
+import Flatpickr from 'react-flatpickr'
+import Datetime from 'react-datetime'
+import { setCaptureCount, startCapture, stopCapture } from '../actions'
 
 /* Use this element as a reference when creating components*/
 
@@ -21,8 +24,8 @@ class Replay extends React.Component {
       replayDBInstance: '',
       captureToReplay: '',
       databaseInstanceOptions: ["No instances available"],
-      completedReplayList: [null]
-
+      completedReplayList: [null],
+      fastMode: true
     }
 
     //binding required for callback
@@ -33,6 +36,7 @@ class Replay extends React.Component {
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
+    this.handleModeChange = this.handleModeChange.bind(this)
   }
 
   componentDidMount() {
@@ -43,6 +47,10 @@ class Replay extends React.Component {
 
   handleReplayNameChange(event) {
     this.setState({ replayName: event.target.value });
+  }
+
+  handleModeChange(event) {
+    this.setState({ fastMode: !this.state.fastMode })
   }
 
   getValidationState() {
@@ -130,7 +138,7 @@ class Replay extends React.Component {
       "captureName": this.state.captureToReplay,
       "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
       //"startTime": "now",
-      "fastMode": false,
+      "fastMode": this.state.fastMode,
       "restoreDb": false
     }
     var that = this;
@@ -234,6 +242,16 @@ class Replay extends React.Component {
             <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
               {this.state.databaseInstanceOptions}
             </FormControl>
+          </FormGroup>
+          <FormGroup>
+            <div>
+              <ButtonToolbar>
+                <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
+                  <ToggleButton value={true}>Fast Mode</ToggleButton>
+                  <ToggleButton value={false}>Time-Based Mode</ToggleButton>
+                </ToggleButtonGroup>
+              </ButtonToolbar>
+            </div>
           </FormGroup>
         </form>
 
