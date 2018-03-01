@@ -8,7 +8,8 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  Line
+  Line,
+  ReferenceArea
 } from 'recharts'
 import { connect } from 'react-redux'
 
@@ -32,7 +33,10 @@ class Graph extends Component {
       bottom : 'dataMin-1',
       top2 : 'dataMax+20',
       bottom2 : 'dataMin-20',
-      animation : true
+      animation : true,
+      leftRange: '',
+      rightRange: '',
+      reset: ''
     }
   }
 
@@ -58,7 +62,37 @@ class Graph extends Component {
   }
 
   zoomIn() {
-    //this.setState({ maxValues: 50, minValues : 50})
+    let { refAreaLeft, refAreaRight} = this.state;
+
+     if ( refAreaLeft === refAreaRight || refAreaRight === '' ) {
+     this.setState( () => ({
+         refAreaLeft : '',
+       refAreaRight : ''
+     }) );
+     return;
+    }
+    console.log("refAreaLeft" , refAreaLeft);
+    console.log("refAreaRight", refAreaRight);
+
+    if ( refAreaLeft > refAreaRight )
+    		[ refAreaLeft, refAreaRight ] = [ refAreaRight, refAreaLeft ];
+
+
+         this.setState( () => ({
+           refAreaLeft : '',
+           refAreaRight : '',
+           minValues : this.state.minValues - 400,
+           maxValues : this.state.maxValues - 400,
+           leftRange: refAreaLeft,
+           rightRange: refAreaRight,
+           reset: 'false'
+         } ) );
+
+
+    //var maxVal = this.state.maxValues - 400;
+    //var minValues = this.state.minValues - 400;
+    //this.setState({ maxValues: maxVal, minValues : minValues})
+    /*
     let { refAreaLeft, refAreaRight, data } = this.state;
     if ( refAreaLeft === refAreaRight || refAreaRight === '' ) {
     	this.setState( () => ({
@@ -81,11 +115,13 @@ class Graph extends Component {
       maxValues: this.state.maxValues - 200,
       minValues: this.state.minValues - 200
     })
+    */
   }
   zoomOut() {
     //this.setState({ maxValues: 50, minValues : 50})
 
-    this.setState({ maxValues: 0, minValues: 0 })
+    this.setState({ maxValues: 0, minValues: 0 ,refAreaLeft : '',
+    refAreaRight : '', reset: 'true'})
   }
   //this function gets the total points to be graphed and the values for
   //the actual linechart. it also sets the state of the totalValuesArray for the linechart
@@ -145,7 +181,7 @@ class Graph extends Component {
   //either graphs an empty graph if no replay or metric has been selected or
   //the lines that represent the replays that have been selected for that metric
   renderGraph() {
-    console.log(this.props);
+    //console.log(this.props);
     if (this.props.booleansForGraph) {
       for (var i = 0; i < this.props.booleansForGraph.length; i++) {
         var metric = "test-metrics1";
@@ -182,7 +218,7 @@ class Graph extends Component {
               margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
+              <XAxis dataKey="name" domain={[0, 30]}/>
               <YAxis
                 domain={[0, 10]}
                 label={{ angle: -90, position: 'insideLeft' }}
@@ -197,6 +233,7 @@ class Graph extends Component {
   //helper function to get all of the 'line' objects to be graphed based on currently
   //selected replays and captures for graphing
   getLines() {
+
     let linesForGraphing = []
     for (let i = 0; i < this.props.booleansForGraph.length; i++) {
       if (this.props.booleansForGraph[i] == true) {
@@ -218,7 +255,24 @@ class Graph extends Component {
   //returns the graph with the accurate data represented by lines on the linechart
   //when there is replay data passed in from the graphContainer
   getGraphLines() {
-    let linecharts = []
+    let linecharts = [];
+
+    //console.log(this.props);
+    var jsonObject = Object.keys(this.props.pointsArray);
+    var testArray = [];
+    testArray = this.props.pointsArray;
+
+    if (this.state.reset == 'true') {
+    }
+    else  {
+    console.log(jsonObject);
+    //console.log(this.props.pointsArray[1]);
+       for (var i = 0; i < jsonObject.length; i++) {
+         if (jsonObject[i] <= this.state.rightRange && jsonObject[i] >= this.state.leftRange) {
+            testArray.push(this.props.pointsArray[i]);
+         }
+      }
+    }
     return (
       <div>
         <div>
@@ -227,7 +281,7 @@ class Graph extends Component {
             <LineChart
               width={1400 - this.state.minValues}
               height={400}
-              data={this.props.pointsArray}
+              data={testArray}
               margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
               onMouseDown = { (e) => this.setState({refAreaLeft:e.activeLabel}) }
               onMouseMove = { (e) => this.state.refAreaLeft && this.setState({refAreaRight:e.activeLabel}) }
@@ -236,7 +290,7 @@ class Graph extends Component {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 allowDataOverflow={false}
-                dataKey="name"
+                dataKey="seconds"
                 padding={{
                   left: this.state.minValues,
                   right: this.state.maxValues
@@ -252,6 +306,10 @@ class Graph extends Component {
               />
               <Tooltip />
               <Legend />
+              {
+              (this.state.refAreaLeft && this.state.refAreaRight) ? (
+                 <ReferenceArea x1={this.state.refAreaLeft} x2={this.state.refAreaRight}  strokeOpacity={0.3} /> ) : null
+               }
               {this.getLines().map(line => line)}
             </LineChart>
           </div>

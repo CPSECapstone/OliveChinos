@@ -18,7 +18,7 @@ def _get_hostname(rds_client, db_id):
   rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address')
   return rds_host
 
-def _execute_transactions(hostname, transactions):
+def _execute_transactions(hostname, transactions, fast_mode):
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
   cur = connection.cursor()
   start_time = datetime.utcnow()
@@ -81,15 +81,17 @@ def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chi
     Key = log_key
   )
 
-def execute_replay(credentials, db_id = "pi"):
+def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
   cloudwatch_client = boto3.client('cloudwatch', **credentials)
 
   hostname = _get_hostname(rds_client, db_id)
-  transactions = _get_transactions(s3_client)
+  path_name = capture_name.replace(".cap", "")
+  capture_path = path_name + "/" + path_name + ".cap"
+  transactions = _get_transactions(s3_client, log_key = capture_path)
 
-  start_time, end_time = _execute_transactions(hostname, transactions)
+  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode)
 
   print (start_time, end_time, file=sys.stderr)
 
@@ -112,6 +114,6 @@ def execute_replay(credentials, db_id = "pi"):
   print ("Metrics\n\n", file=sys.stderr)
   print (metrics, file=sys.stderr)
   
-  _store_metrics(s3_client, metrics)
+  _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
   
 

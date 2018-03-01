@@ -9,10 +9,21 @@ export default class ReplayDetail extends React.Component {
 
   render() {
     return (
-      <div style={{ width: '100%' }}>
-        <span style={{ display: 'inline' }}>
+
+      <div style={{ width: '100%', padding: '15px' }}>
+        <span style={{ display: 'inline', float: 'left' }}>
           <h4>{this.props.replayName}</h4>
-          <p>{this.props.replayDate}</p>
+          <div><span className="text-secondary">Capture On: </span><span>{this.props.replayCapture}</span></div>
+        </span>
+        <span style={{ display: 'inline', float: 'right' }}>
+          <Button
+            style={{ marginLeft: '20px' }}
+            bsSize="large"
+            bsStyle="success"
+          //onClick={this.props.stopCapture.bind(this)}
+          >
+            Analyze
+      </Button>
         </span>
       </div>
     )

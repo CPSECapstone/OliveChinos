@@ -4,38 +4,104 @@ import multiprocessing
 
 from capture import *
 
+"""
+Each capture is created as a process.
+Scheduled captures also have a scheduler to run them at their specified start time.
+
+capture_processes holds all of the capture processes
+Key: capture_name
+Value: (scheduler object, 
+        start_process_id, 
+        end_process_id,
+        start_process_schedule_id, 
+        end_process_schedule_id)
+"""
+capture_processes = {}
+
+
 # this handles initiating the capture, creating the process for a schedulerd
 def new_capture_process(credentials, capture_name, db_name, start_time, end_time): 
-    capture_scheduler = sched.scheduler(time.time, time.sleep)
+
+    capture_scheduler = None
+    start_capture_schedule_id = None
+    end_capture_schedule_id = None
+    end_capture_process = None
 
     start_capture_process = multiprocessing.Process(target=start_capture, 
-            args=(capture_name, db_name, start_time, end_time))
-    start_time_adjusted = 0
-    start_capture_process_id = capture_scheduler.enterabs(start_time_adjusted, 1, 
-            start_capture_process.start())
+            args=(capture_name, db_name, start_time))
 
-    processes_by_cid[capture_name] = (start_capture_process_id,)
+    if end_time == 'No end time..': #interactive capture
+        start_capture_process.start()
+        if start_capture_process.is_alive():
+            print('new interactive capture started: ' + capture_name)
 
-    if end_time != 'No end time..': #scheduled capture
+    else: #scheduled capture
+        capture_scheduler = sched.scheduler(time.time, time.sleep)
+
+        #schedule start_capture event
+        start_time_in_seconds = get_delta(start_time)
+        start_priority = 1
+        
+        start_capture_schedule_id = capture_scheduler.enterabs(start_time_in_seconds, 
+                                    priority, start_capture_process.start)
+
+        #schedule end_capture event
         end_capture_process = multiprocessing.Process(target=end_capture, 
-                args=(credentials, capture_name, db_name, false))
-        end_time_adjusted = 0
-        #NOTE ACTUAL SCHEDULING IS NOT YET WORKING
-        end_capture_process_id = capture_scheduler.enterabs(end_time_adjusted, 1, 
-                end_capture_process.start())
+                args=(credentials, capture_name, db_name))
 
-        processes_by_cid[capture_name] = (start_capture_process_id, end_capture_process_id)
+        end_time_in_seconds= get_delta(end_time)
+        end_priority = 1
+
+        end_capture_schedule_id = capture_scheduler.enterabs(end_time_in_seconds,
+                end_priority, end_capture_process.start)
+
+        #run the task at the given times
+        """
+        there may be some sort of delay depending on processing time 
+        for process configurations
+        """
+        capture_scheduler.run()
+
+    capture_processes[capture_name] = (capture_scheduler,
+                                        start_capture_process, 
+                                        end_capture_process,
+                                        start_capture_schedule_id,
+                                        end_capture_schedule_id)
 
 
 #currently unused, useful later on
 def cancel_capture_process(capture_name): 
-    end_capture_process_id = processes_by_cid[capture_name][1]
-    capture_scheduler.cancel(end_capture_process_id)
+    capture_module = capture_processes[capture_name]
+    scheduler = capture_module[0]
+
+    #cancel start_capture
+    start_capture_process = capture_module[1]
+    start_capture_schedule_id = capture_module[3]
+
+    try: 
+        scheduler.cancel(start_capture_schedule_id)
+    except ValueError: 
+        #log: start has already started running
+    if start_capture_process.is_alive():
+        start_capture_process.terminate()
+
+
+    #cancel end_capture
+    end_capture_process = capture_module[2]
+    end_capture_schedule_id = capture_module[4]
+    try: 
+        scheduler.cancel(end_capture_process_id)
+    except ValueError: 
+        #log: event has already started; terminate should take care of it
+        pass
+    if end_capture_process.is_alive():
+        end_capture_process.terminate()
+        #TODO handle other interrupt stuff
+
+
+    #delete dictionary entry
+    del capture_processes[capture_name]
     
 def get_delta(raw_time): 
     now = datetime.now()
-
-def no_more_captures(): 
-    return not capture_scheduler.queue() 
-
 

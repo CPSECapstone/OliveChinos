@@ -16,6 +16,16 @@ def get_replays_for_capture(credentials, capture_folder):
   replay_list = [key for key in general_capture_list if ".replay" == key[-len(".replay"):]] 
   return replay_list
 
+def get_capture_replay_list(credentials):
+  ret_list = []
+  capture_list = get_capture_list(credentials)
+  for capture in capture_list:
+    replay_list = [replay.replace(capture, "").replace("/", "") for replay in get_replays_for_capture(credentials, capture)]
+    if len(replay_list) > 0:
+      ret_list.append((capture, replay_list))
+
+  return ret_list
+
 def get_analytics(credentials):
   analytics = "Pretend this is some analytics Data"
   region = credentials['region_name']
@@ -35,12 +45,5 @@ def retrieve_analytics(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos",
   )
   new_byte_log = bucket_obj["Body"].read()
   metrics = pickle.loads(new_byte_log)
-
-  print ("\n\n\n\n", file=sys.stderr)
-
-  
-
-  print (metrics, file=sys.stderr)
-
 
   return metrics
