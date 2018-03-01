@@ -3,19 +3,20 @@ import sys
 import configparser
 import json
 from flask import Flask, render_template, request, abort, jsonify
-from multiprocessing import Process
 
 try:
     from .utility.capture import *
     from .utility.analytics import *
     from .utility.replay import *
     from .utility.login import *
+    from .utility.scheduler import *
 except:
     
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
     from utility.login import * 
+    from utility.scheduler import *
 
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -130,19 +131,9 @@ def capture_start():
     capture_name = data.get('captureName', createCaptureName(db_name, start_time))
     
     end_time = data.get('endTime', 'No end time..')
-    
-    capture_process = Process(target=start_capture, args=(capture_name, db_name))
 
-    if start_time==now: 
-        #acquire lock? 
-        capture_process.start()
-        capture_process.join() #make sure parent waits
-
-    else: 
-        #schedule capture_process
-        #schedule end_capture_process
-        schedule_capture(credentials, capture_name, db_name, start_time, end_time)
-    
+    new_capture_process(credentials, capture_name, db_name, start_time, end_time, now)
+   
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -160,7 +151,8 @@ def capture_end():
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
-    capture_details, start_time = end_capture(credentials, capture_name, db_name)
+    is_interactive = true
+    capture_details, start_time = end_capture(credentials, capture_name, db_name, is_interactive)
 
     return jsonify({
         "status": "ended",
@@ -220,5 +212,4 @@ def analytics():
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
-    while True: 
-        capture_scheduler.run()
+

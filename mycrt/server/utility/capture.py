@@ -6,6 +6,8 @@ import time
 import re
 import sys
 
+import scheduler
+
 # Example of credentials dictionary
 '''
 credentials = {
@@ -114,8 +116,7 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
     Key = log_key
   )
 
-def start_capture(capture_name, db_id):
-  start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+def start_capture(capture_name, db_id, start_time):
   query = '''INSERT INTO Captures (db, name, start_time, end_time) 
                VALUES ('{0}', '{1}', '{2}', NULL)'''.format(db_id, capture_name, start_time)
 
@@ -123,6 +124,8 @@ def start_capture(capture_name, db_id):
   execute_utility_query(query)
   print (start_time, file=sys.stderr)
 
+#TODO check if ending scheduled capture
+# this is not currently a process
 def end_capture(credentials, capture_name, db_id):
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
