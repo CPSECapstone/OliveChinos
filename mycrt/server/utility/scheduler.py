@@ -2,7 +2,6 @@ import sched, time
 from datetime import datetime
 import multiprocessing 
 
-from capture import *
 
 """
 Each capture is created as a process.
@@ -20,6 +19,7 @@ capture_processes = {}
 
 
 # this handles initiating the capture, creating the process for a schedulerd
+# assumes if no end time specified, capture is interactive 
 def new_capture_process(credentials, capture_name, db_name, start_time, end_time): 
 
     capture_scheduler = None
@@ -43,7 +43,7 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
         start_priority = 1
         
         start_capture_schedule_id = capture_scheduler.enterabs(start_time_in_seconds, 
-                                    priority, start_capture_process.start)
+                                    start_priority, start_capture_process.start)
 
         #schedule end_capture event
         end_capture_process = multiprocessing.Process(target=end_capture, 
@@ -82,6 +82,8 @@ def cancel_capture_process(capture_name):
         scheduler.cancel(start_capture_schedule_id)
     except ValueError: 
         #log: start has already started running
+        pass
+
     if start_capture_process.is_alive():
         start_capture_process.terminate()
 
@@ -102,6 +104,10 @@ def cancel_capture_process(capture_name):
     #delete dictionary entry
     del capture_processes[capture_name]
     
+#convert datetime string to seconds since epoch for use by scheduler
+#example input: '2018-03-01 00:09'
+#example output: '1519891740.0'
 def get_delta(raw_time): 
-    now = datetime.now()
+    dt_obj = datetime.strptime(raw_time, '%Y-%m-%d %H:%M')
+    return time.mktime(dt_obj.timetuple())
 

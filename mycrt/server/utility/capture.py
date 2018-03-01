@@ -6,7 +6,6 @@ import time
 import re
 import sys
 
-import scheduler
 
 # Example of credentials dictionary
 '''

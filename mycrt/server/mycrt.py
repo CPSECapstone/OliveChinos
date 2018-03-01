@@ -137,7 +137,7 @@ def capture_start():
 
     end_time = data.get('endTime', 'No end time..')
 
-    new_capture_process(credentials, capture_name, db_name, start_time, end_time, now)
+    new_capture_process(credentials, capture_name, db_name, start_time, end_time)
    
     return jsonify({
         "status": "started",
