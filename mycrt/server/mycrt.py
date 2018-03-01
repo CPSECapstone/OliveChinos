@@ -80,7 +80,7 @@ def databaseInstances():
     else: 
         abort(401) 
 
-@application.route("/capture/list", methods=["GET"])
+@application.route("/capture/list_ongoing", methods=["GET"])
 def captureList():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
@@ -91,6 +91,40 @@ def captureList():
         #capture_names_list = get_capture_list(credentials)
         capture_list = get_all_ongoing_capture_details()
         #capture_list = [get_capture_details(name) for name in capture_names_list]
+
+        return jsonify({
+            "captures" : capture_list
+        })
+    else:
+        abort(401)
+
+
+@application.route("/capture/list_completed", methods=["GET"])
+def captureList():
+    headers = request.headers
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        capture_list = get_capture_list(credentials)
+
+        return jsonify({
+            "captures" : capture_list
+        })
+    else:
+        abort(401)
+
+
+@application.route("/capture/list_scheduled", methods=["GET"])
+def captureList():
+    headers = request.headers
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        capture_list = [] # Replace later when scheduled is implemented
 
         return jsonify({
             "captures" : capture_list
@@ -227,6 +261,8 @@ def delete_capture_http():
     
     delete_capture(credentials, capture_name)
     return ('', 200)
+
+@application.route("/capture/get_past", methods=["GET"])
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
