@@ -80,8 +80,8 @@ def databaseInstances():
     else: 
         abort(401) 
 
-@application.route("/capture/list", methods=["GET"])
-def captureList():
+@application.route("/capture/list_ongoing", methods=["GET"])
+def captureListOngoing():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
@@ -91,6 +91,40 @@ def captureList():
         #capture_names_list = get_capture_list(credentials)
         capture_list = get_all_ongoing_capture_details()
         #capture_list = [get_capture_details(name) for name in capture_names_list]
+
+        return jsonify({
+            "captures" : capture_list
+        })
+    else:
+        abort(401)
+
+
+@application.route("/capture/list_completed", methods=["GET"])
+def captureListCompleted():
+    headers = request.headers
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        capture_names = get_capture_list(credentials)
+        capture_list = [get_capture_details(name) for name in capture_names]
+        return jsonify({
+            "captures" : capture_list
+        })
+    else:
+        abort(401)
+
+
+@application.route("/capture/list_scheduled", methods=["GET"])
+def captureListScheduled():
+    headers = request.headers
+    pKey = headers.get("publicKey", pubKey)
+    priKey = headers.get("privateKey", privateKey)
+    if pubKey is None or privateKey is None:
+        abort(400)
+    if verify_login(pubKey, privateKey):
+        capture_list = [] # Replace later when scheduled is implemented
 
         return jsonify({
             "captures" : capture_list
@@ -208,8 +242,27 @@ def replay():
 
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
-  capture_replays = get_capture_replay_list(credentials)    
-  return jsonify(capture_replays)
+    capture_replays = get_capture_replay_list(credentials)    
+    return jsonify(capture_replays)
+
+@application.route("/replay/delete", methods=["DELETE"])
+def delete_replay_http():
+    #Need a capture name and replay name in order to delete replay
+    data = request.get_json()
+    capture_name = data['capture'] 
+    replay_name = data['replay']
+    delete_replay(credentials, capture_name, replay_name)
+    return jsonify({'status': 'complete'})
+
+@application.route("/capture/delete", methods=["DELETE"])
+def delete_capture_http():
+    data = request.get_json()
+    capture_name = data['capture'] 
+    
+    delete_capture(credentials, capture_name)
+    return jsonify({'status': 'complete'})
+
+@application.route("/capture/get_past", methods=["GET"])
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
