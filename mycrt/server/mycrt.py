@@ -81,7 +81,7 @@ def databaseInstances():
         abort(401) 
 
 @application.route("/capture/list_ongoing", methods=["GET"])
-def captureList():
+def captureListOngoing():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
@@ -100,15 +100,15 @@ def captureList():
 
 
 @application.route("/capture/list_completed", methods=["GET"])
-def captureList():
+def captureListCompleted():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
     if pubKey is None or privateKey is None:
         abort(400)
     if verify_login(pubKey, privateKey):
-        capture_list = get_capture_list(credentials)
-
+        capture_names = get_capture_list(credentials)
+        capture_list = [get_capture_details(name) for name in capture_names]
         return jsonify({
             "captures" : capture_list
         })
@@ -117,7 +117,7 @@ def captureList():
 
 
 @application.route("/capture/list_scheduled", methods=["GET"])
-def captureList():
+def captureListScheduled():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)

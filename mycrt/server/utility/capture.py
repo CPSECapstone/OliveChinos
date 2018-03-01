@@ -73,6 +73,7 @@ def get_all_ongoing_capture_details():
   for (capture_name,) in results:
     captures.append(get_capture_details(capture_name))
   return captures
+
   
 def get_capture_details(capture_name):
   """Returns the details of a single capture.
