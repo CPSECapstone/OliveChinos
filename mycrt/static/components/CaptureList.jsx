@@ -14,26 +14,27 @@ export default class CaptureList extends React.Component {
         return (
             <div>
                 <span className='captureListGroup'>
-                    <h4 className='captureListHeader'>Active</h4>
-                    <div>
+                    <div className='captureListHeader'><h4>Active</h4></div>
+                    <div className='captureListContainer'>
+
                         <ListGroup>
                             {this.props.activeCaptures}
                         </ListGroup>
                     </div>
                 </span>
                 <span id='scheduledCaptureList' className='captureListGroup'>
-                    <h4 className='captureListHeader'>Scheduled</h4>
-                    <div>
+                    <div className='captureListHeader'><h4>Scheduled</h4></div>
+                    <div className='captureListContainer'>
                         <ListGroup>
-                            <ListGroupItem>Capture B</ListGroupItem>
+                            {this.props.scheduledCaptures}
                         </ListGroup>
                     </div>
                 </span>
                 <span className='captureListGroup'>
-                    <h4 className='captureListHeader'>Past</h4>
-                    <div>
+                    <div className='captureListHeader'><h4>Completed</h4></div>
+                    <div className='captureListContainer'>
                         <ListGroup>
-                            <ListGroupItem>Capture C</ListGroupItem>
+                            {this.props.completedCaptures}
                         </ListGroup>
                     </div>
                 </span >

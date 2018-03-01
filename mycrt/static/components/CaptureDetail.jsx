@@ -27,10 +27,10 @@ export default class CaptureDetail extends React.Component {
       replayCaptureButton = (<Button
         style={{ marginLeft: '10px' }}
         bsSize="small"
-        bsStyle='danger'
-        onClick={this.props.replayCapture.bind(this)}
+        bsStyle='success'
+      //onClick={this.props.replayCapture.bind(this)}
       >
-        {this.props.captureEditAction}
+        REPLAY
       </Button>)
 
     }

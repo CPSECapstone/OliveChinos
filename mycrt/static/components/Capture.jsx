@@ -29,7 +29,9 @@ class Capture extends React.Component {
       databaseInstanceOptions: ["No instances available"],
       captureDBInstance: '',
       activeCaptureObjects: [],
-      activeCaptureList: [null],
+      activeCaptureList: [],
+      completedCaptureList: [],
+      scheduledCaptureList: [],
       startTime: new Date(),
       endTime: new Date(),
       captureMode: 'interactive'
@@ -105,16 +107,34 @@ class Capture extends React.Component {
       "captureName": captureName
     }
     var that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/' + editAction,
-      type: 'POST',
-      data: JSON.stringify(postData),
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      //console.log(data)
-      that.displayAllCaptures()
-    })
+    if (action === 'STOP' || action === 'CANCEL') {
+      jquery.ajax({
+        url: window.location.href + 'capture/' + editAction,
+        type: 'POST',
+        data: JSON.stringify(postData),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        //console.log(data)
+        that.displayAllCaptures()
+      })
+    }
+    else {
+      var deleteData = {
+        "capture": captureName
+      }
+      jquery.ajax({
+        url: window.location.href + 'capture/delete',
+        type: 'DELETE',
+        data: JSON.stringify(deleteData),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        //console.log(data)
+        that.displayAllCaptures()
+      })
+
+    }
 
   }
 
@@ -250,7 +270,7 @@ class Capture extends React.Component {
       console.log('capture item ', i, ": ", current.captureName)
       var that = this
       currentCaptures.push((function (current, i, that) {
-        return (<ListGroupItem style={{ height: '150px' }} key={current.captureName + i}>
+        return (<ListGroupItem style={{ height: '200px' }} key={current.captureName + i}>
           <CaptureDetail
             className="captureDetail"
             captureName={current.captureName}
@@ -271,18 +291,18 @@ class Capture extends React.Component {
   displayCaptures(captureType) {
     let captureRoute;
     if (captureType === 'active') {
-      captureRoute = 'capture/list'
+      captureRoute = 'list_ongoing'
     }
     else if (captureType === 'scheduled') {
-      captureRoute = 'capture/scheduled'
+      captureRoute = 'list_scheduled'
     }
     else {
-      captureRoute = 'capture/completed_list'
+      captureRoute = 'list_completed'
     }
 
     var that = this;
     jquery.ajax({
-      url: window.location.href + captureRoute,
+      url: window.location.href + 'capture/' + captureRoute,
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
@@ -296,15 +316,15 @@ class Capture extends React.Component {
         that.setState({ scheduledCaptureList: resultList })
       }
       else {
-        that.setState({ pastCaptureList: resultList })
+        that.setState({ completedCaptureList: resultList })
       }
     })
   }
 
   displayAllCaptures() {
     this.displayCaptures('active')
-    //displayCaptures('scheduled')
-    //this.displayCaptures('past')
+    this.displayCaptures('scheduled')
+    this.displayCaptures('past')
   }
 
 
@@ -404,10 +424,11 @@ class Capture extends React.Component {
         </div>
         <hr />
         <div>
-          <h4 style={{ marginLeft: '20px' }}>Active Captures</h4>
           <br />
-          <div>{this.state.activeCaptureList}</div>
-          <CaptureList activeCaptures={this.state.activeCaptureList} />
+          <CaptureList
+            activeCaptures={this.state.activeCaptureList}
+            completedCaptures={this.state.completedCaptureList}
+            scheduledCaptures={this.state.scheduledCaptureList} />
         </div>
       </div >
     )
