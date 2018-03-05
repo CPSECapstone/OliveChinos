@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import jquery from 'jquery';
 import { Button, PageHeader } from 'react-bootstrap';
 import GraphContainer from './GraphContainer';
-import EmptyGraphContainer from './EmptyGraphContainer';
 import { connect } from 'react-redux';
 import { setAnalyticsForGraph } from '../actions'
 
@@ -38,19 +37,14 @@ componentWillReceiveProps() {
 }
 
 renderGraphContainer() {
-  if(this.state.analytics) {
     return <GraphContainer/>
-  }
-  else {
-    return <EmptyGraphContainer/>
-  }
 }
 
 
   render () {
     return (
       <div>
-        <div style={{height:'75vh', border:'1px solid black'}}>
+        <div style={{height:'75vh'}}>
         <div>
           {this.renderGraphContainer()} 
           

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import { Button, Glyphicon } from 'react-bootstrap';
 import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setBooleansForGraph} from '../actions'
+import { setBooleansForGraph, setCaptureNameForGraph} from '../actions'
 
 var selectedColor = "#ADD8E6";
 
@@ -28,6 +29,17 @@ class CaptureReplaySelector extends React.Component {
         return false;
     }
 
+    createCustomToolBar (props) {
+        return (
+          <div style={ { margin: '15px' } }>
+            { props.components.btnGroup }
+            <div className='col-xs-8 col-sm-4 col-md-4 col-lg-2'>
+              { props.components.searchPanel }
+            </div>
+          </div>
+        );
+      }
+
      //this is a helper function to change the background color of the metric
     //that has been selected for the user to see
     getbackgroundColor(uniqueName) {
@@ -46,50 +58,102 @@ class CaptureReplaySelector extends React.Component {
     }
 
     //renders all of the table rows that hold the values for all capture and replay options to graph
-    getReplayCapturesWithData() {
+    getReplayCapturesWithData(refProps, names) {
+        const selectRowProp = {
+            mode: 'checkbox',
+            bgColor: selectedColor, // you should give a bgcolor, otherwise, you can't regonize which row has been selected
+            hideSelectColumn: true,  // enable hide selection column.
+            clickToSelect: true  // you should enable clickToSelect, otherwise, you can't select column.
+          };
+
+        //callback function for onclick of something to graph or not graph
+        //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
+        //the number of lines, and the names for graph in the redux state
+        function setReplayCaptureAsTrueFalse(uniqueName) {
+            let newBooleans = refProps.booleansForGraph.slice();
+            let totalNameOptions = names;
+            for(let i = 0; i < refProps.booleansForGraph.length; i++) {
+                if(totalNameOptions[i] == uniqueName) {
+                    newBooleans[i] = !(newBooleans[i])
+                }
+            }
+            refProps.dispatch(setBooleansForGraph(newBooleans));
+        }
+
+
+        var None = [{
+            none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
+        }]
+        
+
         if(this.state.totalReplayNames.length == 0) {
+            var options = {
+                deleteBtn: this.createCustomDeleteButton.bind(this)
+            }
+            function buttonFormatter(cell, row){
+                return <Button 
+                            type="submit"
+                            bsSize="small"
+                            bsStyle="success"
+                        >
+                Start a New Replay
+                </Button>;
+            }
             return (
-                <tr>
-                    <td>No Replays Recorded For This Capture Yet.</td>
-                </tr>
+            <div>
+                <BootstrapTable search={ true } multiColumnSearch={ true } deleteRow options={options} data={ None }>
+                    <TableHeaderColumn dataFormat={buttonFormatter} dataField='none' isKey>No Replays Recorded For {refProps.currentCaptureForGraph} Yet.</TableHeaderColumn>
+                </BootstrapTable>
+            </div>
             )
         }
         else if(this.state.totalReplayNames != false) {
-            let replayCaptureOptions = this.state.totalReplayNames;
-            return (
-                replayCaptureOptions.map(uniqueName => (
-                    <tr key={uniqueName} onClick={this.setReplayCaptureAsTrueFalse.bind(this, uniqueName)}>
-                    <td
-                    style={{backgroundColor: this.getbackgroundColor(uniqueName)}}
-                    key={uniqueName}>
-                    {uniqueName}
-                    </td>
-                    </tr>
-                ))
-            );
+            let replayOptions = this.state.totalReplayNames;
+            let replayData = [];
+            var options = {
+                onRowClick: function(row) {
+                    setReplayCaptureAsTrueFalse(row["Name"])
+                },
+                deleteBtn: this.createCustomDeleteButton.bind(this)
+            }
+            for(let i = 0; i < replayOptions.length; i++) {
+                let replayInfo = {
+                    Name : replayOptions[i],
+                    Date: "Date"
+                }
+                replayData.push(replayInfo)
+            }
+            return(
+                <BootstrapTable deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
+                    <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
+                    <TableHeaderColumn dataField='Date'>Date</TableHeaderColumn>
+                </BootstrapTable>
+            )
         }
         }
 
-    //callback function for onclick of something to graph or not graph
-    //dispatches an action that updates the boolean array, this updates the datapointsforgraph,
-    //the number of lines, and the names for graph in the redux state
-    setReplayCaptureAsTrueFalse(uniqueName, e) {
-        let newBooleans = this.props.booleansForGraph.slice();
-        let totalNameOptions = this.state.totalReplayNames;
-        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-            if(totalNameOptions[i] == uniqueName) {
-                newBooleans[i] = !(newBooleans[i])
-            }
+    //reRenders the capture options by dispatching this action when back button is clicked
+    //ignore that it says deleteButton - it is required for react-bootstrap-table
+    createCustomDeleteButton (onClick) {
+        console.log('WTF IS THIS: ', this)
+        function rerenderCapturesOnBackButton()
+        {
+            this.props.dispatch(setCaptureNameForGraph("Capture Options"));
         }
-        this.props.dispatch(setBooleansForGraph(newBooleans));
+        return (
+            <Button bsSize="small" onClick={rerenderCapturesOnBackButton.bind(this)}>
+            <Glyphicon glyph="chevron-left" />
+            Select A Different Capture
+            </Button>
+        );
     }
 
+
+
     render() {
+        console.log('********this is the props: ', this.props)
         return(
-            <tbody style={{overflowY: 'scroll'}}>
-                <tr style={{height:'50px'}}></tr>
-                {this.getReplayCapturesWithData()}
-            </tbody>
+            this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)
         );
     }
 
