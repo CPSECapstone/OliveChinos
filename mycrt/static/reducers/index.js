@@ -18,6 +18,7 @@ import {
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
+  CHANGE_STATE_FOR_COMPONENTS
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -40,12 +41,18 @@ let initialState = {
   replayCaptureNamesForGraph: false,
   analyticsForGraph: false,
   totalNames: false,
-  currentCaptureForGraph: 'Capture Options'
-
+  currentCaptureForGraph: 'Capture Options',
+  stateType: 'onCapture'
 }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
+
+    case CHANGE_STATE_FOR_COMPONENTS:
+       return Object.assign({}, state, {
+        stateType: action.key
+       })
+
     case SET_BOOLEANS_FOR_GRAPH:
       return Object.assign({}, state, {
         booleansForGraph: action.key

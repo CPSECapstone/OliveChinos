@@ -4,6 +4,7 @@ import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
+import { changeStateForComponents } from '../actions/index';
 import { connect } from 'react-redux'
 
 class MakeshiftHome extends Component {
@@ -19,49 +20,22 @@ class MakeshiftHome extends Component {
     }
   }
 
-  renderCapture() {
-    if (this.state.onCapture == false) {
-      this.setState({ onCapture: true })
-      this.setState({ onReplay: false })
-      this.setState({ onAnalyze: false })
-    }
-    this.renderPage()
-  }
-
-  renderReplay() {
-    if (this.state.onReplay == false) {
-      this.setState({ onReplay: true })
-      this.setState({ onCapture: false })
-      this.setState({ onAnalyze: false })
-    }
-    this.renderPage()
-  }
-
-  renderAnalyze() {
-    if (this.state.onAnalyze == false) {
-      this.setState({ onAnalyze: true })
-      this.setState({ onCapture: false })
-      this.setState({ onReplay: false })
-    }
-    this.renderPage()
-  }
-
   renderPage() {
-    if (this.state.onCapture == true) {
+    if (this.props.stateType === "onCapture") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Capture</h3>
           <Capture />
         </div>
       )
-    } else if (this.state.onReplay == true) {
+   } else if (this.props.stateType == "onReplay") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Replay</h3>
           <Replay />
         </div>
       )
-    } else if (this.state.onAnalyze == true) {
+   } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Analyze</h3>
@@ -119,16 +93,16 @@ class MakeshiftHome extends Component {
             </div>
             <button
               className="tablinks"
-              onClick={() => this.renderCapture()}
+              onClick={() => this.props.dispatch(changeStateForComponents("onCapture"))}
               id="button"
               type="button"
             >
               Capture
             </button>
-            <button className="tablinks" onClick={() => this.renderReplay()}>
+            <button className="tablinks" onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
               Replay
             </button>
-            <button className="tablinks" onClick={() => this.renderAnalyze()}>
+            <button className="tablinks" onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
               Analyze
             </button>
           </div>
@@ -139,6 +113,10 @@ class MakeshiftHome extends Component {
   }
 }
 
-const mapStateToProps = state => ({ data: state })
+const mapStateToProps = state => ({
+   data: state,
+   stateType: state.stateType,
+
+})
 
 export default connect(mapStateToProps)(MakeshiftHome)
