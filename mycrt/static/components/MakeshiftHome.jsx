@@ -24,18 +24,17 @@ class MakeshiftHome extends Component {
     if (this.props.stateType === "onCapture") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Capture</h3>
           <Capture />
         </div>
       )
-   } else if (this.props.stateType == "onReplay") {
+    } else if (this.props.stateType == "onReplay") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Replay</h3>
           <Replay />
         </div>
       )
-   } else if (this.props.stateType == "onAnalyze") {
+    } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Analyze</h3>
@@ -74,9 +73,19 @@ class MakeshiftHome extends Component {
       this.props.data.activeReplays > 0 ? styles.active : styles.notActive
     return (
       <div>
-        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
-          MyCRT Tool
-        </h1>
+        <div>
+          <div id="headerLeft">
+            Left
+          </div>
+          <div id="headerCenter">
+            <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
+              MyCRT
+          </h1>
+          </div>
+          <div id="headerRight">
+            Right
+          </div>
+        </div>
         <div>
           <div className="tab">
             <div className="tablinks">
@@ -114,8 +123,8 @@ class MakeshiftHome extends Component {
 }
 
 const mapStateToProps = state => ({
-   data: state,
-   stateType: state.stateType,
+  data: state,
+  stateType: state.stateType,
 
 })
 

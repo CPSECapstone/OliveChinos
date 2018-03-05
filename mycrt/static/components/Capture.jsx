@@ -375,6 +375,9 @@ class Capture extends React.Component {
 
     return (
       <div>
+        <div>
+          <h3 style={{ marginLeft: '20px' }}>Capture</h3>
+        </div>
         <hr />
         <div>
           <form>
