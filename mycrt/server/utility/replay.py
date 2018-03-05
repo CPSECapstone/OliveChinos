@@ -116,4 +116,21 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   
   _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
   
+def delete_replay(credentials, capture_name, replay_name):
+  '''Remove all traces of a replay in S3.
 
+  Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexisting capture name
+    replay_name: A preexisting replay name
+  '''
+
+  s3_resource = boto3.resource('s3', **credentials)
+  bucket_id = "my-crt-test-bucket-olive-chinos"
+
+  try:
+    s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
+  except Exception:
+    print("Replay to delete does not exist.", file=sys.stderr)

@@ -45,3 +45,23 @@
     border-color: #000;
     color: #333333;
       }
+
+.bsTable {
+    cursor: pointer;
+    overflow-y:scroll;
+    height:33vh;
+}
+
+#icon {
+    width : 20px;
+    height : 20px;
+    margin-right: 10px;
+}
+
+#toggle {
+    height: 20px;
+    padding-top: 5px;
+    border: 0;
+    margin-bottom: 20px;
+    padding-bottom: 25px;
+}
