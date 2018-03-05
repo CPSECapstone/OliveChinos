@@ -39,7 +39,7 @@ componentWillReceiveProps() {
 
 renderGraphContainer() {
   if(this.state.analytics) {
-    return <GraphContainer data={this.state.analytics}/>
+    return <GraphContainer/>
   }
   else {
     return <EmptyGraphContainer/>
@@ -61,8 +61,6 @@ renderGraphContainer() {
   }
 }
 
-const mapStateToProps = state => ({
-  // analyticsForGraph: state.analyticsForGraph
-})
+const mapStateToProps = state => ({})
 
 export default connect(mapStateToProps)(Analytics)

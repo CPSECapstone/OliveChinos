@@ -29,11 +29,14 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
     end_capture_schedule_id = None
     end_capture_process = None
 
-    start_capture_process = multiprocessing.Process(target=start_capture, 
-            args=(capture_name, db_name, start_time))
 
     if end_time == 'No end time..': #interactive capture
+        start_capture_process = multiprocessing.Process(target=start_capture, 
+                args=(capture_name, db_name, start_time))
         start_capture_process.start()
+        start_capture_process.join()
+
+        #TODO remove this once tested
         if start_capture_process.is_alive():
             print('new interactive capture started: ' + capture_name, file=sys.stderr)
 
@@ -41,16 +44,22 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
         print('AAAAAAAAAAA', file=sys.stderr)
         capture_scheduler = sched.scheduler(time.time, time.sleep)
 
-        #schedule start_capture event
-        start_time_in_seconds = get_delta(start_time)
-        print(start_time_in_seconds, file=sys.stderr)
-        print('now: ' + str(time.time()), file=sys.stderr)
-        start_priority = 1
-        
-        start_capture_schedule_id = capture_scheduler.enterabs(start_time_in_seconds, 
-                                    start_priority, start_capture_process.start)
+        start_capture_sched_id= capture_scheduler.enterabs(start_time_in_seconds, 
+                                    start_priority, 
+                                    run_start_capture_process, 
+                                    (capture_name, db_name, start_time))
 
-        #schedule end_capture event
+        end_capture_sched_id = capture_scheduler.enterabs(end_time_in_seconds, 
+                                    end_priority, 
+                                    run_end_capture_process, 
+                                    (credentials, capture_name, db_name, end_time))
+
+        #TODO test to make sure no delay from start time to actual run time
+        schedule_process = multiprocessing.Process(target=capture_scheduler.run) 
+        schedule_process.start()
+        schedule_process.join()
+
+                #schedule end_capture event
         print('BBBBBBBB', file=sys.stderr)
         end_capture_process = multiprocessing.Process(target=end_capture, 
                 args=(credentials, capture_name, db_name))
@@ -62,15 +71,6 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
                 end_priority, end_capture_process.start)
 
         #run the task at the given times
-        """
-        there may be some sort of delay depending on processing time 
-        for process configurations
-        """
-        print('CCCCCCCCC', file=sys.stderr)
-        schedule_process = multiprocessing.Process(target=capture_scheduler.run) 
-        schedule_process.start()
-        print('DDDDDDDD', file=sys.stderr)
-
     capture_processes[capture_name] = (capture_scheduler,
                                         start_capture_process, 
                                         end_capture_process,
@@ -119,8 +119,16 @@ def cancel_capture_process(capture_name):
 #convert datetime string to seconds since epoch for use by scheduler
 #example input: '2018-03-01 00:09'
 #example output: '1519891740.0'
-def get_delta(raw_time): 
+def _get_epoch_time(raw_time): 
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     eight_hours = timedelta(hours=8).total_seconds()
     return time.mktime(dt_obj.timetuple()) - eight_hours
+
+def _run_process(function_to_run, args): 
+    run_time = _get_epoch_time(time)
+    priority = 1
+
+    process = multiprocessing.Process(target=function_to_run, args=args)
+    process.start()
+    process.join()
 

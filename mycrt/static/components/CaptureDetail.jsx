@@ -12,6 +12,7 @@ export default class CaptureDetail extends React.Component {
     let endTime = null;
     let stopCaptureButton = null;
     let captureIcon = null;
+    let replayCaptureButton = null;
     // If the capture is a scheduled capture 
     if (this.props.captureEndTime != "No end time..") {
       endTime = (<div><span className="text-secondary">End Time: </span><span>{this.props.captureEndTime}</span></div>)
@@ -20,6 +21,18 @@ export default class CaptureDetail extends React.Component {
     else {
       captureIcon = null;
       //captureIcon = <span className="glyphicon glyphicon-play-circle"></span>
+    }
+
+    if (this.props.captureType === 'past') {
+      replayCaptureButton = (<Button
+        style={{ marginLeft: '10px' }}
+        bsSize="small"
+        bsStyle='success'
+      //onClick={this.props.replayCapture.bind(this)}
+      >
+        REPLAY
+      </Button>)
+
     }
 
     return (
@@ -31,14 +44,15 @@ export default class CaptureDetail extends React.Component {
           {endTime}
         </span>
         <span style={{ display: 'inline', float: 'right' }}>
+          {replayCaptureButton}
           <Button
-            style={{ marginLeft: '20px' }}
-            bsSize="large"
-            bsStyle="danger"
-            onClick={this.props.stopCapture.bind(this)}
+            style={{ marginLeft: '10px' }}
+            bsSize="small"
+            bsStyle='danger'
+            onClick={this.props.editCapture.bind(this)}
           >
-            Stop Capture
-      </Button>
+            {this.props.captureEditAction}
+          </Button>
         </span>
       </div>
     )
