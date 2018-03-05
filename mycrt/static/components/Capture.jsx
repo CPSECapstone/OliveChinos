@@ -250,11 +250,11 @@ class Capture extends React.Component {
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
                 value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                onChange={data => { this.setState({ startTime:data }) }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
                   value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  onChange={data => { this.setState({ endTime:data }) }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>)
@@ -264,6 +264,7 @@ class Capture extends React.Component {
 
   render() {
     let captureScheduler = null;
+    let that = this; 
     if (this.state.captureMode == 'schedule') {
       captureScheduler = <FormGroup>
         <ControlLabel>Capture Schedule</ControlLabel>
@@ -272,11 +273,11 @@ class Capture extends React.Component {
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
                 value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                onChange={data => { this.setState({ startTime:data }) }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
                   value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  onChange={data => { this.setState({ endTime:data }) }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>

@@ -124,8 +124,9 @@ def capture_start():
     data = request.get_json()
     db_name = data['db'] 
 
-    now = convertDatetimeToString(datetime.utcnow())
+    now = [convertDatetimeToString(datetime.utcnow())]
     start_time = data.get('startTime', now)
+    start_time = start_time[0]
     
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(db_name, start_time))
@@ -135,7 +136,8 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name):
       abort(400)
 
-    end_time = data.get('endTime', 'No end time..')
+    end_time = data.get('endTime', ['No end time..'])
+    end_time = end_time[0]
 
     new_capture_process(credentials, capture_name, db_name, start_time, end_time)
    

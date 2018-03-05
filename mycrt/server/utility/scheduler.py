@@ -1,7 +1,8 @@
 import sched, time
-from datetime import datetime
+from datetime import datetime, timedelta
 import multiprocessing 
 
+from .capture import *
 
 """
 Each capture is created as a process.
@@ -22,6 +23,7 @@ capture_processes = {}
 # assumes if no end time specified, capture is interactive 
 def new_capture_process(credentials, capture_name, db_name, start_time, end_time): 
 
+    print('BLAHHHHHHHH', file=sys.stderr)
     capture_scheduler = None
     start_capture_schedule_id = None
     end_capture_schedule_id = None
@@ -33,19 +35,23 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
     if end_time == 'No end time..': #interactive capture
         start_capture_process.start()
         if start_capture_process.is_alive():
-            print('new interactive capture started: ' + capture_name)
+            print('new interactive capture started: ' + capture_name, file=sys.stderr)
 
     else: #scheduled capture
+        print('AAAAAAAAAAA', file=sys.stderr)
         capture_scheduler = sched.scheduler(time.time, time.sleep)
 
         #schedule start_capture event
         start_time_in_seconds = get_delta(start_time)
+        print(start_time_in_seconds, file=sys.stderr)
+        print('now: ' + str(time.time()), file=sys.stderr)
         start_priority = 1
         
         start_capture_schedule_id = capture_scheduler.enterabs(start_time_in_seconds, 
                                     start_priority, start_capture_process.start)
 
         #schedule end_capture event
+        print('BBBBBBBB', file=sys.stderr)
         end_capture_process = multiprocessing.Process(target=end_capture, 
                 args=(credentials, capture_name, db_name))
 
@@ -60,17 +66,23 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
         there may be some sort of delay depending on processing time 
         for process configurations
         """
-        capture_scheduler.run()
+        print('CCCCCCCCC', file=sys.stderr)
+        schedule_process = multiprocessing.Process(target=capture_scheduler.run) 
+        schedule_process.start()
+        print('DDDDDDDD', file=sys.stderr)
 
     capture_processes[capture_name] = (capture_scheduler,
                                         start_capture_process, 
                                         end_capture_process,
                                         start_capture_schedule_id,
                                         end_capture_schedule_id)
+    
+    print('FOOOOOOOO', file=sys.stderr)
 
 
 #currently unused, useful later on
 def cancel_capture_process(capture_name): 
+    #TODO check if the capture was scheduled
     capture_module = capture_processes[capture_name]
     scheduler = capture_module[0]
 
@@ -108,6 +120,7 @@ def cancel_capture_process(capture_name):
 #example input: '2018-03-01 00:09'
 #example output: '1519891740.0'
 def get_delta(raw_time): 
-    dt_obj = datetime.strptime(raw_time, '%Y-%m-%d %H:%M')
-    return time.mktime(dt_obj.timetuple())
+    dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+    eight_hours = timedelta(hours=8).total_seconds()
+    return time.mktime(dt_obj.timetuple()) - eight_hours
 
