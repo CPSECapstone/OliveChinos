@@ -3,8 +3,10 @@ import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
-import MetricSelector from './MetricSelector'
-import { setCaptureNameForGraph, setTotalNamesForGraph } from '../actions'
+import MetricSelector from './MetricSelector';
+import { setCaptureNameForGraph, setTotalNamesForGraph } from '../actions';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 
 var selectedColor = "#ADD8E6";
 
@@ -14,17 +16,34 @@ class CaptureOptions extends React.Component {
     }
 
     //renders all of the table rows that hold the values for all capture options to graph
-    getCapturesWithData() {
+    getCapturesWithData(refProps) {
+        function setCaptureName(uniqueName) {
+            refProps.dispatch(setCaptureNameForGraph(uniqueName));
+            let totalReplayNames = Object.keys(refProps.analyticsForGraph[uniqueName]);
+            refProps.dispatch(setTotalNamesForGraph(totalReplayNames))
+        }
+
+        var options = {
+            onRowClick: function(row) {
+                setCaptureName(row["Name"])
+            }
+        }
+
+        let CaptureOptions = Object.keys(this.props.analyticsForGraph);
+        var CaptureData = [];
+        for(let i = 0; i < CaptureOptions.length; i++) {
+            let captureInfo = {
+                Name : CaptureOptions[i],
+                DataBase : 'Database Name'
+            }
+            CaptureData.push(captureInfo)
+        }
             let replayCaptureOptions = Object.keys(this.props.analyticsForGraph);
             return (
-                replayCaptureOptions.map(uniqueName => (
-                    <tr id="captureOption" key={uniqueName} onClick={this.setCaptureName.bind(this, uniqueName)}>
-                    <td
-                    key={uniqueName}>
-                    {uniqueName}
-                    </td>
-                    </tr>
-                ))
+            <BootstrapTable options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
+                <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
+                <TableHeaderColumn dataField='DataBase'>Database Instance</TableHeaderColumn>
+            </BootstrapTable>
             );
         }
 
@@ -39,7 +58,7 @@ class CaptureOptions extends React.Component {
     render() {
         return(
             <tbody style={{overflowY: 'scroll'}}>
-                {this.getCapturesWithData()}
+                {this.getCapturesWithData(this.props)}
             </tbody>
         );
     }

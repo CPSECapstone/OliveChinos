@@ -2,12 +2,15 @@ import React, { Component } from 'react';
 import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
+require('../styles/loader.css');
 import { Button, Glyphicon} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
 import { setCaptureNameForGraph } from '../actions/index';
 import CaptureOptions from './CaptureOptions';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 
 var selectedColor = "#ADD8E6";
 
@@ -23,42 +26,18 @@ class GraphContainer extends React.Component {
         this.props.dispatch(setCaptureNameForGraph("Capture Options"));
     }
 
-    //either renders Capture Options in table header or renders the current capture name if one is selected
-    getCaptureReplayHeader() {
-        if(this.props.currentCaptureForGraph == "Capture Options") {
-            return(
-            <th scope="col">{this.props.currentCaptureForGraph}</th>
-            );
-        }
-        else {
-            return (
-            <th scope="col">
-            <Button onClick={this.rerenderCapturesOnBackButton.bind(this)} className="btn-custom" bsSize="small">
-            <Glyphicon glyph="chevron-left" />
-            BACK
-            </Button>
-            {this.props.currentCaptureForGraph}
-            </th>
-            );
-        }
-    }
-
     //Renders the table below the graph
     renderSelectorTable() {
         return (
-        <div className='row' style={{height: '24vh', overflowY: 'scroll'}}>
-            <div className='col-xs-6' style={{width: '38vw'}} >
-                <table className="table table-hover">
-                    <thead className="thead-dark" style={{position: 'absolute', width: '38vw'}}>
-                    <tr>
-                        {this.getCaptureReplayHeader()}
-                    </tr>
-                    </thead >
-                        {this.displayCorrectReplayCaptures()}
-                </table>
+        <div>
+            <div className='row'>
+                <div>
+                    <MetricSelector />
+                </div>
             </div>
-            <div className='col-xs-6' style={{width: '38vw', position: 'absolute', right:'26'}}>
-                <MetricSelector />
+
+            <div className='row bsTable'>
+                {this.displayCorrectReplayCaptures()}
             </div>
         </div>
         );
@@ -67,7 +46,7 @@ class GraphContainer extends React.Component {
     //This will either render the metric table below the graph with data
     //or it will render 'loading data' if the data hasn't come in yet
     displayCorrectReplayCaptures() {
-        if(!this.props.analyticsForGraph) {
+        if(this.props.analyticsForGraph == false) {
             return this.getReplayCapturesWithoutData()
         }
         else {
@@ -77,7 +56,10 @@ class GraphContainer extends React.Component {
 
     getReplayCapturesWithoutData() {
         return (
-            <tbody><tr><td>...Loading Data...</td></tr></tbody>
+            <div className='row bsTable'>
+            <h4 className='col'>Fetching AWS RDS Data</h4>
+            <div id="loader" className='col'></div>
+            </div>
         );
     }
 
