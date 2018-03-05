@@ -1,10 +1,8 @@
 export default {
   active: {
-    backgroundColor:'#77e686',
-    height:'10vh'
+    backgroundColor: '#5fb86b',
   },
   notActive: {
-      backgroundColor:'inherit',
-      height:'10vh'
+    backgroundColor: 'inherit',
   }
 }

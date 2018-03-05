@@ -6,17 +6,6 @@
   width: 20%;
   height: 100vh;
 }
-.captureActiveTab {
-  display: inline-block;
-  float: left;
-  width: 50%;
-}
-
-.replayActiveTab {
-  float: right;
-  width: 50%;
-  display: inline-block;
-}
 
 /* Style the buttons inside the tab */
 .tab button {
