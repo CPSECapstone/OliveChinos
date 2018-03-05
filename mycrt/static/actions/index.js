@@ -18,11 +18,17 @@ import {
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
+  CHANGE_STATE_FOR_COMPONENTS
 } from './constants'
 
 export function setBooleansForGraph(key) {
   return { type: SET_BOOLEANS_FOR_GRAPH, key }
 }
+
+export function changeStateForComponents(key) {
+   return { type: CHANGE_STATE_FOR_COMPONENTS, key }
+}
+
 export function setPublicKey(key) {
   return { type: SET_PUBLIC_KEY, key }
 }
