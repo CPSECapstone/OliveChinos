@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
 //import { Flatpickr } from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
@@ -19,6 +19,7 @@ class Capture extends React.Component {
     super(props)
 
     this.state = {
+      show: false,
       capture: this.props.capture,
       activeCaptures: this.props.activeCaptures,
       haveCaptureData: false,
@@ -38,6 +39,8 @@ class Capture extends React.Component {
     }
 
     //binding required for callback
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.startNewCapture = this.startNewCapture.bind(this)
     this.editCapture = this.editCapture.bind(this)
     this.getCaptures = this.getCaptures.bind(this)
@@ -53,6 +56,19 @@ class Capture extends React.Component {
   componentDidMount() {
     this.loadDatabaseInstances()
     this.displayAllCaptures()
+  }
+
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  handleCloseAndStartCapture() {
+    this.setState({ show: false });
+    this.startNewCapture;
+  }
+
+  handleShow() {
+    this.setState({ show: true });
   }
 
   startNewCapture() {
@@ -376,58 +392,72 @@ class Capture extends React.Component {
     return (
       <div>
         <div>
-          <h3 style={{ marginLeft: '20px' }}>Capture</h3>
-        </div>
-        <hr />
-        <div>
-          <form>
-            <FormGroup
-              controlId="formBasicText"
-              validationState={this.getValidationState()}
+          <div id="captureTitle">
+            <h3 style={{ marginLeft: '20px' }}>Capture</h3>
+          </div>
+
+          <div id="newCaptureBtnContainer">
+            <Button
+              id="newCaptureBtn"
+              //style={{ marginLeft: '' }}
+              bsSize="xsmall"
+              bsStyle="primary"
+              onClick={this.handleShow}
             >
-              <ControlLabel>Capture Name</ControlLabel>
-              <FormControl
-                //id='captureNameInput'
-                type="text"
-                value={this.state.captureName}
-                placeholder="Enter name"
-                onChange={this.handleCaptureNameChange}
-              />
-              <FormControl.Feedback />
-              <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
-            </FormGroup>
-            <FormGroup controlId="formControlsSelect">
-              <ControlLabel>Database Instance</ControlLabel>
-              <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
-                {this.state.databaseInstanceOptions}
-              </FormControl>
-            </FormGroup>
-            <FormGroup>
-              <div>
-                <ButtonToolbar>
-                  <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
-                    <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
-                    <ToggleButton value={'schedule'}>Schedule Mode</ToggleButton>
-                  </ToggleButtonGroup>
-                </ButtonToolbar>
-              </div>
-            </FormGroup>
-            <div>
-              {captureScheduler}
-            </div>
-          </form>
-          <Button
-            style={{ marginLeft: '' }}
-            bsSize="large"
-            bsStyle="success"
-            onClick={this.startNewCapture}
-          >
-            Start Capture
-        </Button>
+              New Capture
+            </Button>
+          </div>
         </div>
-        <hr />
-        <div>
-          <br />
+
+        <Modal show={this.state.show} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>New Capture</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <FormGroup
+                controlId="formBasicText"
+                validationState={this.getValidationState()}
+              >
+                <ControlLabel>Capture Name</ControlLabel>
+                <FormControl
+                  //id='captureNameInput'
+                  type="text"
+                  value={this.state.captureName}
+                  placeholder="Enter name"
+                  onChange={this.handleCaptureNameChange}
+                />
+                <FormControl.Feedback />
+                <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Database Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
+                  {this.state.databaseInstanceOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup>
+                <div>
+                  <ButtonToolbar>
+                    <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
+                      <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
+                      <ToggleButton value={'schedule'}>Schedule Mode</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
+              </FormGroup>
+              <div>
+                {captureScheduler}
+              </div>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleClose}>Close</Button>
+            <Button bsStyle="primary" onClick={this.handleClose}>Start New Capture</Button>
+          </Modal.Footer>
+        </Modal>
+        <br />
+        <div id="captureBody">
           <CaptureList
             activeCaptures={this.state.activeCaptureList}
             completedCaptures={this.state.completedCaptureList}
