@@ -170,10 +170,12 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name):
       abort(400)
 
-    end_time = data.get('endTime', ['No end time..'])
+    end_time = data.get('endTime', [None])
     end_time = end_time[0]
+    is_scheduled = end_time is not None
 
-    new_capture_process(credentials, capture_name, db_name, start_time, end_time)
+    new_capture_process(is_scheduled, credentials, capture_name, 
+                            db_name, start_time, end_time)
    
     return jsonify({
         "status": "started",

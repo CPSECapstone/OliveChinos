@@ -4,6 +4,8 @@ import multiprocessing
 
 from .capture import *
 
+SUCCESS = 0
+
 """
 Each capture is created as a process.
 Scheduled captures also have a scheduler to run them at their specified start time.
@@ -28,9 +30,10 @@ Value: (scheduler object,
 """
 capture_scheduler = {}
 
-# this handles initiating the capture, creating the process for a schedulerd
+# this handles initiating the capture, creating the process for a scheduler
 # assumes if no end time specified, capture is interactive 
-def new_capture_process(credentials, capture_name, db_name, start_time, end_time): 
+def new_capture_process(is_scheduled, credentials, capture_name, 
+                            db_name, start_time, end_time): 
 
     start_capture_schedule_id = None
     start_capture_process = None
@@ -38,7 +41,7 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
     end_capture_process = None
 
 
-    if end_time == 'No end time..': #interactive capture
+    if is_scheduled: #interactive capture
         start_capture_process = multiprocessing.Process(target=start_capture, 
                 args=(capture_name, db_name, start_time))
         start_capture_process.start()
@@ -80,13 +83,15 @@ def new_capture_process(credentials, capture_name, db_name, start_time, end_time
                                             start_capture_sched_id,
                                             end_capture_sched_id)
 
+        return SUCCESS
+
 def _run_start_capture(capture_name, db_name, start_time): 
-    # a capture must start before it can end so safe to set end_capture_id=None
+    # capture must start before it can end so safe to set end_capture_id=None
     start_process_id = _run_process(start_capture, (capture_name, db_name, start_time))
     capture_processes[capture_name] = (start_process_id, None)
 
 def _run_end_capture(credentials, capture_name, db_name): 
-    # don't want to overwrite start_capture_id
+    # don't overwrite start_capture_id
     start_process_id = capture_processes[capture_name][0]
     end_process_id = _run_process(end_capture, (credentials, 
                                                 capture_name, 
