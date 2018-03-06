@@ -48,8 +48,6 @@
 
 .bsTable {
     cursor: pointer;
-    overflow-y:scroll;
-    height:33vh;
 }
 
 #icon {
