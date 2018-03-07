@@ -285,14 +285,15 @@ class Graph extends Component {
 
       let linecharts = [];
       var testArray = [];
-      var leftMin;
-      var rightMax;
-      var bottomMin = this.getMinYAxis();
-      var topMax = this.getMaxYAxis();
 
       if (this.state.dataPointsForGraph == false) {
          this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
       }
+
+      var leftMin;
+      var rightMax;
+      var bottomMin = this.getMinYAxis();
+      var topMax = this.getMaxYAxis();
 
       if (this.state.leftRange == 0 && this.state.rightRange == 0) {
          testArray = this.state.dataPointsForGraph;
