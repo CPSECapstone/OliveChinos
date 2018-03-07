@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
 import { startReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
 import ReplayDetail from './ReplayDetail'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
+import '../styles/replaystyles.css'
 import { setCaptureCount, startCapture, stopCapture } from '../actions'
 
 /* Use this element as a reference when creating components*/
@@ -16,6 +17,7 @@ class Replay extends React.Component {
     super(props)
 
     this.state = {
+      show: false,
       replay: this.props.replay,
       activeReplays: this.props.activeReplays,
       replayName: '',
@@ -29,7 +31,8 @@ class Replay extends React.Component {
     }
 
     //binding required for callback
-
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.addReplay = this.addReplay.bind(this)
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
     this.displayReplays = this.displayReplays.bind(this)
@@ -37,6 +40,19 @@ class Replay extends React.Component {
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
+  }
+
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  handleCloseAndAddReplay() {
+    this.setState({ show: false });
+    this.addReplay;
+  }
+
+  handleShow() {
+    this.setState({ show: true });
   }
 
   componentDidMount() {
@@ -214,59 +230,78 @@ class Replay extends React.Component {
   render() {
     return (
       <div>
-        <hr />
-        <form>
-          <FormGroup
-            //controlId="formBasicText"
-            validationState={this.getValidationState()}
-          >
-            <ControlLabel>Replay Name</ControlLabel>
-            <FormControl
-              id='replayNameInput'
-              type="text"
-              value={this.state.replayName}
-              placeholder="Enter name"
-              onChange={this.handleReplayNameChange}
-            />
-            <FormControl.Feedback />
-            <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
-          </FormGroup>
-          <FormGroup controlId="formControlsSelect">
-            <ControlLabel>Capture To Replay</ControlLabel>
-            <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
-              {this.state.captureOptions}
-            </FormControl>
-          </FormGroup>
-          <FormGroup controlId="formControlsSelect">
-            <ControlLabel>Database Instance</ControlLabel>
-            <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
-              {this.state.databaseInstanceOptions}
-            </FormControl>
-          </FormGroup>
-          <FormGroup>
-            <div>
-              <ButtonToolbar>
-                <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
-                  <ToggleButton value={true}>Fast Mode</ToggleButton>
-                  <ToggleButton value={false}>Time-Based Mode</ToggleButton>
-                </ToggleButtonGroup>
-              </ButtonToolbar>
-            </div>
-          </FormGroup>
-        </form>
-
-        <Button
-          style={{ marginLeft: '20px' }}
-          bsSize="large"
-          bsStyle="success"
-          onClick={this.addReplay}
-        >
-          Start Replay
-        </Button>
-        <hr />
         <div>
-          <h4 style={{ marginLeft: '20px' }}>Replays</h4>
-          <br />
+          <div id="replayTitle">
+            <h3 style={{ marginLeft: '20px' }}>Replay 2</h3>
+          </div>
+
+          <div id="newReplayBtnContainer">
+            <Button
+              id="newReplayBtn"
+              //style={{ marginLeft: '' }}
+              bsSize="xsmall"
+              bsStyle="primary"
+              onClick={this.handleShow}
+            >
+              New Replay
+            </Button>
+          </div>
+        </div>
+
+        <Modal show={this.state.show} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>New Replay</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <FormGroup
+                //controlId="formBasicText"
+                validationState={this.getValidationState()}
+              >
+                <ControlLabel>Replay Name</ControlLabel>
+                <FormControl
+                  id='replayNameInput'
+                  type="text"
+                  value={this.state.replayName}
+                  placeholder="Enter name"
+                  onChange={this.handleReplayNameChange}
+                />
+                <FormControl.Feedback />
+                <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Capture To Replay</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
+                  {this.state.captureOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Database Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
+                  {this.state.databaseInstanceOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup>
+                <div>
+                  <ButtonToolbar>
+                    <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
+                      <ToggleButton value={true}>Fast Mode</ToggleButton>
+                      <ToggleButton value={false}>Time-Based Mode</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
+              </FormGroup>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleClose}>Close</Button>
+            <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <br />
+
+        <div id="replayBody">
           <div>{this.state.completedReplayList}</div>
         </div>
       </div>

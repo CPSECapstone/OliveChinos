@@ -31,7 +31,6 @@ class MakeshiftHome extends Component {
     } else if (this.props.stateType == "onReplay") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Replay</h3>
           <Replay />
         </div>
       )

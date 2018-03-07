@@ -1,0 +1,19 @@
+#replayTitle {
+    width: 70%;
+    display: inline;
+    float: left;
+}
+
+#newReplayBtnContainer {
+    float: right;
+    margin-right: 25px;
+    margin-top: 15px;
+}
+
+#newReplayBtn {
+    padding: 10px 15px;
+}
+
+#replayBody {
+    margin-top: 75px;
+}

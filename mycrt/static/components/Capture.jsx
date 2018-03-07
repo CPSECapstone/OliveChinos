@@ -453,10 +453,12 @@ class Capture extends React.Component {
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.handleClose}>Close</Button>
-            <Button bsStyle="primary" onClick={this.handleClose}>Start New Capture</Button>
+            <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
+
         <br />
+
         <div id="captureBody">
           <CaptureList
             activeCaptures={this.state.activeCaptureList}
