@@ -84,14 +84,14 @@ class CaptureReplaySelector extends React.Component {
         var None = [{
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
-        
+
 
         if(this.state.totalReplayNames.length == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
             function buttonFormatter(cell, row){
-                return <Button 
+                return <Button
                             type="submit"
                             bsSize="small"
                             bsStyle="success"
@@ -137,7 +137,7 @@ class CaptureReplaySelector extends React.Component {
     //reRenders the capture options by dispatching this action when back button is clicked
     //ignore that it says deleteButton - it is required for react-bootstrap-table
     createCustomDeleteButton (onClick) {
-        console.log('WTF IS THIS: ', this)
+        //console.log('WTF IS THIS: ', this)
         function rerenderCapturesOnBackButton()
         {
             this.props.dispatch(setCaptureNameForGraph("Capture Options"));
@@ -153,7 +153,7 @@ class CaptureReplaySelector extends React.Component {
 
 
     render() {
-        console.log('********this is the props: ', this.props)
+        //console.log('********this is the props: ', this.props)
         return(
             this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)
         );
