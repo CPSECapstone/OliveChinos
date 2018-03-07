@@ -1,8 +1,10 @@
 import React, {Component} from 'react'
+import * as ReactDOM from 'react-dom';
 import {setDataPointsForGraph} from '../actions'
 import Async from 'react-promise'
 import alasql from 'alasql';
 import '../styles/graphComponent.css'
+import FileSaver from 'file-saver'
 
 import {
    LineChart,
@@ -47,6 +49,16 @@ class Graph extends Component {
          }
       }
    }
+
+   downloadObjectAsJson(){
+   var exportObj = this.state.dataPointsForGraph;
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", "test.json");
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
 
    getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
       let newLinesToGraph = []
@@ -281,6 +293,22 @@ class Graph extends Component {
       return linesForGraphing
    }
 
+   exportChart(asSVG) {
+
+       // A Recharts component is rendered as a div that contains namely an SVG
+       // which holds the chart. We can access this SVG by calling upon the first child/
+       let chartSVG = ReactDOM.findDOMNode(this.currentGraph).children[0];
+
+       if (asSVG) {
+           let svgURL = new XMLSerializer().serializeToString(chartSVG);
+           let svgBlob = new Blob([svgURL], {type: "image/svg+xml;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.svg");
+       } else {
+           let svgBlob = new Blob([chartSVG.outerHTML], {type: "text/html;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.html");
+       }
+   }
+
    getGraphLines() {
 
       let linecharts = [];
@@ -312,12 +340,18 @@ class Graph extends Component {
          }
       }
 
+
+      console.log(this.state);
+      console.log(this.props);
+
       return (
         <div id="graphContainer">
           <div>
             <div>
               <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
               <LineChart
+                id="currentGraph"
+                ref={(graph) => this.currentGraph = graph}
                 width={1400}
                 height={400}
                 data={testArray}
@@ -358,6 +392,23 @@ class Graph extends Component {
                 {' '}
                 Reset
               </a>
+              <a
+                href="javascript: void(0);"
+                className="btn update"
+                onClick={this.exportChart.bind(this)}
+              >
+                {' '}
+                Download Graph
+              </a>
+              <a
+                href="javascript: void(0);"
+                className="btn update"
+                onClick={this.downloadObjectAsJson.bind(this)}
+              >
+                {' '}
+                Download CSV
+              </a>
+
             </div>
           </div>
         </div>
