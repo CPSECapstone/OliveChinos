@@ -56,6 +56,8 @@ class Graph extends Component {
             newLinesToGraph.push(totalNames[i])
          }
       }
+      console.log("newLines");
+      console.log(newLinesToGraph);
       let numberOfSelectedReplays = newLinesToGraph.length
       if (analytics != false) {
          let totalNumberOfOptionsToChooseFrom = totalNames.length
@@ -71,11 +73,14 @@ class Graph extends Component {
          }
       }
       if (arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
+
          this.setState({dataPointsForGraph: false})
+         return false;
       } else {
          this.setState({
             dataPointsForGraph: arrayOfDataJSONS[arrayOfDataJSONS.length - 1]
          })
+         return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
       }
    }
 
@@ -243,11 +248,11 @@ class Graph extends Component {
    }
 
    getGraphLines() {
+
       if (this.state.dataPointsForGraph == false) {
-         this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+         this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
       }
       let linecharts = [];
-      var jsonObject = Object.keys(this.state.dataPointsForGraph);
       var testArray = [];
       var leftMin;
       var rightMax;
@@ -256,7 +261,7 @@ class Graph extends Component {
          leftMin = this.getMin();
          rightMax = this.getMax();
       } else {
-
+         var jsonObject = Object.keys(this.state.dataPointsForGraph);
          leftMin = parseInt(this.state.leftRange);
          rightMax = parseInt(this.state.rightRange);
 
