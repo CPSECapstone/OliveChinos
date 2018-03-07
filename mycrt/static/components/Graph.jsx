@@ -160,10 +160,10 @@ class Graph extends Component {
       this.setState({leftRange: refAreaLeft, rightRange: refAreaRight, dataPointsForGraph: dataPointsForGraph.slice(), refAreaLeft: 0, refAreaRight: 0});
    }
    zoomOut() {
-      this.setState(() => ({leftRange: this.getMin(), rightRange: this.getMax(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
+      this.setState(() => ({leftRange: this.getMinXAxis(), rightRange: this.getMaxXAxis(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
    }
 
-   getMin() {
+   getMinXAxis() {
       let totalValues = []
 
       for (let j = 0; j < this.props.totalNames.length; j++) {
@@ -181,12 +181,46 @@ class Graph extends Component {
       return Math.floor(dataMin)
    }
 
-   getMax() {
+   getMaxXAxis() {
       let totalValues = []
       for (let j = 0; j < this.props.totalNames.length; j++) {
          if (this.props.booleansForGraph[j] === true) {
             for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
                totalValues.push(this.state.dataPointsForGraph[i]["seconds"])
+            }
+         }
+      }
+      let dataMax = totalValues.reduce(function(a, b) {
+         return Math.max(a, b)
+      })
+
+      return Math.ceil(dataMax)
+   }
+
+   getMinYAxis() {
+      let totalValues = []
+
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+            }
+         }
+      }
+
+      let dataMin = totalValues.reduce(function(a, b) {
+         return Math.min(a, b)
+      })
+
+      return Math.floor(dataMin)
+   }
+
+   getMaxYAxis() {
+      let totalValues = []
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
             }
          }
       }
@@ -249,17 +283,21 @@ class Graph extends Component {
 
    getGraphLines() {
 
-      if (this.state.dataPointsForGraph == false) {
-         this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
-      }
       let linecharts = [];
       var testArray = [];
       var leftMin;
       var rightMax;
+      var bottomMin = this.getMinYAxis();
+      var topMax = this.getMaxYAxis();
+
+      if (this.state.dataPointsForGraph == false) {
+         this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+      }
+
       if (this.state.leftRange == 0 && this.state.rightRange == 0) {
          testArray = this.state.dataPointsForGraph;
-         leftMin = this.getMin();
-         rightMax = this.getMax();
+         leftMin = this.getMinXAxis();
+         rightMax = this.getMaxXAxis();
       } else {
          var jsonObject = Object.keys(this.state.dataPointsForGraph);
          leftMin = parseInt(this.state.leftRange);
@@ -300,6 +338,8 @@ class Graph extends Component {
                     angle: -90,
                     position: 'insideLeft'
                   }}
+                  domain={[bottomMin, topMax]}
+
                 />
                 <Tooltip />
                 <Legend />
