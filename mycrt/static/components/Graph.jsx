@@ -51,13 +51,21 @@ class Graph extends Component {
    }
 
    downloadObjectAsJson(){
-   var exportObj = this.state.dataPointsForGraph;
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
-    var downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", "test.json");
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+      var newDate = new Date().toISOString().split('T')[0];
+      var newTime = new Date().toISOString().split('T')[1].split('.')[0];
+
+      var exportObj = {
+         "Metric": this.props.metricForGraph,
+         "Date": newDate,
+         "Time": newTime,
+         "DataPoints": this.state.dataPointsForGraph
+      }
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null , 3));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", "test.json");
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
   }
 
    getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
@@ -286,7 +294,7 @@ class Graph extends Component {
       for (let i = 0; i < this.props.booleansForGraph.length; i++) {
          if (this.props.booleansForGraph[i] == true) {
             let currKey = this.props.totalNames[i]
-            let line = (<Line key={i} dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
+            let line = (<Line key={i} id="Legend" dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
             linesForGraphing.push(line)
          }
       }
@@ -295,8 +303,6 @@ class Graph extends Component {
 
    exportChart(asSVG) {
 
-       // A Recharts component is rendered as a div that contains namely an SVG
-       // which holds the chart. We can access this SVG by calling upon the first child/
        let chartSVG = ReactDOM.findDOMNode(this.currentGraph).children[0];
 
        if (asSVG) {
@@ -406,7 +412,7 @@ class Graph extends Component {
                 onClick={this.downloadObjectAsJson.bind(this)}
               >
                 {' '}
-                Download CSV
+                Download JSON
               </a>
 
             </div>
