@@ -33,8 +33,8 @@ class Capture extends React.Component {
       activeCaptureList: [],
       completedCaptureList: [],
       scheduledCaptureList: [],
-      startTime: new Date(),
-      endTime: new Date(),
+      captureStartTime: new Date(),
+      captureEndTime: new Date(),
       captureMode: 'interactive'
     }
 
@@ -50,6 +50,8 @@ class Capture extends React.Component {
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.updateCaptureDB = this.updateCaptureDB.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+    this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
 
   }
 
@@ -354,12 +356,16 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
-                value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                value={this.state.captureStartTime}
+                onChange={date => {
+                  this.setState({ captureStartTime: date })
+                }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
-                  value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  value={this.state.captureEndTime}
+                  onChange={date => {
+                    this.setState({ captureEndTime: date })
+                  }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>)
@@ -376,12 +382,16 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
-                value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                value={this.state.captureStartTime}
+                onChange={date => {
+                  this.setState({ captureStartTime: date })
+                }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
-                  value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  value={this.state.captureEndTime}
+                  onChange={date => {
+                    this.setState({ captureEndTime: date })
+                  }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>
@@ -409,7 +419,7 @@ class Capture extends React.Component {
           </div>
         </div>
 
-        <Modal show={this.state.show} onHide={this.handleClose}>
+        <Modal show={this.state.show} onHide={this.handleClose} backdrop='static'>
           <Modal.Header closeButton>
             <Modal.Title>New Capture</Modal.Title>
           </Modal.Header>
@@ -446,17 +456,16 @@ class Capture extends React.Component {
                   </ButtonToolbar>
                 </div>
               </FormGroup>
-              <div>
-                {captureScheduler}
-              </div>
+              {captureScheduler}
             </form>
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.handleClose}>Close</Button>
-            <Button bsStyle="primary" onClick={this.handleClose}>Start New Capture</Button>
+            <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
         <br />
+        {captureScheduler}
         <div id="captureBody">
           <CaptureList
             activeCaptures={this.state.activeCaptureList}
