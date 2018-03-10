@@ -18,7 +18,7 @@ def _get_hostname(rds_client, db_id):
   rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address')
   return rds_host
 
-def _execute_transactions(hostname, transactions):
+def _execute_transactions(hostname, transactions, fast_mode):
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
   cur = connection.cursor()
   start_time = datetime.utcnow()
@@ -81,15 +81,17 @@ def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chi
     Key = log_key
   )
 
-def execute_replay(credentials, db_id = "pi"):
+def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
   cloudwatch_client = boto3.client('cloudwatch', **credentials)
 
   hostname = _get_hostname(rds_client, db_id)
-  transactions = _get_transactions(s3_client)
+  path_name = capture_name.replace(".cap", "")
+  capture_path = path_name + "/" + path_name + ".cap"
+  transactions = _get_transactions(s3_client, log_key = capture_path)
 
-  start_time, end_time = _execute_transactions(hostname, transactions)
+  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode)
 
   print (start_time, end_time, file=sys.stderr)
 
@@ -112,6 +114,23 @@ def execute_replay(credentials, db_id = "pi"):
   print ("Metrics\n\n", file=sys.stderr)
   print (metrics, file=sys.stderr)
   
-  _store_metrics(s3_client, metrics)
+  _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
   
+def delete_replay(credentials, capture_name, replay_name):
+  '''Remove all traces of a replay in S3.
 
+  Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexisting capture name
+    replay_name: A preexisting replay name
+  '''
+
+  s3_resource = boto3.resource('s3', **credentials)
+  bucket_id = "my-crt-test-bucket-olive-chinos"
+
+  try:
+    s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
+  except Exception:
+    print("Replay to delete does not exist.", file=sys.stderr)

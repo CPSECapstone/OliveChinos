@@ -25,3 +25,41 @@
     padding-right: 0;
     padding-left: 0;
 }
+
+#captureOption:hover {
+    background-color: "#ADD8E6";
+    cursor: pointer;
+}
+
+.btn-custom {
+    margin-right:20px;
+    background-color: #fff;
+    border-color: #000;
+    color: #333333;
+    padding: 0;
+    height: 20px;
+    /* width:20px; */
+  }
+  .btn-custom:hover {
+  background-color: #e5e5e5;
+    border-color: #000;
+    color: #333333;
+      }
+
+.bsTable {
+    cursor: pointer;
+}
+
+#icon {
+    width : 20px;
+    height : 20px;
+    margin-right: 10px;
+}
+
+#toggle {
+    height: 20px;
+    padding-top: 5px;
+    border: 0;
+    margin-bottom: 20px;
+    padding-bottom: 25px;
+}

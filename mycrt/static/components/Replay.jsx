@@ -1,10 +1,13 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { startReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
 import ReplayDetail from './ReplayDetail'
+import Flatpickr from 'react-flatpickr'
+import Datetime from 'react-datetime'
+import { setCaptureCount, startCapture, stopCapture } from '../actions'
 
 /* Use this element as a reference when creating components*/
 
@@ -21,25 +24,33 @@ class Replay extends React.Component {
       replayDBInstance: '',
       captureToReplay: '',
       databaseInstanceOptions: ["No instances available"],
-      activeReplayList: [null]
-
+      completedReplayList: [null],
+      fastMode: true
     }
 
     //binding required for callback
 
     this.addReplay = this.addReplay.bind(this)
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
+    this.displayReplays = this.displayReplays.bind(this)
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
+    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
+    this.handleModeChange = this.handleModeChange.bind(this)
   }
 
   componentDidMount() {
+    this.loadDatabaseInstances()
     this.loadCapturesToReplay()
     this.displayReplays()
   }
 
   handleReplayNameChange(event) {
     this.setState({ replayName: event.target.value });
+  }
+
+  handleModeChange(event) {
+    this.setState({ fastMode: !this.state.fastMode })
   }
 
   getValidationState() {
@@ -60,12 +71,12 @@ class Replay extends React.Component {
 
 
   createCapturesSelect(data) {
-    var captures = data["databases"];
+    var captures = data
     let captureList = [];
     for (var i = 0; i < captures.length; i++) {
-      var instance = captures[i];
-      var selectOption = (<option value={instance} key={i}>
-        {instance}
+      var capture_name = captures[i];
+      var selectOption = (<option value={capture_name} key={i}>
+        {capture_name}
       </option>)
       captureList.push(selectOption)
     }
@@ -75,13 +86,15 @@ class Replay extends React.Component {
   loadCapturesToReplay() {
     var that = this;
     jquery.ajax({
-      url: window.location.href + 'capture/list',
+      url: window.location.href + 'capture/completed_list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
       var resultList = that.createCapturesSelect(data)
       that.setState({ captureOptions: resultList })
+      that.setState({ captureToReplay: resultList[0].props.value })
+
     })
   }
 
@@ -121,11 +134,11 @@ class Replay extends React.Component {
     this.setState({ replay: 'Replay Active' })
     this.props.dispatch(startNewReplay())
     var postData = {
-      "db": replayDB,
-      "captureName": captureName,
-      "replayName": replayName,
+      "db": this.state.replayDBInstance,
+      "captureName": this.state.captureToReplay,
+      "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
       //"startTime": "now",
-      "fastMode": false,
+      "fastMode": this.state.fastMode,
       "restoreDb": false
     }
     var that = this;
@@ -136,9 +149,8 @@ class Replay extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      that.setState({ replay: 'Replay Inactive' })
       that.props.dispatch(stopReplay())
-      console.log(data)
+      that.displayReplays()
 
     })
 
@@ -154,34 +166,48 @@ class Replay extends React.Component {
 
 
   getReplays(data) {
-    var currentReplays = [];
-    var current;
-    for (var i = 0; i < this.props.activeReplays; i++) {
-      current = data[i]
-      currentReplays.push(
-        <li key={current.name + i}>
-          <ReplayDetail
-            captureName={current.replayName}
-            captureDB={current.db}
-            captureDate={current.startTime}
-          />
-        </li>
-      )
+    var completedReplays = [];
+    var currentTup;
+    var currentCapture;
+    var currentReplayArr;
+    var currentReplay;
+    console.log("DATA\n", data)
+    // List of replays is list of tuples : Each tuple is structured (Capture, Listof Replay)
+    for (var i = 0; i < data.length; i++) {
+      currentTup = data[i]
+      currentCapture = currentTup[0]
+      currentReplayArr = currentTup[1]
+      // console.log('replay item ', i, ": ", current.replayName)
+      var that = this
+      for (var j = 0; j < currentReplayArr.length; j++) {
+        currentReplay = currentReplayArr[j]
+        completedReplays.push((function (currentReplay, i, j, that) {
+          return (<ListGroupItem style={{ height: '150px' }} key={currentReplay + i + "-" + j}>
+            <ReplayDetail
+              className="replayDetail"
+              replayCapture={currentCapture}
+              replayName={currentReplay}
+            // replayDB={currentReplay.db}
+            // replayDate={currentReplay.date}
+            //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
+            />
+          </ListGroupItem>)
+        }(currentReplay, i, j, that)))
+      }
     }
-    return <ul>{currentReplays}</ul>
+    return <ListGroup>{completedReplays}</ListGroup>
   }
 
   displayReplays() {
     var that = this;
     jquery.ajax({
-      // TODO: Add route for current replays
-      url: window.location.href + 'replays/list',
+      url: window.location.href + 'replay/list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
       var resultList = that.getReplays(data)
-      that.setState({ activeReplayList: resultList })
+      that.setState({ completedReplayList: resultList })
     })
   }
 
@@ -213,9 +239,19 @@ class Replay extends React.Component {
           </FormGroup>
           <FormGroup controlId="formControlsSelect">
             <ControlLabel>Database Instance</ControlLabel>
-            <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateReplayDB}>
+            <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
               {this.state.databaseInstanceOptions}
             </FormControl>
+          </FormGroup>
+          <FormGroup>
+            <div>
+              <ButtonToolbar>
+                <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
+                  <ToggleButton value={true}>Fast Mode</ToggleButton>
+                  <ToggleButton value={false}>Time-Based Mode</ToggleButton>
+                </ToggleButtonGroup>
+              </ButtonToolbar>
+            </div>
           </FormGroup>
         </form>
 
@@ -228,8 +264,11 @@ class Replay extends React.Component {
           Start Replay
         </Button>
         <hr />
-        <h4 style={{ marginLeft: '20px' }}>{this.state.replay}</h4>
-        <div>{this.displayReplays()}</div>
+        <div>
+          <h4 style={{ marginLeft: '20px' }}>Replays</h4>
+          <br />
+          <div>{this.state.completedReplayList}</div>
+        </div>
       </div>
     )
   }

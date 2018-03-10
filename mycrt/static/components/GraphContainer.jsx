@@ -2,65 +2,40 @@ import React, { Component } from 'react';
 import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
+require('../styles/loader.css');
+import { Button, Glyphicon} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
-import { setBooleansForGraph } from '../actions/index';
+import { setCaptureNameForGraph } from '../actions/index';
+import CaptureOptions from './CaptureOptions';
 
 var selectedColor = "#ADD8E6";
 
 class GraphContainer extends React.Component {
     constructor(props) {
         super(props);
-    
-        let dataResult = this.setData();
-        this.state = {
-          //all unique names of replay captures that user can choose from
-          totalReplayCaptures: dataResult.totalReplayCaptures,
-          //array of booleans for each replay/capture option: true if selected and false if not selected
-          rcBooleans: dataResult.rcBooleans
-        };
         
     }
 
-    //function that is called on initial render of the graph container to set the intial redux state elements
-    setData() {
-        let result = {};
-        if(this.props.data){
-            let replayCaptureOptions = [];
-            let metricOptions = [];
-            let arrayOfFalses = [];
-            console.log('THIS IS THE LIST OF ANALYTICS: ', this.props.data)
-            var count = Object.keys(this.props.data["test_folder"]).length;
-            let currentData = this.props.data["test_folder"]
-            for(let i = 1; i < (count + 1); i++) {
-                let title = "test-metrics"+i
-                replayCaptureOptions.push(title)
-                arrayOfFalses.push(false)
-            }
-            result.totalReplayCaptures = replayCaptureOptions;
-            result.rcBooleans = arrayOfFalses;
-            this.props.dispatch(setBooleansForGraph(arrayOfFalses))
-        }
-        return result;
+    //reRenders the capture options by dispatching this action when back button is clicked
+    rerenderCapturesOnBackButton()
+    {
+        this.props.dispatch(setCaptureNameForGraph("Capture Options"));
     }
 
     //Renders the table below the graph
     renderSelectorTable() {
         return (
-        <div className='row'>
-            <div className='col-xs-6' style={{width: '38vw'}} >
-                <table className="table table-hover">
-                    <thead className="thead-dark">
-                    <tr>
-                        <th scope="col">Replay/Capture Options</th>
-                    </tr>
-                    </thead>
-                        {this.displayCorrectReplayCaptures()}
-                </table>
+        <div>
+            <div className='row'>
+                <div>
+                    <MetricSelector />
+                </div>
             </div>
-            <div className='col-xs-6' style={{width: '38vw'}}>
-                <MetricSelector />
+
+            <div className='row bsTable'>
+                {this.displayCorrectReplayCaptures()}
             </div>
         </div>
         );
@@ -69,7 +44,7 @@ class GraphContainer extends React.Component {
     //This will either render the metric table below the graph with data
     //or it will render 'loading data' if the data hasn't come in yet
     displayCorrectReplayCaptures() {
-        if(!this.props.data) {
+        if(this.props.analyticsForGraph == false) {
             return this.getReplayCapturesWithoutData()
         }
         else {
@@ -79,23 +54,25 @@ class GraphContainer extends React.Component {
 
     getReplayCapturesWithoutData() {
         return (
-            <tbody><tr><td>...Loading Data...</td></tr></tbody>
+            <div className='row bsTable'>
+            <h4 className='col'>Fetching AWS RDS Data</h4>
+            <div id="loader" className='col'></div>
+            </div>
         );
     }
 
     getReplayCapturesWithData() {
-        return (
-            <CaptureReplaySelector totalReplayCaptures={this.state.totalReplayCaptures} rcBooleans={this.state.rcBooleans}/>
-        );
-    }
-    
+        if(this.props.currentCaptureForGraph == 'Capture Options') {
+            return (
+                <CaptureOptions />
+            );
+        }
+        else {
+            return (
+                <CaptureReplaySelector />
 
-    //This function renders the graph object and passes
-    //all specified data into it
-    renderConfigurableGraph() {
-        return (
-            <Graph metric={this.props.metricForGraph} values={this.props.replayCaptureNamesForGraph} pointsArray={this.props.dataPointsForGraph} numLines={this.props.numLinesForGraph}/>
-        );
+            )
+        }
     }
 
 
@@ -106,7 +83,7 @@ class GraphContainer extends React.Component {
             <div>
             <div style={{height:'50vh', border:'1px solid black', overflowY:'scroll'}}>
             <div>
-                {this.renderConfigurableGraph()}
+                <Graph />
             </div>
             </div>
             </div>
@@ -118,12 +95,8 @@ class GraphContainer extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    dataPointsForGraph: state.dataPointsForGraph,
-    valuesForGraph: state.valuesForGraph,
-    metricForGraph: state.metricForGraph,
-    numLinesForGraph: state.numLinesForGraph,
-    booleansForGraph: state.booleansForGraph,
-    replayCaptureNamesForGraph: state.replayCaptureNamesForGraph
+    currentCaptureForGraph: state.currentCaptureForGraph,
+    analyticsForGraph: state.analyticsForGraph
   })
   
   export default connect(mapStateToProps)(GraphContainer)

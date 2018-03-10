@@ -1,184 +1,385 @@
-import React, { Component } from 'react'
-import {LineChart, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line} from 'recharts'
-import { connect } from 'react-redux'
+import React, {Component} from 'react'
+import {setDataPointsForGraph} from '../actions'
+import Async from 'react-promise'
+import alasql from 'alasql';
+import '../styles/graphComponent.css'
+
+import {
+   LineChart,
+   AreaChart,
+   CartesianGrid,
+   XAxis,
+   YAxis,
+   Tooltip,
+   Legend,
+   Line,
+   ReferenceArea
+} from 'recharts'
+import {connect} from 'react-redux'
 
 class Graph extends Component {
-    constructor(props) {
-        super(props)
+   constructor(props) {
+      super(props)
+      this.state = {
+         yLabel: '',
+         metric: this.props.metricForGraph,
+         selectedData: this.props.selectedData,
+         refAreaLeft: 0,
+         refAreaRight: 0,
+         leftRange: 0,
+         rightRange: 0,
+         dataPointsForGraph: false
+      }
+   }
 
-        this.state = {
-            xLabel: '',
-            yLabel: '',
-            metric: this.props.nameOfMetric,
-            selectedData: this.props.selectedData,
-            title: '',
-            minValues: ' ',
-            maxValues: '',
-            changableMin: '',
-            changableMax: ''
-        };
-    };
+   componentWillReceiveProps(nextProps) {
+      if (this.props.metricForGraph != false) {
 
-    //function to get the correct colors for the lines being graphed (feel free to change the color options in this array)
-    //and return random color for each different line in the graph - max lines is 8, feel free to change that too
-    getRandomColor(index) {
-        let colorValues = ["deepskyblue", "lightsalmon", "darkolivegreen", "darkred", "blue", "goldenrod", "grey", "peru" ];
-        if(this.props.values.length < 8) {
-            return colorValues[index]
-        }
-        else {
-            alert('Maximum Lines For Graph Reached')
-            return 'white'
-        }
-    }
+         if (this.props != nextProps && (nextProps.currentCaptureForGraph != "Capture Options")) {
+            if (this.props.metricForGraph != nextProps.metricForGraph) {
+               this.props = nextProps;
+               this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, false, this.props.currentCaptureForGraph);
 
-    zoomIn() {
-      //this.setState({ maxValues: 50, minValues : 50})
+            } else {
+               this.props = nextProps;
+               this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph);
+            }
+         }
+      }
+   }
 
-      this.setState({ maxValues: this.state.maxValues- 200, minValues : this.state.minValues - 200})
-  }
-  zoomOut() {
-    //this.setState({ maxValues: 50, minValues : 50})
+   getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
+      let newLinesToGraph = []
+      let arrayOfDataJSONS = dataPoints;
+      for (let i = 0; i < booleanArray.length; i++) {
+         if (booleanArray[i]) {
+            newLinesToGraph.push(totalNames[i])
+         }
+      }
+      console.log("newLines");
+      console.log(newLinesToGraph);
+      let numberOfSelectedReplays = newLinesToGraph.length
+      if (analytics != false) {
+         let totalNumberOfOptionsToChooseFrom = totalNames.length
+         if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
+            let uniqueName = newLinesToGraph[0]
+            let firstJSON = this.getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
+            arrayOfDataJSONS = [numberOfSelectedReplays]
+            arrayOfDataJSONS[0] = firstJSON
+            for (let i = 1; i < numberOfSelectedReplays; i++) {
+               uniqueName = newLinesToGraph[i]
+               arrayOfDataJSONS[i] = this.getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
+            }
+         }
+      }
+      if (arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
 
-    this.setState({ maxValues:0 , minValues : 0})
-}
-    //this function gets the total points to be graphed and the values for
-    //the actual linechart. it also sets the state of the totalValuesArray for the linechart
-    getTotalPoints() {
-        let pointsValues = []
-        let values = []
-        let dataMin = 0
-        let dataMax = 0
-        let listOfAnalytics = this.state.selectedData;
-        let listOfTotalPoints = []
-        for (var outer = 0; outer < listOfAnalytics.length; outer++ ) {
+         this.setState({dataPointsForGraph: false})
+         return false;
+      } else {
+         this.setState({
+            dataPointsForGraph: arrayOfDataJSONS[arrayOfDataJSONS.length - 1]
+         })
+         return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
+      }
+   }
+
+   getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
+      let currMetric = metric;
+      let listOfAnalytics = analytics[captureName];
+      if (booleanArray != false && currMetric != false) {
+         for (let outer = 0; outer < booleanArray.length; outer++) {
             let pointsValues = []
-                for(let i = 0; i < listOfAnalytics[outer][this.props.metric].length; i++) {
-                let currPoint = {value: `${i}`, metric: listOfAnalytics[outer][this.props.metric][i].Average}
-                values.push(listOfAnalytics[outer][this.props.metric][i].Average)
-                pointsValues.push(currPoint)
-                }
-                listOfTotalPoints.push(pointsValues)
+            if (booleanArray[outer]) {
+               let currIndex = `${uniqueName}`
+               for (let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
+                  let currPoint = {
+                     seconds: `${i}`
+                  }
+                  currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
+                  pointsValues.push(currPoint)
+               }
+               if (dataPoints != false && dataPoints != undefined) {
+                  return this.updateFinalJSONObject(pointsValues, numLines, dataPoints, captureName)
+               } else {
+                  return pointsValues
+               }
             }
-        this.setState({totalValuesArray: values})
-        return listOfTotalPoints;
-    }
+         }
+      }
+   }
 
-    //helper function to get minimum value of current total data being graphed
-    //in ordder to scale the x axis
-    getMin() {
-        let totalValues = [];
-        for(let i = 0; i < this.props.pointsArray.length; i++) {
-            totalValues.push(this.props.pointsArray[i][this.props.metric])
-        }
-        let dataMin = totalValues.reduce(function(a, b) {
-            return Math.min(a, b);
-        });
-        return Math.floor(dataMin);
-    }
+   updateFinalJSONObject(newJsonElement, numLines, dataPoints, captureName) {
+      if (numLines > 0) {
+         let oldJsonElement = dataPoints;
+         alasql.fn.extend = alasql.utils.extend;
+         var res = alasql('SELECT * FROM ? newJsonElement JOIN ? oldJsonElement USING seconds', [newJsonElement, oldJsonElement]);
+         return res
+      } else
+         return newJsonElement
+   }
 
-    //helper function to get maximum value of current total data being graphed
-    getMax() {
-        let totalValues = []
-        for(let i = 0; i < this.props.pointsArray.length; i++) {
-            totalValues.push(this.props.pointsArray[i][this.props.metric])
-        }
-        let dataMax = totalValues.reduce(function(a, b) {
-            return Math.max(a, b);
-        });
+   getValues() {
+      let values = [];
+      for (let i = 0; i < this.props.booleansForGraph.length; i++) {
+         if (this.props.booleansForGraph[i]) {
+            // debugger;
+            values.push(this.props.totalNames[i])
+         }
+      }
+      return values;
+   }
 
-        return Math.ceil(dataMax);
-    }
+   getRandomColor(index) {
+      let colorValues = [
+         'deepskyblue',
+         'lightsalmon',
+         'darkolivegreen',
+         'darkred',
+         'blue',
+         'goldenrod',
+         'grey',
+         'peru'
+      ]
+      if (this.getValues().length < 8) {
+         return colorValues[index]
+      } else {
+         alert('Maximum Lines For Graph Reached')
+         return 'white'
+      }
+   }
 
-    //either graphs an empty graph if no replay or metric has been selected or
-    //the lines that represent the replays that have been selected for that metric
-    renderGraph() {
-        if((!this.props.values) || (!this.props.pointsArray)) {
-            return <div>{this.emptyGraph()}</div>
-        }
-        else {
-            return (
-                <div>
-                    {this.getGraphLines()}
-                </div>
-            );
-        }
-    }
+   zoomIn() {
+      let {refAreaLeft, refAreaRight, dataPointsForGraph} = this.state;
 
-    //empty graph for when no replay has been selected
-    emptyGraph() {
-        return (
+      if (refAreaLeft === refAreaRight || refAreaRight === 0 || refAreaLeft > refAreaRight) {
+         this.setState(() => ({refAreaLeft: 0, refAreaRight: 0}));
+         return;
+      }
+
+      this.setState({leftRange: refAreaLeft, rightRange: refAreaRight, dataPointsForGraph: dataPointsForGraph.slice(), refAreaLeft: 0, refAreaRight: 0});
+   }
+   zoomOut() {
+      this.setState(() => ({leftRange: this.getMinXAxis(), rightRange: this.getMaxXAxis(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
+   }
+
+   getMinXAxis() {
+      let totalValues = []
+
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i]["seconds"])
+            }
+         }
+      }
+
+      let dataMin = totalValues.reduce(function(a, b) {
+         return Math.min(a, b)
+      })
+
+      return Math.floor(dataMin)
+   }
+
+   getMaxXAxis() {
+      let totalValues = []
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i]["seconds"])
+            }
+         }
+      }
+      let dataMax = totalValues.reduce(function(a, b) {
+         return Math.max(a, b)
+      })
+
+      return Math.ceil(dataMax)
+   }
+
+   getMinYAxis() {
+      let totalValues = []
+
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+            }
+         }
+      }
+
+      let dataMin = totalValues.reduce(function(a, b) {
+         return Math.min(a, b)
+      })
+
+      return Math.floor(dataMin)
+   }
+
+   getMaxYAxis() {
+      let totalValues = []
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+            }
+         }
+      }
+      let dataMax = totalValues.reduce(function(a, b) {
+         return Math.max(a, b)
+      })
+
+      return Math.ceil(dataMax)
+   }
+
+   renderGraph() {
+      let hasTrue = false;
+      if (this.props.booleansForGraph) {
+         for (var i = 0; i < this.props.booleansForGraph.length; i++) {
+            var metric = "test-metrics1";
+            if (this.props.booleansForGraph[i]) {
+               hasTrue = true;
+            }
+         }
+      }
+
+      if (!hasTrue || this.props.metricForGraph == false) {
+         return <div>{this.emptyGraph()}</div>
+      } else {
+         return <div>{this.getGraphLines()}</div>
+      }
+   }
+
+   emptyGraph() {
+      return (<div>
+         <div>
             <div>
+               <h3 style={{
+                     marginLeft: '20px'
+                  }}/>
+               <LineChart width={1400} height={400}>
+                  <CartesianGrid strokeDasharray="3 3"/>
+                  <XAxis dataKey="name" domain={[0, 30]}/>
+                  <YAxis domain={[0, 10]} label={{
+                        angle: -90,
+                        position: 'insideLeft'
+                     }}/>
+               </LineChart>
+            </div>
+         </div>
+      </div>)
+   }
+
+   getLines() {
+      let linesForGraphing = []
+      for (let i = 0; i < this.props.booleansForGraph.length; i++) {
+         if (this.props.booleansForGraph[i] == true) {
+            let currKey = this.props.totalNames[i]
+            let line = (<Line key={i} dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
+            linesForGraphing.push(line)
+         }
+      }
+      return linesForGraphing
+   }
+
+   getGraphLines() {
+
+      let linecharts = [];
+      var testArray = [];
+
+      if (this.state.dataPointsForGraph == false) {
+         this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+      }
+
+      var leftMin;
+      var rightMax;
+      var bottomMin = this.getMinYAxis();
+      var topMax = this.getMaxYAxis();
+
+      if (this.state.leftRange == 0 && this.state.rightRange == 0) {
+         testArray = this.state.dataPointsForGraph;
+         leftMin = this.getMinXAxis();
+         rightMax = this.getMaxXAxis();
+      } else {
+         var jsonObject = Object.keys(this.state.dataPointsForGraph);
+         leftMin = parseInt(this.state.leftRange);
+         rightMax = parseInt(this.state.rightRange);
+
+         for (var i = 0; i < jsonObject.length; i++) {
+            var currentPoint = this.state.dataPointsForGraph[i];
+            if (currentPoint.seconds <= this.state.rightRange && currentPoint.seconds >= this.state.leftRange) {
+               testArray.push(currentPoint);
+            }
+         }
+      }
+
+      return (
+        <div id="graphContainer">
+          <div>
             <div>
-                <div>
-                <h3 style={{marginLeft:'20px'}}></h3>
-            <LineChart width={1400} height={400}
-                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+              <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
+              <LineChart
+                width={1400}
+                height={400}
+                data={testArray}
+                onMouseDown = { (e) => this.setState({refAreaLeft:e.activeLabel}) }
+                onMouseMove = { (e) => this.state.refAreaLeft && this.setState({refAreaRight:e.activeLabel}) }
+                onMouseUp = { this.zoomIn.bind( this ) }
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 10]} label={{ angle: -90, position: 'insideLeft' }}/>
-            </LineChart>
+                <XAxis
+                  allowDataOverflow={true}
+                  dataKey="seconds"
+                  domain={[leftMin, rightMax]}
+                  type="number"
+                />
+                <YAxis
+                  allowDataOverflow={true}
+                  label={{
+                    value: this.props.yLabel,
+                    angle: -90,
+                    position: 'insideLeft'
+                  }}
+                  domain={[bottomMin, topMax]}
+
+                />
+                <Tooltip />
+                <Legend />
+                {
+                (this.state.refAreaLeft && this.state.refAreaRight) ? (
+                  <ReferenceArea x1={this.state.refAreaLeft} x2={this.state.refAreaRight}  strokeOpacity={0.3} /> ) : null
+                }
+                {this.getLines().map(line => line)}
+              </LineChart>
+              <a
+                href="javascript: void(0);"
+                className="btn update"
+                onClick={this.zoomOut.bind(this)}
+              >
+                {' '}
+                Reset
+              </a>
             </div>
-            </div>
+          </div>
         </div>
-        );
-    }
+      )
+   }
 
-    //helper function to get all of the 'line' objects to be graphed based on currently
-    //selected replays and captures for graphing
-    getLines() {
-        let linesForGraphing = []
-        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-            if(this.props.booleansForGraph[i] == true) {
-                let currKey = this.props.totalNames[i];
-                let line = <Line key={i} dataKey={currKey} animationDuration={300} stroke={this.getRandomColor(i)}/>
-                linesForGraphing.push(line)
-            }
-        }
-        return linesForGraphing
-    }
-
-    //returns the graph with the accurate data represented by lines on the linechart
-    //when there is replay data passed in from the graphContainer
-    getGraphLines() {
-        let linecharts = [];
-            return(
-            <div>
-                <div>
-                    <div>
-                    <h3 style={{marginLeft:'20px'}}>Metric: {this.props.metric}</h3>
-                <LineChart width={1400 - this.state.minValues} height={400} data={this.props.pointsArray}
-                    margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis allowDataOverflow={false} dataKey="name" padding={{left: this.state.minValues, right:this.state.maxValues}}  />
-                        <YAxis allowDataOverflow={false} label={{ value:this.props.yLabel, angle: -90, position: 'insideLeft' }}/>
-                        <Tooltip />
-                        <Legend />
-                        {this.getLines().map(line => (
-                            line
-                        ))}
-                </LineChart>
-                </div>
-                </div>
-            </div>
-            );
-    }
-
-
-    render() {
-        return(
-            <div>
-            <a href="javascript: void(0);" className="btn update" onClick={this.zoomOut.bind( this )}> Reset</a>
-            <a href="javascript: void(0);" className="btn update" onClick={this.zoomIn.bind( this )}> Zoom In</a>
-            {this.renderGraph()}
-            </div>
-        );
-    }
+   render() {
+      return (<div>
+         {this.renderGraph()}
+      </div>)
+   }
 }
 
 const mapStateToProps = state => ({
-    booleansForGraph: state.booleansForGraph,
-    totalNames: state.totalNames
+   booleansForGraph: state.booleansForGraph,
+   totalNames: state.totalNames,
+   setPreviousMetric: state.setPreviousMetric,
+   metricForGraph: state.metricForGraph,
+   currentCaptureForGraph: state.currentCaptureForGraph,
+   analyticsForGraph: state.analyticsForGraph,
+   totalNames: state.totalNames
+
 })
 
 export default connect(mapStateToProps)(Graph)
