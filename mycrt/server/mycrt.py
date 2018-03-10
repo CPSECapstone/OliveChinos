@@ -194,8 +194,7 @@ def capture_end():
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
-    is_interactive = true
-    capture_details, start_time = end_capture(credentials, capture_name, db_name, is_interactive)
+    capture_details, start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
         "status": "ended",
