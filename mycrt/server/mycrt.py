@@ -126,7 +126,7 @@ def captureListScheduled():
     if pubKey is None or privateKey is None:
         abort(400)
     if verify_login(pubKey, privateKey):
-        capture_list = [] # Replace later when scheduled is implemented
+        capture_list = get_all_scheduled_capture_details()
 
         return jsonify({
             "captures" : capture_list

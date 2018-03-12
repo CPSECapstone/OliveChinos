@@ -48,6 +48,34 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
   connection.close()
   return results
 
+def get_all_scheduled_capture_details():
+  """Get all scheduled capture details from utility database.
+
+  Returns: 
+    A list containing details of captures that are ongoing.
+    These details are represented by a dictionary. The dictionary
+    will have the following format:
+      {
+        "captureName" : String,
+        "db" : String,
+        "endTime" : None,
+        "startTime" : String,
+        "status" : Boolean
+      } 
+  """
+
+  # FIX LATER (is inefficient)
+  query = '''
+    SELECT name from Captures
+    WHERE status = "scheduled"
+  '''
+  results = execute_utility_query(query)
+  captures = []
+  for (capture_name,) in results:
+    captures.append(get_capture_details(capture_name))
+  return captures
+
+
 def get_all_ongoing_capture_details():
   """Get all ongoing capture details from utility database.
 
@@ -67,7 +95,7 @@ def get_all_ongoing_capture_details():
   # FIX LATER (is inefficient)
   query = '''
     SELECT name from Captures
-    WHERE end_time is NULL
+    WHERE status = "ongoing"
   '''
   results = execute_utility_query(query)
   captures = []
@@ -191,6 +219,18 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
     Key = log_key
   )
 
+def schedule_capture(capture_name, db_id, start_time, end_time):
+  """Schedules a capture to be logged into the database.
+
+  """
+
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
+               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled")'''.format(db_id, capture_name, start_time, end_time)
+
+  execute_utility_query(query)
+
+  
+
 def start_capture(capture_name, db_id, start_time):
   """Starts a capture.
 
@@ -203,8 +243,8 @@ def start_capture(capture_name, db_id, start_time):
   """
 
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  query = '''INSERT INTO Captures (db, name, start_time, end_time) 
-               VALUES ('{0}', '{1}', '{2}', NULL)'''.format(db_id, capture_name, start_time)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing") ON DUPLICATE KEY UPDATE'''.format(db_id, capture_name, start_time)
   execute_utility_query(query)
 
 #TODO check if ending scheduled capture
@@ -219,7 +259,7 @@ def end_capture(credentials, capture_name, db_id):
   """
 
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
+  execute_utility_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
   query = '''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name)
   query_res = execute_utility_query(query) 
