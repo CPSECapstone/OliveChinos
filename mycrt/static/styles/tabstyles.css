@@ -8,6 +8,7 @@
   /* This offsets the height of the navbar*/
   margin-top: -100px; 
   padding-top: 100px;
+  padding-bottom: 10px;
   overflow: hidden;
 }
 
