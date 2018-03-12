@@ -10,9 +10,17 @@ SUCCESS = 0
 
 manager = multiprocessing.Manager()
 
-""" 
+'''Dictionary to store pids for scheduler processes
+    
+Each scheduled capture has a scheduler object which is responsible for calling the
+start- and end-capture functions at the specified start and end times. 
 
-"""
+To cancel a capture, simply kill the process responsible for calling these 
+functions.
+
+    Key: capture_name (STRING)
+    Value: scheduler_pid (INT)
+'''
 capture_scheduler_pids = manager.dict()
 
 
