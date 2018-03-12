@@ -41,6 +41,7 @@ class Replay extends React.Component {
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
   }
 
   handleClose() {
@@ -49,7 +50,9 @@ class Replay extends React.Component {
 
   handleCloseAndAddReplay() {
     this.setState({ show: false });
-    this.addReplay;
+    // THIS IS WHAT NEEDS TO BE FIXED
+    console.log('THIS IS WHAT WE ARE SENDING TO ADD REPLAY:', this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance)
+    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance);
   }
 
   handleShow() {
