@@ -14,7 +14,7 @@ except:
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
-    from utility.login import * 
+    from utility.login import *
 
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -281,3 +281,4 @@ def analytics():
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
+    init_replay()
