@@ -202,11 +202,11 @@ def start_capture(capture_name, rds_name, db_name, username, password):
   """
 
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', NULL, '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
   execute_utility_query(query)
 
-def end_capture(credentials, capture_name, rds):
+def end_capture(credentials, capture_name, db):
   """Ends a specified capture.
 
   Args:
@@ -216,15 +216,15 @@ def end_capture(credentials, capture_name, rds):
   """
 
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE rds = '{1}' AND name = '{2}' '''.format(end_time, rds, capture_name))
+  execute_utility_query('''UPDATE Captures SET end_time = '{0}' WHERE name = '{1}' '''.format(end_time, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query = '''SELECT start_time, db, username, password FROM Captures WHERE rds = '{0}' AND name = '{1}' '''.format(rds, capture_name)
+  query = '''SELECT start_time, rds, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
   query_res = execute_utility_query(query) 
-  start_time, db, username, password = query_res[0]
+  start_time, rds, username, password = query_res[0]
   s3_client = boto3.client('s3', **credentials)
   
   databases = list_databases(credentials)
-  address = databases[db_id]
+  address = databases[rds]
   
   query = '''
       SELECT event_time, argument 
