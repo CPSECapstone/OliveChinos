@@ -1,16 +1,14 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
 import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
-import { startReplay } from '../actions'
+import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
-import ReplayDetail from './ReplayDetail'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import '../styles/replaystyles.css'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
-import { setCaptureCount, startCapture, stopCapture } from '../actions';
 import '../styles/loader.css';
 
 /* Use this element as a reference when creating components*/
@@ -29,7 +27,7 @@ class Replay extends React.Component {
       replayDBInstance: '',
       captureToReplay: '',
       databaseInstanceOptions: ["No instances available"],
-      completedReplayList: [null],
+      completedReplayList: null,
       fastMode: true
     }
 
@@ -183,44 +181,20 @@ class Replay extends React.Component {
     this.setState({ replayDBInstance: e.target.value });
   }
 
+  analyze(captureName, replayName) {
+    var bools = new Array(this.props.analyticsForGraph[captureName].length)
+    let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
+    for(let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
+      let currReplay = currentReplayNames[i];
+      if(currReplay == replayName) {
+        bools[i] = true
+      }
+      else {
+        bools[i] = false
+      }
+    }
 
-  // getReplays(data) {
-  //   var completedReplays = [];
-  //   var currentTup;
-  //   var currentCapture;
-  //   var currentReplayArr;
-  //   var currentReplay;
-  //   console.log("DATA\n", data)
-  //   // List of replays is list of tuples : Each tuple is structured (Capture, Listof Replay)
-  //   for (var i = 0; i < data.length; i++) {
-  //     currentTup = data[i]
-  //     currentCapture = currentTup[0]
-  //     currentReplayArr = currentTup[1]
-  //     // console.log('replay item ', i, ": ", current.replayName)
-  //     var that = this
-  //     for (var j = 0; j < currentReplayArr.length; j++) {
-  //       currentReplay = currentReplayArr[j]
-  //       completedReplays.push((function (currentReplay, i, j, that) {
-  //         return (<ListGroupItem style={{ height: '150px' }} key={currentReplay + i + "-" + j}>
-  //           <ReplayDetail
-  //             className="replayDetail"
-  //             replayCapture={currentCapture}
-  //             replayName={currentReplay}
-  //           // replayDB={currentReplay.db}
-  //           // replayDate={currentReplay.date}
-  //           //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
-  //           />
-  //         </ListGroupItem>)
-  //       }(currentReplay, i, j, that)))
-  //     }
-  //   }
-  //   return <ListGroup>{completedReplays}</ListGroup>
-  // }
-
-  analyze(captureName, replayName, dbName) {
-    this.props.dispatch(setCaptureNameForGraph());
-    this.props.dispatch(setTotalNamesForGraph());
-    this.props.dispatch()
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
   }
 
   getReplayTable(data) {
@@ -228,11 +202,16 @@ class Replay extends React.Component {
     var current;
     var captureEditAction;
     var that = this;
+
+    var options = {
+      defaultSortName: 'capture',  // default sort column name
+      defaultSortOrder: 'desc'  // default sort order
+    };
     function buttonFormatter(cell, row) {
       return (
         <div className='row'>
-          <Button className='btn-info'
-            onClick={() => that.analyze(row["captureName"], row["replayName"])}
+          <Button className='btn-info btn-sm'
+            onClick={() => that.analyze(row["capture"], row["replay"])}
           >
             ANALYZE
         </Button>
@@ -240,21 +219,18 @@ class Replay extends React.Component {
       );
     }
 
-    console.log("DATA****\n", data)
-    if (data.length > 0) {
-      return <BootstrapTable search={true} multiColumnSearch={true} data={data}>
-        <TableHeaderColumn dataField='replayName' isKey>Replay Name</TableHeaderColumn>
-        <TableHeaderColumn dataField='captureName' >Capture</TableHeaderColumn>
+    console.log("DATA****\n", data["replays"])
+    if (data["replays"].length > 0) {
+      return <BootstrapTable search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
+        <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db'>Database</TableHeaderColumn>
         <TableHeaderColumn dataField='mode'>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
     }
     else {
-      var tester = [{
-        something: 1,
-      }]
-      return <BootstrapTable data={[]} search={true} multiColumnSearch={true} >
+      return <BootstrapTable data={[]} search={true} multiColumnSearch={true} options={options}>
         <TableHeaderColumn isKey dataField='something'>Replay Name</TableHeaderColumn>
         <TableHeaderColumn >Capture</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
@@ -277,6 +253,18 @@ class Replay extends React.Component {
       var resultList = that.getReplayTable(data)
       that.setState({ completedReplayList: resultList })
     })
+  }
+
+  getReplayTableOrLoader() {
+    if(this.state.completedReplayList == null) {
+      return <div id="loader"></div>
+    } else {
+      return (
+        <div>
+          {this.state.completedReplayList}
+        </div>
+      );
+    }
   }
 
   render() {
@@ -354,7 +342,7 @@ class Replay extends React.Component {
         <br />
 
         <div id="replayBody">
-          <div>{this.state.completedReplayList}</div>
+          <div>{this.getReplayTableOrLoader()}</div>
         </div>
       </div>
     )
@@ -363,7 +351,8 @@ class Replay extends React.Component {
 
 const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
-  replay: state.replay
+  replay: state.replay,
+  analyticsForGraph: state.analyticsForGraph
 })
 
 export default connect(mapStateToProps)(Replay)
