@@ -228,9 +228,6 @@ class Capture extends React.Component {
     else return null;
   }
 
-  getHelpBlock() {
-
-  }
 
   handleQueryChange(event) {
     this.setState({ query: event.target.value })
@@ -253,7 +250,9 @@ class Capture extends React.Component {
   }
 
   handleModeChange(event) {
+    console.log(event)
     this.setState({ captureMode: event })
+    console.log(this.state.captureMode)
   }
 
   createDBInstancesSelect(data) {
@@ -551,8 +550,8 @@ class Capture extends React.Component {
                 <div className="modeButtonContainer">
                   <ButtonToolbar>
                     <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
-                      <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
-                      <ToggleButton value={'schedule'}>Schedule Mode</ToggleButton>
+                      <ToggleButton id="toggle" value='interactive'>Interactive Mode</ToggleButton>
+                      <ToggleButton id="toggle" value='schedule'>Schedule Mode</ToggleButton>
                     </ToggleButtonGroup>
                   </ButtonToolbar>
                 </div>

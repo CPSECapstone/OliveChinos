@@ -39,6 +39,10 @@
     border-color: #ccc !important;
 }
 
+.toggleButton {
+    border: 1px solid #ccc !important;
+}
+
 .dbInfoFormCol {
     padding-left: 0px;
     padding-bottom: 15px;
