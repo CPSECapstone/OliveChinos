@@ -1,13 +1,15 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
-import { startReplay } from '../actions'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
+import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
-import ReplayDetail from './ReplayDetail'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
-import { setCaptureCount, startCapture, stopCapture } from '../actions'
+import '../styles/replaystyles.css'
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
+import '../styles/loader.css';
 
 /* Use this element as a reference when creating components*/
 
@@ -16,6 +18,7 @@ class Replay extends React.Component {
     super(props)
 
     this.state = {
+      show: false,
       replay: this.props.replay,
       activeReplays: this.props.activeReplays,
       replayName: '',
@@ -24,12 +27,13 @@ class Replay extends React.Component {
       replayDBInstance: '',
       captureToReplay: '',
       databaseInstanceOptions: ["No instances available"],
-      completedReplayList: [null],
+      completedReplayList: null,
       fastMode: true
     }
 
     //binding required for callback
-
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.addReplay = this.addReplay.bind(this)
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
     this.displayReplays = this.displayReplays.bind(this)
@@ -37,6 +41,22 @@ class Replay extends React.Component {
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
+  }
+
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  handleCloseAndAddReplay() {
+    this.setState({ show: false });
+    // THIS IS WHAT NEEDS TO BE FIXED
+    console.log('THIS IS WHAT WE ARE SENDING TO ADD REPLAY:', this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance)
+    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance);
+  }
+
+  handleShow() {
+    this.setState({ show: true });
   }
 
   componentDidMount() {
@@ -164,38 +184,64 @@ class Replay extends React.Component {
     this.setState({ replayDBInstance: e.target.value });
   }
 
-
-  getReplays(data) {
-    var completedReplays = [];
-    var currentTup;
-    var currentCapture;
-    var currentReplayArr;
-    var currentReplay;
-    console.log("DATA\n", data)
-    // List of replays is list of tuples : Each tuple is structured (Capture, Listof Replay)
-    for (var i = 0; i < data.length; i++) {
-      currentTup = data[i]
-      currentCapture = currentTup[0]
-      currentReplayArr = currentTup[1]
-      // console.log('replay item ', i, ": ", current.replayName)
-      var that = this
-      for (var j = 0; j < currentReplayArr.length; j++) {
-        currentReplay = currentReplayArr[j]
-        completedReplays.push((function (currentReplay, i, j, that) {
-          return (<ListGroupItem style={{ height: '150px' }} key={currentReplay + i + "-" + j}>
-            <ReplayDetail
-              className="replayDetail"
-              replayCapture={currentCapture}
-              replayName={currentReplay}
-            // replayDB={currentReplay.db}
-            // replayDate={currentReplay.date}
-            //stopCapture={() => { that.stopCapture(current.captureName, current.db, i) }}
-            />
-          </ListGroupItem>)
-        }(currentReplay, i, j, that)))
+  analyze(captureName, replayName) {
+    var bools = new Array(this.props.analyticsForGraph[captureName].length)
+    let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
+    for(let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
+      let currReplay = currentReplayNames[i];
+      if(currReplay == replayName) {
+        bools[i] = true
+      }
+      else {
+        bools[i] = false
       }
     }
-    return <ListGroup>{completedReplays}</ListGroup>
+
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
+  }
+
+  getReplayTable(data) {
+    var currentCaptures = [];
+    var current;
+    var captureEditAction;
+    var that = this;
+
+    var options = {
+      defaultSortName: 'capture',  // default sort column name
+      defaultSortOrder: 'desc'  // default sort order
+    };
+    function buttonFormatter(cell, row) {
+      return (
+        <div className='row'>
+          <Button className='btn-info btn-sm'
+            onClick={() => that.analyze(row["capture"], row["replay"])}
+          >
+            ANALYZE
+        </Button>
+        </div>
+      );
+    }
+
+    console.log("DATA****\n", data["replays"])
+    if (data["replays"].length > 0) {
+      return <BootstrapTable search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
+        <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
+        <TableHeaderColumn dataField='db'>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='mode'>Mode</TableHeaderColumn>
+        <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
+      </BootstrapTable>
+    }
+    else {
+      return <BootstrapTable data={[]} search={true} multiColumnSearch={true} options={options}>
+        <TableHeaderColumn isKey dataField='something'>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn >Capture</TableHeaderColumn>
+        <TableHeaderColumn >Database</TableHeaderColumn>
+        <TableHeaderColumn >Mode</TableHeaderColumn>
+        <TableHeaderColumn >Action</TableHeaderColumn>
+
+      </BootstrapTable>
+    }
   }
 
   displayReplays() {
@@ -206,68 +252,100 @@ class Replay extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      var resultList = that.getReplays(data)
+      // var resultList = that.getReplays(data)
+      var resultList = that.getReplayTable(data)
       that.setState({ completedReplayList: resultList })
     })
+  }
+
+  getReplayTableOrLoader() {
+    if(this.state.completedReplayList == null) {
+      return <div id="loader"></div>
+    } else {
+      return (
+        <div>
+          {this.state.completedReplayList}
+        </div>
+      );
+    }
   }
 
   render() {
     return (
       <div>
-        <hr />
-        <form>
-          <FormGroup
-            //controlId="formBasicText"
-            validationState={this.getValidationState()}
-          >
-            <ControlLabel>Replay Name</ControlLabel>
-            <FormControl
-              id='replayNameInput'
-              type="text"
-              value={this.state.replayName}
-              placeholder="Enter name"
-              onChange={this.handleReplayNameChange}
-            />
-            <FormControl.Feedback />
-            <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
-          </FormGroup>
-          <FormGroup controlId="formControlsSelect">
-            <ControlLabel>Capture To Replay</ControlLabel>
-            <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
-              {this.state.captureOptions}
-            </FormControl>
-          </FormGroup>
-          <FormGroup controlId="formControlsSelect">
-            <ControlLabel>Database Instance</ControlLabel>
-            <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
-              {this.state.databaseInstanceOptions}
-            </FormControl>
-          </FormGroup>
-          <FormGroup>
-            <div>
-              <ButtonToolbar>
-                <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
-                  <ToggleButton value={true}>Fast Mode</ToggleButton>
-                  <ToggleButton value={false}>Time-Based Mode</ToggleButton>
-                </ToggleButtonGroup>
-              </ButtonToolbar>
-            </div>
-          </FormGroup>
-        </form>
-
-        <Button
-          style={{ marginLeft: '20px' }}
-          bsSize="large"
-          bsStyle="success"
-          onClick={this.addReplay}
-        >
-          Start Replay
-        </Button>
-        <hr />
         <div>
-          <h4 style={{ marginLeft: '20px' }}>Replays</h4>
-          <br />
-          <div>{this.state.completedReplayList}</div>
+          <div id="replayTitle">
+            <h3 style={{ marginLeft: '20px' }}>Replay</h3>
+          </div>
+
+          <div id="newReplayBtnContainer">
+            <Button
+              id="newReplayBtn"
+              //style={{ marginLeft: '' }}
+              bsSize="xsmall"
+              bsStyle="primary"
+              onClick={this.handleShow}
+            >
+              New Replay
+            </Button>
+          </div>
+        </div>
+
+        <Modal show={this.state.show} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>New Replay</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <FormGroup
+                //controlId="formBasicText"
+                validationState={this.getValidationState()}
+              >
+                <ControlLabel>Replay Name</ControlLabel>
+                <FormControl
+                  id='replayNameInput'
+                  type="text"
+                  value={this.state.replayName}
+                  placeholder="Enter name"
+                  onChange={this.handleReplayNameChange}
+                />
+                <FormControl.Feedback />
+                <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Capture To Replay</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
+                  {this.state.captureOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Database Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
+                  {this.state.databaseInstanceOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup>
+                <div>
+                  <ButtonToolbar>
+                    <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
+                      <ToggleButton value={true}>Fast Mode</ToggleButton>
+                      <ToggleButton value={false}>Time-Based Mode</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
+              </FormGroup>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleClose}>Close</Button>
+            <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <br />
+
+        <div id="replayBody">
+          <div>{this.getReplayTableOrLoader()}</div>
         </div>
       </div>
     )
@@ -276,7 +354,8 @@ class Replay extends React.Component {
 
 const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
-  replay: state.replay
+  replay: state.replay,
+  analyticsForGraph: state.analyticsForGraph
 })
 
 export default connect(mapStateToProps)(Replay)

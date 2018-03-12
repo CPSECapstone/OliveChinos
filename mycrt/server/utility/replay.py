@@ -3,8 +3,12 @@ import boto3
 from datetime import datetime, timedelta
 import pickle
 import sys
+import time
+from multiprocessing import Manager, Process, Lock
+import os
 
 from .capture import *
+from .analytics import get_capture_replay_list 
 
 #db_id = "pi"
 #hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
@@ -12,6 +16,11 @@ username = "olive"
 password = "olivechinos"
 database = "CRDB"
 period = 10
+
+manager = Manager()
+replays_in_progress = manager.dict()
+db_in_use = manager.dict()
+lock = Lock()
 
 def _get_hostname(rds_client, db_id):
   instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)
@@ -24,13 +33,7 @@ def _execute_transactions(hostname, transactions, fast_mode):
   start_time = datetime.utcnow()
   start_test = datetime.now()
 
-  print (transactions, file=sys.stderr)
-  print('\n', len(transactions), file=sys.stderr)
-  i = 0
   for _, command in transactions:
-    i += 1
-    if i % 10 == 0:
-      print(i, file = sys.stderr)
     try:
       cur.execute(command)
     except:
@@ -49,8 +52,6 @@ def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", 
   transactions = pickle.loads(new_byte_log)
 
   #transactions = [(x,y[6:]) for x,y in transactions]
-
-  print (transactions, file=sys.stderr)
 
   return transactions
 
@@ -81,7 +82,53 @@ def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chi
     Key = log_key
   )
 
+def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
+  replays_in_progress[capture_name + "/" + replay_name] = {
+      "replayName" : replay_name,
+      "captureName" : capture_name,
+      "db" : db_id,
+      "mode" : fast_mode,
+      "pid" : os.getpid()
+    }
+
+  with lock:
+    if db_id in db_in_use:
+      db_in_use[db_id] = db_in_use[db_id] + [os.getpid()]
+    else:
+      db_in_use[db_id] = [os.getpid()]
+
+def _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock):
+  with lock:
+    del replays_in_progress[capture_name + "/" + replay_name]
+    db_in_use[db_id] = db_in_use[db_id][1:] # remove first element
+
+def get_active_db():
+  return [key for key, _ in db_in_use.items()]
+
+def get_active_replays():
+  fields = ["replayName", "captureName", "db", "mode"]
+  rep_list = []
+  for _, replay in replays_in_progress.items():
+    rep_list.append({field : replay[field] for field in fields})
+
+  return { "replays" : rep_list }
+
 def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
+  proc = Process(target = _manage_replay,
+                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock))
+  proc.start()
+
+def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
+  _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
+  pid = os.getpid()
+  while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
+    time.sleep(3) # sleep three seconds and try again later
+  
+  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db)
+  _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
+
+def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
+
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
   cloudwatch_client = boto3.client('cloudwatch', **credentials)
@@ -92,8 +139,6 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode)
-
-  print (start_time, end_time, file=sys.stderr)
 
   CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time)
   FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time)
@@ -111,10 +156,10 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
     "db_id": db_id
   }
 
-  print ("Metrics\n\n", file=sys.stderr)
-  print (metrics, file=sys.stderr)
-  
   _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
+ 
+  query = """INSERT INTO Replays (replay, capture, db, mode) VALUES ('{0}', '{1}', '{2}', '{3}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time")
+  execute_utility_query(query)
   
 def delete_replay(credentials, capture_name, replay_name):
   '''Remove all traces of a replay in S3.
@@ -127,6 +172,9 @@ def delete_replay(credentials, capture_name, replay_name):
     replay_name: A preexisting replay name
   '''
 
+  query = """delete from Replays where replay = '{0}' and capture = '{1}'""".format(replay_name, capture_name)
+  execute_utility_query(query)
+
   s3_resource = boto3.resource('s3', **credentials)
   bucket_id = "my-crt-test-bucket-olive-chinos"
 
@@ -134,3 +182,23 @@ def delete_replay(credentials, capture_name, replay_name):
     s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
   except Exception:
     print("Replay to delete does not exist.", file=sys.stderr)
+
+def get_replays_from_table():
+  query = "select * from Replays"
+  results = execute_utility_query(query)
+  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode} for (replay, capture, db, mode) in results]
+  return {"replays" : replays}
+
+def _populate_replay_table():
+  table_replays = execute_utility_query("select replay, capture from Replays")
+  table_replays = set((capture, replay) for (replay, capture) in table_replays)
+  s3_replays = get_capture_replay_list({"region_name":"us-east-2"}) 
+  replays_to_add = set()
+  for capture, replays in s3_replays:
+    for replay in replays:
+      replay = replay.replace(".replay", "")
+      if (capture, replay) not in table_replays:
+        query = '''INSERT INTO Replays (replay, capture, db, mode) 
+                   VALUES ('{0}', '{1}', 'unknown', 'unknown')'''.format(replay, capture)
+        execute_utility_query(query)
+

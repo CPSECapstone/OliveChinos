@@ -18,7 +18,8 @@ import {
   SET_ANALYTICS_FOR_GRAPH,
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
-  CHANGE_STATE_FOR_COMPONENTS
+  CHANGE_STATE_FOR_COMPONENTS,
+  SET_GRAPH_DATA_FROM_REPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -144,6 +145,16 @@ function reducer(state = initialState, action) {
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {
         currentCaptureForGraph: action.key
+      })
+
+    case SET_GRAPH_DATA_FROM_REPLAY:
+    console.log('DISPATCHING THIS ACTION: ', action)
+      return Object.assign({}, state, {
+        booleansForGraph: action.booleans,
+        currentCaptureForGraph: action.captureName,
+        metricForGraph: action.metricName,
+        stateType: action.stateName,
+        totalNames: action.totNames
       })
 
     default:

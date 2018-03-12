@@ -2,9 +2,9 @@
 import React from 'react'
 import Sidebar from 'react-sidebar'
 import Login from './login'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import { Router, Route } from 'react-router'
-import MakeshiftHome from './MakeshiftHome'
+import Home from './Home'
 
 class App extends React.Component {
 
@@ -19,11 +19,11 @@ class App extends React.Component {
   }
 
   getValidLogin() {
-    if(this.state.validLogin == false) {
-      return <Login publicKey={this.state.publicKey} privateKey={this.state.privateKey}/>
+    if (this.state.validLogin == false) {
+      return <Login publicKey={this.state.publicKey} privateKey={this.state.privateKey} />
     }
     else {
-      return <MakeshiftHome />
+      return <Home />
     }
   }
 
@@ -31,13 +31,13 @@ class App extends React.Component {
     /* CHANGE validLogin TO TRUE FOR TESTING PURPOSES */
     // this.setState({validLogin: false});
     return (
-      <div style={{marginLeft:'1vw'}}>
+      <div>
         {this.getValidLogin()}
-        </div>
+      </div>
     );
   }
 }
 
-const mapStateToProps = state => ({data: state})
+const mapStateToProps = state => ({ data: state })
 
 export default connect(mapStateToProps)(App)
