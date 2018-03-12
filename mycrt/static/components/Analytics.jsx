@@ -16,24 +16,6 @@ constructor(props) {
     };
 
     var analyticsData = '';
-  // binding required for callback
-    this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
-}
-
-getPythonAnalytics() {
-  jquery.get(window.location.href + 'analytics', (data) => {
-    this.setState({analytics: data}, this.render);
-    this.props.dispatch(setAnalyticsForGraph(data))
-  });
-  
-}
-
-componentWillMount() {
-  this.getPythonAnalytics();
-}
-
-componentWillReceiveProps() {
-  this.getPythonAnalytics();
 }
 
 renderGraphContainer() {
