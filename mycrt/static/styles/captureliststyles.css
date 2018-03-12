@@ -34,7 +34,7 @@
 }
 
 .buttonToolbar {
-    margin: 0;
+    margin: 0 auto;
     width: 500px;
     padding-right: 5vw;
     padding-left: 5vw;
