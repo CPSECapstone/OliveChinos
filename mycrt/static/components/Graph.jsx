@@ -1,8 +1,10 @@
 import React, {Component} from 'react'
+import * as ReactDOM from 'react-dom';
 import {setDataPointsForGraph} from '../actions'
 import Async from 'react-promise'
 import alasql from 'alasql';
 import '../styles/graphComponent.css'
+import FileSaver from 'file-saver'
 
 import {
    LineChart,
@@ -47,6 +49,24 @@ class Graph extends Component {
          }
       }
    }
+
+   downloadObjectAsJson(){
+      var newDate = new Date().toISOString().split('T')[0];
+      var newTime = new Date().toISOString().split('T')[1].split('.')[0];
+
+      var exportObj = {
+         "Metric": this.props.metricForGraph,
+         "Date": newDate,
+         "Time": newTime,
+         "DataPoints": this.state.dataPointsForGraph
+      }
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null , 3));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", "test.json");
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  }
 
    getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
       let newLinesToGraph = []
@@ -274,11 +294,25 @@ class Graph extends Component {
       for (let i = 0; i < this.props.booleansForGraph.length; i++) {
          if (this.props.booleansForGraph[i] == true) {
             let currKey = this.props.totalNames[i]
-            let line = (<Line key={i} dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
+            let line = (<Line key={i} id="Legend" dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
             linesForGraphing.push(line)
          }
       }
       return linesForGraphing
+   }
+
+   exportChart(asSVG) {
+
+       let chartSVG = ReactDOM.findDOMNode(this.currentGraph).children[0];
+
+       if (asSVG) {
+           let svgURL = new XMLSerializer().serializeToString(chartSVG);
+           let svgBlob = new Blob([svgURL], {type: "image/svg+xml;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.svg");
+       } else {
+           let svgBlob = new Blob([chartSVG.outerHTML], {type: "text/html;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.html");
+       }
    }
 
    getGraphLines() {
@@ -312,12 +346,18 @@ class Graph extends Component {
          }
       }
 
+
+      console.log(this.state);
+      console.log(this.props);
+
       return (
         <div id="graphContainer">
           <div>
             <div>
               <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
               <LineChart
+                id="currentGraph"
+                ref={(graph) => this.currentGraph = graph}
                 width={1400}
                 height={400}
                 data={testArray}
@@ -358,6 +398,23 @@ class Graph extends Component {
                 {' '}
                 Reset
               </a>
+              <a
+                href="javascript: void(0);"
+                className="btn update"
+                onClick={this.exportChart.bind(this)}
+              >
+                {' '}
+                Download Graph
+              </a>
+              <a
+                href="javascript: void(0);"
+                className="btn update"
+                onClick={this.downloadObjectAsJson.bind(this)}
+              >
+                {' '}
+                Download JSON
+              </a>
+
             </div>
           </div>
         </div>
