@@ -10,7 +10,6 @@ import { connect } from 'react-redux'
 import { setCaptureCount, startCapture, stopCapture } from '../actions'
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
-import CaptureDetail from './CaptureDetail'
 import CaptureList from './CaptureList'
 
 /* Use this element as a reference when creating components*/
@@ -252,58 +251,52 @@ class Capture extends React.Component {
     })
   }
 
-  // getCaptures(data, captureState) {
-  //   var currentCaptures = [];
-  //   var current;
-  //   var captureEditAction;
-  //   if (captureState === 'active') {
-  //     captureEditAction = 'STOP'
-  //   }
-  //   else if (captureState === 'scheduled') {
-  //     captureEditAction = 'CANCEL'
-  //   }
-  //   else {
-  //     captureEditAction = 'DELETE'
-
-  //   }
-  //   console.log("DATA\n", data)
-  //   for (var i = 0; i < data.captures.length; i++) {
-  //     current = data.captures[i]
-  //     console.log('capture item ', i, ": ", current.captureName)
-  //     var that = this
-  //     currentCaptures.push((function (current, i, that) {
-  //       return (<ListGroupItem style={{ height: '200px' }} key={current.captureName + i}>
-  //         <CaptureDetail
-  //           className="captureDetail"
-  //           captureName={current.captureName}
-  //           captureDB={current.db}
-  //           captureStartTime={current.startTime}
-  //           captureEndTime={current.endTime}
-  //           captureType={captureState}
-  //           captureEditAction={captureEditAction}
-  //           editCapture={() => { that.editCapture(current.captureName, current.db, captureEditAction) }}
-  //         />
-  //       </ListGroupItem>)
-  //     }(current, i, that)))
-  //   }
-
-  //   return <ListGroup>{currentCaptures}</ListGroup>
-  // }
-
   getCapturesTable(data, captureState) {
     var currentCaptures = [];
     var current;
     var captureEditAction;
-    if (captureState === 'active') {
-      captureEditAction = 'STOP'
+    var that = this;
+    function buttonFormatter(cell, row) {
+      if(captureState === 'past') {
+        return (
+          <div className='row'>
+          <Button className='btn-warning'
+            onClick={ () => that.editCapture(row["captureName"], row["db"], 'REPLAY')}
+          >
+          REPLAY
+          </Button>
+          <Button className='btn-danger'
+            onClick={ () => that.editCapture(row["captureName"], row["db"], 'DELETE')}
+          >
+          DELETE
+          </Button>
+          </div>
+        );
+      }
+      else if (captureState === 'active') {
+        return (
+          <div className='row'>
+          <Button className='btn-danger'
+            onClick={ () => that.editCapture(row["captureName"], row["db"], 'STOP')}
+          >
+          STOP
+          </Button>
+          </div>
+        );
+      }
+      else if (captureState === 'scheduled') {
+        return (
+          <div className='row'>
+          <Button className='btn-danger'
+            onClick={ () => that.editCapture(row["captureName"], row["db"], 'CANCEL')}
+          >
+          CANCEL
+          </Button>
+          </div>
+        );
+      }
     }
-    else if (captureState === 'scheduled') {
-      captureEditAction = 'CANCEL'
-    }
-    else {
-      captureEditAction = 'DELETE'
-
-    }
+    
     console.log("DATA!!!\n", data["captures"])
     if(data["captures"].length > 0) {
     return <BootstrapTable search={ true } multiColumnSearch={ true } data={ data["captures"] }>
@@ -312,6 +305,7 @@ class Capture extends React.Component {
       <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
       <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
       <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
+      <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
     </BootstrapTable>
     }
     else {
@@ -324,30 +318,10 @@ class Capture extends React.Component {
       <TableHeaderColumn >Capture Name</TableHeaderColumn>
       <TableHeaderColumn >Start Time</TableHeaderColumn>
       <TableHeaderColumn >End Time</TableHeaderColumn>
+      <TableHeaderColumn >Action</TableHeaderColumn>
+
     </BootstrapTable>
     }
-
-    // for (var i = 0; i < data.captures.length; i++) {
-    //   current = data.captures[i]
-    //   console.log('capture item ', i, ": ", current.captureName)
-    //   var that = this
-    //   currentCaptures.push((function (current, i, that) {
-    //     return (<ListGroupItem style={{ height: '200px' }} key={current.captureName + i}>
-    //       <CaptureDetail
-    //         className="captureDetail"
-    //         captureName={current.captureName}
-    //         captureDB={current.db}
-    //         captureStartTime={current.startTime}
-    //         captureEndTime={current.endTime}
-    //         captureType={captureState}
-    //         captureEditAction={captureEditAction}
-    //         editCapture={() => { that.editCapture(current.captureName, current.db, captureEditAction) }}
-    //       />
-    //     </ListGroupItem>)
-    //   }(current, i, that)))
-    // }
-
-    // return <ListGroup>{currentCaptures}</ListGroup>
   }
 
   displayCaptures(captureType) {
@@ -370,7 +344,6 @@ class Capture extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       var resultList = that.getCapturesTable(data, captureType)
-      // var resultList = that.getCaptures(data, captureType)
       if (captureType === 'active') {
         that.props.dispatch(setCaptureCount(data.captures.length))
         console.log('SETTING THE ACTIVES')

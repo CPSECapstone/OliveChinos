@@ -9,6 +9,24 @@ import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents }
 
 var selectedColor = "#ADD8E6";
 
+class ReplayButton extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        <Button
+            type="submit"
+            bsSize="small"
+            bsStyle="success"
+            //@todo: get this working!
+            onClick={this.props.refProps.dispatch(changeStateForComponents("onReplay"))}
+        >
+        Start a New Replay
+        </Button>;
+    }
+}
+
 class CaptureReplaySelector extends React.Component {
     constructor(props) {
         super(props);
@@ -91,15 +109,16 @@ class CaptureReplaySelector extends React.Component {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
             function buttonFormatter(cell, row){
-                return <Button
-                            type="submit"
-                            bsSize="small"
-                            bsStyle="success"
-                            //@todo: get this working!
-                            // onClick={refProps.dispatch(changeStateForComponents("onReplay"))}
-                        >
-                        Start a New Replay
-                    </Button>;
+                return (
+                <Button
+                type="submit"
+                bsSize="small"
+                bsStyle="success"
+                onClick={ () => refProps.dispatch(changeStateForComponents("onReplay"))}
+                >
+                Start a New Replay
+                </Button>
+                );
             }
             return (
             <div>
