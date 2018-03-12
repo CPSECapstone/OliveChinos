@@ -8,6 +8,7 @@ from multiprocessing import Manager, Process, Lock
 import os
 
 from .capture import *
+from .analytics import get_capture_replay_list 
 
 #db_id = "pi"
 #hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
@@ -127,6 +128,7 @@ def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
 
 def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
+
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
   cloudwatch_client = boto3.client('cloudwatch', **credentials)
@@ -154,8 +156,10 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "db_id": db_id
   }
 
-  
   _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
+ 
+  query = """INSERT INTO Replays (replay, capture, db, mode) VALUES ('{0}', '{1}', '{2}', '{3}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time")
+  execute_utility_query(query)
   
 def delete_replay(credentials, capture_name, replay_name):
   '''Remove all traces of a replay in S3.
@@ -168,6 +172,9 @@ def delete_replay(credentials, capture_name, replay_name):
     replay_name: A preexisting replay name
   '''
 
+  query = """delete from Replays where replay = '{0}' and capture = '{1}'""".format(replay_name, capture_name)
+  execute_utility_query(query)
+
   s3_resource = boto3.resource('s3', **credentials)
   bucket_id = "my-crt-test-bucket-olive-chinos"
 
@@ -175,3 +182,23 @@ def delete_replay(credentials, capture_name, replay_name):
     s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
   except Exception:
     print("Replay to delete does not exist.", file=sys.stderr)
+
+def get_replays_from_table():
+  query = "select * from Replays"
+  results = execute_utility_query(query)
+  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode} for (replay, capture, db, mode) in results]
+  return {"replays" : replays}
+
+def _populate_replay_table():
+  table_replays = execute_utility_query("select replay, capture from Replays")
+  table_replays = set((capture, replay) for (replay, capture) in table_replays)
+  s3_replays = get_capture_replay_list({"region_name":"us-east-2"}) 
+  replays_to_add = set()
+  for capture, replays in s3_replays:
+    for replay in replays:
+      replay = replay.replace(".replay", "")
+      if (capture, replay) not in table_replays:
+        query = '''INSERT INTO Replays (replay, capture, db, mode) 
+                   VALUES ('{0}', '{1}', 'unknown', 'unknown')'''.format(replay, capture)
+        execute_utility_query(query)
+
