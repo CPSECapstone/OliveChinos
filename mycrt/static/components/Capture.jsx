@@ -7,7 +7,7 @@ import '../styles/capturestyles.css'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { setCaptureCount, startCapture, stopCapture } from '../actions'
+import { setCaptureCount, startCapture, stopCapture, changeStateForComponents } from '../actions'
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
@@ -119,6 +119,9 @@ class Capture extends React.Component {
         //console.log(data)
         that.displayAllCaptures()
       })
+    }
+    else if(action == 'REPLAY') {
+      this.props.dispatch(changeStateForComponents("onReplay"))
     }
     else {
       var deleteData = {
