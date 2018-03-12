@@ -7,6 +7,7 @@ import '../styles/graphComponent.css'
 import FileSaver from 'file-saver'
 
 import {
+   ResponsiveContainer,
    LineChart,
    AreaChart,
    CartesianGrid,
@@ -276,6 +277,7 @@ class Graph extends Component {
                <h3 style={{
                      marginLeft: '20px'
                   }}/>
+                  <ResponsiveContainer width="100%" height="40%" overflow="visible">
                <LineChart width={1400} height={400}>
                   <CartesianGrid strokeDasharray="3 3"/>
                   <XAxis dataKey="name" domain={[0, 30]}/>
@@ -284,6 +286,7 @@ class Graph extends Component {
                         position: 'insideLeft'
                      }}/>
                </LineChart>
+               </ResponsiveContainer>
             </div>
          </div>
       </div>)
@@ -355,6 +358,9 @@ class Graph extends Component {
           <div>
             <div>
               <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
+
+               <ResponsiveContainer width="100%" height="40%" overflow="visible">
+
               <LineChart
                 id="currentGraph"
                 ref={(graph) => this.currentGraph = graph}
@@ -390,6 +396,9 @@ class Graph extends Component {
                 }
                 {this.getLines().map(line => line)}
               </LineChart>
+              </ResponsiveContainer>
+
+              <div height="10%">
               <a
                 href="javascript: void(0);"
                 className="btn update"
@@ -414,7 +423,9 @@ class Graph extends Component {
                 {' '}
                 Download JSON
               </a>
+              </div>
 
+              
             </div>
           </div>
         </div>

@@ -81,7 +81,7 @@ class GraphContainer extends React.Component {
         return(
             <div>
             <div>
-            <div style={{height:'50vh', border:'1px solid black', overflowY:'scroll'}}>
+            <div style={{minHeight:'40vh', padding:'2px'}}>
             <div>
                 <Graph />
             </div>

@@ -122,7 +122,7 @@ class CaptureReplaySelector extends React.Component {
             }
             return (
             <div>
-                <BootstrapTable search={ true } multiColumnSearch={ true } deleteRow options={options} data={ None }>
+                <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute'} } search={ true } multiColumnSearch={ true } deleteRow options={options} data={ None }>
                     <TableHeaderColumn dataFormat={buttonFormatter} dataField='none' isKey>No Replays Recorded For {refProps.currentCaptureForGraph} Yet.</TableHeaderColumn>
                 </BootstrapTable>
             </div>
@@ -145,7 +145,7 @@ class CaptureReplaySelector extends React.Component {
                 replayData.push(replayInfo)
             }
             return(
-                <BootstrapTable deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
+                <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
                     <TableHeaderColumn dataField='Date'>Date</TableHeaderColumn>
                 </BootstrapTable>

@@ -40,7 +40,7 @@ class CaptureOptions extends React.Component {
         }
             let replayCaptureOptions = Object.keys(this.props.analyticsForGraph);
             return (
-            <BootstrapTable options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
+            <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute'} } options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
                 <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
                 <TableHeaderColumn dataField='DataBase'>Database Instance</TableHeaderColumn>
             </BootstrapTable>
@@ -57,9 +57,9 @@ class CaptureOptions extends React.Component {
 
     render() {
         return(
-            <tbody style={{overflowY: 'scroll'}}>
+            <div>
                 {this.getCapturesWithData(this.props)}
-            </tbody>
+            </div>
         );
     }
 
