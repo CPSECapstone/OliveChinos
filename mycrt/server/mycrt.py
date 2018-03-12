@@ -53,11 +53,15 @@ def rest_test():
 @application.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    pubKey = data["publicKey"] 
-    privateKey = data["privateKey"] 
-    if pubKey is None or privateKey is None:
+    given_username = data['username']
+    given_password = data['password']
+    #pubKey = data["publicKey"] 
+    #privateKey = data["privateKey"] 
+    #if pubKey is None or privateKey is None:
+    if given_username is None or given_password is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    #if verify_login(pubKey, privateKey):
+    if global_username == given_username and global_password == given_password:
         return ('', 204)
     else: 
         abort(401) 
@@ -278,7 +282,12 @@ def analytics():
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
-
+global_username = "abc"
+global_password = "123"
 
 if __name__ == "__main__":
+    try:
+        global_username, global_password = sys.argv[1:3]
+    except Exception:
+        pass
     application.run(debug=True, host='0.0.0.0')
