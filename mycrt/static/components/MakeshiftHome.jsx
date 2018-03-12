@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 require('../styles/tabstyles.css')
+import '../styles/homestyles.css'
 import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
@@ -24,18 +25,16 @@ class MakeshiftHome extends Component {
     if (this.props.stateType === "onCapture") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Capture</h3>
           <Capture />
         </div>
       )
-   } else if (this.props.stateType == "onReplay") {
+    } else if (this.props.stateType == "onReplay") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Replay</h3>
           <Replay />
         </div>
       )
-   } else if (this.props.stateType == "onAnalyze") {
+    } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Analyze</h3>
@@ -49,20 +48,20 @@ class MakeshiftHome extends Component {
     if (action === 'capture') {
       if (this.props.data.activeCaptures > 1) {
         return (
-          <div>{this.props.data.activeCaptures} Captures in Progress...</div>
+          <div>{this.props.data.activeCaptures} Captures</div>
         )
       } else if (this.props.data.activeCaptures == 1) {
-        return <div>1 Capture in Progress...</div>
+        return <div>1 Capture</div>
       } else {
-        return <div>No Captures in Progress</div>
+        return <div>No Captures</div>
       }
     } else if (action === 'replay') {
       if (this.props.data.activeReplays > 1) {
-        return <div>{this.props.data.activeReplays} Replays in Progress...</div>
+        return <div>{this.props.data.activeReplays} Replays</div>
       } else if (this.props.data.activeReplays == 1) {
-        return <div>1 Replay in Progress...</div>
+        return <div>1 Replay</div>
       } else {
-        return <div>No Replays in Progress</div>
+        return <div>No Replays</div>
       }
     }
   }
@@ -74,23 +73,37 @@ class MakeshiftHome extends Component {
       this.props.data.activeReplays > 0 ? styles.active : styles.notActive
     return (
       <div>
-        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
-          MyCRT Tool
-        </h1>
-        <div>
-          <div className="tab">
-            <div className="tablinks">
-              <div className="captureActiveTab">
-                <button style={captureActiveStyle} className="tablinks">
-                  {this.currentAction('capture')}
-                </button>
-              </div>
-              <div className="replayActiveTab">
-                <button style={replayActiveStyle} className="tablinks">
-                  {this.currentAction('replay')}
-                </button>
+        <div className="headerContainer">
+          <div id="headerLeft">
+            <div>
+              <h4>In Progress:</h4>
+            </div>
+            <div id="captureProgress" className="progressBarContainer">
+              <button style={captureActiveStyle} className="progressButton">
+                {this.currentAction('capture')}
+              </button>
+            </div>
+            <div id="replayProgress" className="progressBarContainer">
+              <button style={replayActiveStyle} className="progressButton">
+                {this.currentAction('replay')}
+              </button>
+            </div>
+          </div>
+          <div id="headerCenter">
+            <h1>
+              MyCRT
+          </h1>
+          </div>
+          <div id="headerRight">
+            <div id="userContainer">
+              <div id="userLogoContainer">
+                <span id="userLogo" className="glyphicon glyphicon-user"></span>
               </div>
             </div>
+          </div>
+        </div>
+        <div>
+          <div className="tab">
             <button
               className="tablinks"
               onClick={() => this.props.dispatch(changeStateForComponents("onCapture"))}
@@ -108,14 +121,14 @@ class MakeshiftHome extends Component {
           </div>
           {this.renderPage()}
         </div>
-      </div>
+      </div >
     )
   }
 }
 
 const mapStateToProps = state => ({
-   data: state,
-   stateType: state.stateType,
+  data: state,
+  stateType: state.stateType,
 
 })
 

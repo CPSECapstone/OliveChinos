@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 //import { Flatpickr } from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
@@ -8,7 +8,7 @@ import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
 import { setCaptureCount, startCapture, stopCapture, changeStateForComponents } from '../actions'
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
 
@@ -19,6 +19,7 @@ class Capture extends React.Component {
     super(props)
 
     this.state = {
+      show: false,
       capture: this.props.capture,
       activeCaptures: this.props.activeCaptures,
       haveCaptureData: false,
@@ -32,12 +33,14 @@ class Capture extends React.Component {
       activeCaptureList: [],
       completedCaptureList: [],
       scheduledCaptureList: [],
-      startTime: new Date(),
-      endTime: new Date(),
+      captureStartTime: new Date(),
+      captureEndTime: new Date(),
       captureMode: 'interactive'
     }
 
     //binding required for callback
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.startNewCapture = this.startNewCapture.bind(this)
     this.editCapture = this.editCapture.bind(this)
     // this.getCaptures = this.getCaptures.bind(this)
@@ -47,6 +50,8 @@ class Capture extends React.Component {
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.updateCaptureDB = this.updateCaptureDB.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+    this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
     this.getCapturesTable = this.getCapturesTable.bind(this)
 
   }
@@ -54,6 +59,19 @@ class Capture extends React.Component {
   componentDidMount() {
     this.loadDatabaseInstances()
     this.displayAllCaptures()
+  }
+
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  handleCloseAndStartCapture() {
+    this.startNewCapture();
+    this.setState({ show: false });
+  }
+
+  handleShow() {
+    this.setState({ show: true });
   }
 
   startNewCapture() {
@@ -82,9 +100,13 @@ class Capture extends React.Component {
       data: JSON.stringify(postData),
       contentType: 'application/json',
       dataType: 'json'
-    }).done(function (data) {
-      that.displayAllCaptures()
     })
+      .done(function (data) {
+        that.displayAllCaptures()
+      })
+      .fail(function (data) {
+
+      })
 
   }
 
@@ -120,7 +142,7 @@ class Capture extends React.Component {
         that.displayAllCaptures()
       })
     }
-    else if(action == 'REPLAY') {
+    else if (action == 'REPLAY') {
       this.props.dispatch(changeStateForComponents("onReplay"))
     }
     else {
@@ -260,18 +282,18 @@ class Capture extends React.Component {
     var captureEditAction;
     var that = this;
     function buttonFormatter(cell, row) {
-      if(captureState === 'past') {
+      if (captureState === 'past') {
         return (
           <div className='row'>
-          <Button className='btn-warning'
-            onClick={ () => that.editCapture(row["captureName"], row["db"], 'REPLAY')}
-          >
-          REPLAY
+            <Button className='btn-warning'
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'REPLAY')}
+            >
+              REPLAY
           </Button>
-          <Button className='btn-danger'
-            onClick={ () => that.editCapture(row["captureName"], row["db"], 'DELETE')}
-          >
-          DELETE
+            <Button className='btn-danger'
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'DELETE')}
+            >
+              DELETE
           </Button>
           </div>
         );
@@ -279,10 +301,10 @@ class Capture extends React.Component {
       else if (captureState === 'active') {
         return (
           <div className='row'>
-          <Button className='btn-danger'
-            onClick={ () => that.editCapture(row["captureName"], row["db"], 'STOP')}
-          >
-          STOP
+            <Button className='btn-danger'
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'STOP')}
+            >
+              STOP
           </Button>
           </div>
         );
@@ -290,40 +312,40 @@ class Capture extends React.Component {
       else if (captureState === 'scheduled') {
         return (
           <div className='row'>
-          <Button className='btn-danger'
-            onClick={ () => that.editCapture(row["captureName"], row["db"], 'CANCEL')}
-          >
-          CANCEL
+            <Button className='btn-danger'
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'CANCEL')}
+            >
+              CANCEL
           </Button>
           </div>
         );
       }
     }
-    
+
     console.log("DATA!!!\n", data["captures"])
-    if(data["captures"].length > 0) {
-    return <BootstrapTable search={ true } multiColumnSearch={ true } data={ data["captures"] }>
-      <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
-      <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
-      <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
-      <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
-      <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
-      <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
-    </BootstrapTable>
+    if (data["captures"].length > 0) {
+      return <BootstrapTable search={true} multiColumnSearch={true} data={data["captures"]}>
+        <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
+        <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
+        <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
+      </BootstrapTable>
     }
     else {
       var tester = [{
         something: 1,
       }]
-      return <BootstrapTable data={[]} search={ true } multiColumnSearch={ true } >
-      <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
-      <TableHeaderColumn >Database</TableHeaderColumn>
-      <TableHeaderColumn >Capture Name</TableHeaderColumn>
-      <TableHeaderColumn >Start Time</TableHeaderColumn>
-      <TableHeaderColumn >End Time</TableHeaderColumn>
-      <TableHeaderColumn >Action</TableHeaderColumn>
+      return <BootstrapTable data={[]} search={true} multiColumnSearch={true} >
+        <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
+        <TableHeaderColumn >Database</TableHeaderColumn>
+        <TableHeaderColumn >Capture Name</TableHeaderColumn>
+        <TableHeaderColumn >Start Time</TableHeaderColumn>
+        <TableHeaderColumn >End Time</TableHeaderColumn>
+        <TableHeaderColumn >Action</TableHeaderColumn>
 
-    </BootstrapTable>
+      </BootstrapTable>
     }
   }
 
@@ -380,12 +402,16 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
-                value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                value={this.state.captureStartTime}
+                onChange={date => {
+                  this.setState({ captureStartTime: date })
+                }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
-                  value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  value={this.state.captureEndTime}
+                  onChange={date => {
+                    this.setState({ captureEndTime: date })
+                  }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>)
@@ -402,71 +428,109 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
-                value={this.state.startTime}
-                onChange={date => { this.setState({ startTime }) }} /></td>
+                value={this.state.captureStartTime}
+                onChange={date => {
+                  this.setState({ captureStartTime: date })
+                }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
-                  value={this.state.endTime}
-                  onChange={date => { this.setState({ endTime }) }} /></td></tr>
+                  value={this.state.captureEndTime}
+                  onChange={date => {
+                    this.setState({ captureEndTime: date })
+                  }} /></td></tr>
           </tbody>
         </table>
       </FormGroup>
+    }
+
+    let uniqueNameAlert = null;
+    if (this.state.show) {
+      uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleDismiss}>
+        <h4>Oh snap! You got an error!</h4>
+        <p>
+          Change this and that and try again. Duis mollis, est non commodo
+          luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
+          Cras mattis consectetur purus sit amet fermentum.
+            </p>
+        <p>
+          <Button bsStyle="danger">Take this action</Button>
+          <span> or </span>
+          <Button onClick={this.handleDismiss}>Hide Alert</Button>
+        </p>
+      </Alert>
     }
 
 
 
     return (
       <div>
-        <hr />
         <div>
-          <form>
-            <FormGroup
-              controlId="formBasicText"
-              validationState={this.getValidationState()}
+          <div id="captureTitle">
+            <h3 style={{ marginLeft: '20px' }}>Capture</h3>
+          </div>
+
+          <div id="newCaptureBtnContainer">
+            <Button
+              id="newCaptureBtn"
+              //style={{ marginLeft: '' }}
+              bsSize="xsmall"
+              bsStyle="primary"
+              onClick={this.handleShow}
             >
-              <ControlLabel>Capture Name</ControlLabel>
-              <FormControl
-                //id='captureNameInput'
-                type="text"
-                value={this.state.captureName}
-                placeholder="Enter name"
-                onChange={this.handleCaptureNameChange}
-              />
-              <FormControl.Feedback />
-              <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
-            </FormGroup>
-            <FormGroup controlId="formControlsSelect">
-              <ControlLabel>Database Instance</ControlLabel>
-              <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
-                {this.state.databaseInstanceOptions}
-              </FormControl>
-            </FormGroup>
-            <FormGroup>
-              <div>
-                <ButtonToolbar>
-                  <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
-                    <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
-                    <ToggleButton value={'schedule'}>Schedule Mode</ToggleButton>
-                  </ToggleButtonGroup>
-                </ButtonToolbar>
-              </div>
-            </FormGroup>
-            <div>
-              {captureScheduler}
-            </div>
-          </form>
-          <Button
-            style={{ marginLeft: '' }}
-            bsSize="large"
-            bsStyle="success"
-            onClick={this.startNewCapture}
-          >
-            Start Capture
-        </Button>
+              New Capture
+            </Button>
+          </div>
         </div>
-        <hr />
-        <div>
-          <br />
+
+        <Modal show={this.state.show} onHide={this.handleClose} backdrop='static' enforceFocus={false}>
+          <Modal.Header closeButton>
+            <Modal.Title>New Capture</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <FormGroup
+                controlId="formBasicText"
+                validationState={this.getValidationState()}
+              >
+                <ControlLabel>Capture Name</ControlLabel>
+                <FormControl
+                  //id='captureNameInput'
+                  type="text"
+                  value={this.state.captureName}
+                  placeholder="Enter name"
+                  onChange={this.handleCaptureNameChange}
+                />
+                <FormControl.Feedback />
+                <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
+              </FormGroup>
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Database Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
+                  {this.state.databaseInstanceOptions}
+                </FormControl>
+              </FormGroup>
+              <FormGroup>
+                <div>
+                  <ButtonToolbar>
+                    <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
+                      <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
+                      <ToggleButton value={'schedule'}>Schedule Mode</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
+              </FormGroup>
+              {captureScheduler}
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.handleClose}>Close</Button>
+            <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <br />
+
+        <div id="captureBody">
           <CaptureList
             activeCaptures={this.state.activeCaptureList}
             completedCaptures={this.state.completedCaptureList}
