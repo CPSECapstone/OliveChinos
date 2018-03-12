@@ -83,6 +83,7 @@ def _add_to_scheduled_captures(capture_name, scheduler_process_id):
 
 def _create_scheduled_event(scheduler, func, args, unformatted_time): 
     time_to_run = _get_epoch_time(unformatted_time)
+    print('running time: ' + str(time_to_run), file=sys.stderr)
 
     priority = 1
     return scheduler.enterabs(time_to_run, priority, func, args)
@@ -119,6 +120,6 @@ def _get_epoch_time(raw_time):
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
-    eight_hours = timedelta(hours=7).total_seconds()
-    return time.mktime(dt_obj.timetuple()) - eight_hours
+#    eight_hours = timedelta(hours=7).total_seconds()
+    return time.mktime(dt_obj.timetuple()) 
 
