@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import jquery from 'jquery'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
-import MakeshiftHome from './MakeshiftHome'
+import Home from './Home'
 import '../styles/loginstyles.css'
 
 import { setAuth, setPublicKey, setPrivateKey } from '../actions'
@@ -137,9 +137,9 @@ class Login extends Component {
     )
   }
 
-  renderMakeshiftHome() {
+  renderHome() {
     if (this.props.loggedIn == false) {
-      return <MakeshiftHome />
+      return <Home />
     } else {
       return this.renderLogin()
     }
@@ -148,7 +148,7 @@ class Login extends Component {
   render() {
     return (
       <div>
-        <div>{this.renderMakeshiftHome()}</div>
+        <div>{this.renderHome()}</div>
         <div />
       </div>
     )

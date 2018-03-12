@@ -4,7 +4,7 @@ import Sidebar from 'react-sidebar'
 import Login from './login'
 import { connect } from 'react-redux'
 import { Router, Route } from 'react-router'
-import MakeshiftHome from './MakeshiftHome'
+import Home from './Home'
 
 class App extends React.Component {
 
@@ -23,7 +23,7 @@ class App extends React.Component {
       return <Login publicKey={this.state.publicKey} privateKey={this.state.privateKey} />
     }
     else {
-      return <MakeshiftHome />
+      return <Home />
     }
   }
 
