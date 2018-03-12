@@ -224,12 +224,12 @@ def schedule_capture(capture_name, db_id, start_time, end_time):
 
   """
 
+  print('scheduling capture', file=sys.stderr)
   query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
                VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled")'''.format(db_id, capture_name, start_time, end_time)
 
   execute_utility_query(query)
 
-  
 
 def start_capture(capture_name, db_id, start_time):
   """Starts a capture.
@@ -242,9 +242,10 @@ def start_capture(capture_name, db_id, start_time):
     db_id: Database identifier
   """
 
+  print('starting capture', file=sys.stderr)
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing") ON DUPLICATE KEY UPDATE'''.format(db_id, capture_name, start_time)
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing") ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_id, capture_name, start_time)
   execute_utility_query(query)
 
 #TODO check if ending scheduled capture
@@ -258,6 +259,7 @@ def end_capture(credentials, capture_name, db_id):
     db_id: Database identifier
   """
 
+  print('ending capture', file=sys.stderr)
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   execute_utility_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
@@ -310,3 +312,20 @@ def delete_capture(credentials, capture_name):
 
   query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
   execute_utility_query(query)
+
+def cancel_capture(capture_name): 
+    '''Remove scheduled or ongoing capture from database
+    
+    As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
+    that need to be removed are in the utility db.
+
+    Args: 
+        capture_name: A preexisting capture name
+    '''
+
+    query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
+    execute_utility_query(query)
+    
+
+
+
