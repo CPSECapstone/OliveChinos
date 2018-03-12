@@ -154,20 +154,24 @@ def replayListForSpecificCapture():
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
     data = request.get_json()
-    db_name = data['db'] 
+    db_name = data['db']
+    rds_name = data['rds']
+    username = data['username']
+    password = data['password']
+ 
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
        
     #TODO verify that capture name is unique. return 403? if not.
-    capture_name = data.get('captureName', createCaptureName(db_name, start_time))
+    capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
     if capture_name == "":
-      capture_name = createCaptureName(db_name, start_time)
+      capture_name = createCaptureName(rds_name + "_" + db_name, start_time)
 
     if not check_if_capture_name_is_unique(capture_name):
       abort(400)
 
     end_time = data.get('endTime', 'No end time..')
     
-    start_capture(capture_name, db_name)
+    start_capture(capture_name, rds_name, db_name, username, password)
     return jsonify({
         "status": "started",
         "db": db_name,
