@@ -2,6 +2,7 @@ import click
 import traceback
 from datetime import datetime
 import requests #rest api
+import json
 
 
 @click.group()
@@ -46,7 +47,7 @@ def _get_capture_list(status):
     if captures.status_code != 200: #there was an error
         raise requests.HTTPError('GET /captures/ {}'.format(captures.status_code))
 
-    return str(captures.json())
+    return format_json(captures.json())
 
 @capture.command(short_help='-start capturing a database workload')
 @click.argument('db-instance')
@@ -68,12 +69,14 @@ def start(db_instance, capture_name, start_time, end_time):
     '''
 
     if not start_time: #interactive capture
+        click.echo('got here')
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
         start_time=date_time.split('_')[1]
 
     task = {'db': db_instance, 
             'captureName': capture_name,
-            'startTime': start_time
+            'startTime': [start_time], 
+            'endTime': [end_time]
     }
 
     resp = requests.post('http://localhost:5000/capture/start', json=task)
@@ -81,21 +84,29 @@ def start(db_instance, capture_name, start_time, end_time):
     if resp.status_code != 200:
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
+    click.echo('Capture \'' + capture_name + '\' on database \'' + db_instance + '\' was scheduled or started.')
+
 
 @capture.command(short_help='-end an ongoing capture')
+@click.argument('db-instance')
 @click.argument('capture-name')
-def end(capture_name): 
+def end(db_instance, capture_name): 
     '''-end an ongoing capture
 
     Note the specified capture must currently be in progress in order to end it. 
     '''
     #TODO we might need to add the db_name in here
-    task = {'captureName': capture_name}
+    task = {'captureName': capture_name,
+            'db': db_instance}
 
     resp = requests.post('http://localhost:5000/capture/end', json=task)
 
     if resp.status_code != 200: 
-        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        click.echo('There was an error.')
+        click.echo('Please make sure your capture name and db instance are correct.')
+        #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+
+    click.echo('Capture \'' + capture_name + '\' on database \'' + db_instance + '\' was ended.')
 
 @capture.command(short_help='-cancel a capture')
 @click.argument('capture-name')
@@ -128,6 +139,7 @@ def delete(capture_name):
     if resp.status_code != 200: 
         raise requests.HTTPError('DELETE /capture/delete/ {}'.format(resp.status_code))
 
+    click.echo('Capture ' + capture_name + ' was deleted.')
 
 '''-------------REPLAY-------------'''
 @cli.group()
@@ -179,7 +191,8 @@ def delete(capture_name, replay_name):
     resp = requests.delete('http://localhost:5000/replay/delete', json=task)
 
     if resp.status_code != 200:
-        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        click.echo('Please make sure the capture name is correct.')
+        #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
 
 @replay.command()
@@ -189,6 +202,8 @@ def view():
 
     if replays.status_code != 200: #there was an error
         raise requests.HTTPError('GET /replay/list {}'.format(captures.status_code))
+
+    click.echo(format_json(replays.json()))
 
 '''-------------ANALYZE-------------'''
 @cli.group()
@@ -203,12 +218,13 @@ def list_metrics():
     click.echo('Available Metrics:\n' + metric_options)
 
 @analyze.command()
-@click.argument('replay-name', nargs=-1)
+@click.argument('capture-name', nargs=1)
+@click.argument('replay-names', nargs=-1)
 @click.option('-m', '--metric-name', multiple=True, 
         help='-the name of the metric; use command "list-metrics to see supported options"')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(replay_name, metric_name, raw):
+def view(capture_name, replay_names, metric_name, raw):
     '''-view metrics for any number of replays'''
 
     analytics = requests.get('http://localhost:5000/analytics')
@@ -217,7 +233,10 @@ def view(replay_name, metric_name, raw):
 
     json_input = analytics.json()
     if raw: 
-        click.echo(json_input)
+        for replay in replay_names: 
+            click.echo('\nMetric data for \'' + str(replay) + '\'')
+            click.echo(format_json(json_input[capture_name][replay]))
+        click.echo()
     else :
         try:
             '''Current bucket structure:
@@ -227,21 +246,24 @@ def view(replay_name, metric_name, raw):
                ...
             '''
             #Average of data points
-            for folder in json_input: 
-                for replay_id in json_input[folder]: 
-                    replay = json_input[folder][replay_id]
-                    cpu_util = get_average(replay['CPUUtilization'])
-                    freeable_mem = get_average(replay['FreeableMemory'])
-                    read_iops = get_average(replay['ReadIOPS'])
-                    write_iops = get_average(replay['WriteIOPS'])
+            capture_folder = json_input[capture_name]
+            for replay in replay_names: 
+                click.echo('\nMetric Data for \'' + str(replay) + '\'') 
+                metrics = capture_folder[replay]
+                cpu_util = get_average(metrics['CPUUtilization'])
+                freeable_mem = get_average(metrics['FreeableMemory'])
+                read_iops = get_average(metrics['ReadIOPS'])
+                write_iops = get_average(metrics['WriteIOPS'])
 
-                    click.echo('Start Time: ' + str(replay['start_time']))
-                    click.echo('End Time: ' + str(replay['end_time']))
-                    click.echo('---METRIC AVERAGES---')
-                    click.echo('CPU Utilization (%): ' + str(cpu_util))
-                    click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-                    click.echo('Read IOPS (count/sec): ' + str(read_iops))
-                    click.echo('Write IOPS (count/sec): ' + str(write_iops))
+                click.echo('Start Time: ' + str(metrics['start_time']))
+                click.echo('End Time: ' + str(metrics['end_time']))
+                click.echo('---METRIC AVERAGES---')
+                click.echo('CPU Utilization (%): ' + str(cpu_util))
+                click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
+                click.echo('Read IOPS (count/sec): ' + str(read_iops))
+                click.echo('Write IOPS (count/sec): ' + str(write_iops))
+
+            click.echo()
 
         except (ValueError, KeyError, TypeError): 
             traceback.print_exc() 
@@ -254,3 +276,6 @@ def get_average(metric_list):
         average += data_point
 
     return average / len(metric_list)
+
+def format_json(json_input): 
+    return json.dumps(json_input, indent=4, sort_keys=True)
