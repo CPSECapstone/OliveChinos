@@ -232,7 +232,7 @@ class Replay extends React.Component {
       <div>
         <div>
           <div id="replayTitle">
-            <h3 style={{ marginLeft: '20px' }}>Replay 2</h3>
+            <h3 style={{ marginLeft: '20px' }}>Replay</h3>
           </div>
 
           <div id="newReplayBtnContainer">
