@@ -419,7 +419,7 @@ class Capture extends React.Component {
           </div>
         </div>
 
-        <Modal show={this.state.show} onHide={this.handleClose} backdrop='static'>
+        <Modal show={this.state.show} onHide={this.handleClose} backdrop='static' enforceFocus={false}>
           <Modal.Header closeButton>
             <Modal.Title>New Capture</Modal.Title>
           </Modal.Header>
