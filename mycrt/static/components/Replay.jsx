@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
@@ -24,8 +24,11 @@ class Replay extends React.Component {
       replayName: '',
       inputHelpBlock: 'Optional. If not provided, name will be generated.',
       captureOptions: ["No captures available"],
-      replayDBInstance: '',
+      replayRDSInstance: '',
       captureToReplay: '',
+      replayDBName: '',
+      replayDBUsername: '',
+      replayDBPassword: '',
       databaseInstanceOptions: ["No instances available"],
       completedReplayList: null,
       fastMode: true
@@ -51,8 +54,8 @@ class Replay extends React.Component {
   handleCloseAndAddReplay() {
     this.setState({ show: false });
     // THIS IS WHAT NEEDS TO BE FIXED
-    console.log('THIS IS WHAT WE ARE SENDING TO ADD REPLAY:', this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance)
-    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayDBInstance);
+    console.log('THIS IS WHAT WE ARE SENDING TO ADD REPLAY:', this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance)
+    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
   }
 
   handleShow() {
@@ -145,7 +148,7 @@ class Replay extends React.Component {
       that.setState({
         databaseInstanceOptions: returnList
       })
-      that.setState({ replayDBInstance: returnList[0].props.value })
+      that.setState({ replayRDSInstance: returnList[0].props.value })
     })
   }
 
@@ -154,9 +157,12 @@ class Replay extends React.Component {
     this.setState({ replay: 'Replay Active' })
     this.props.dispatch(startNewReplay())
     var postData = {
-      "db": this.state.replayDBInstance,
+      "db": this.state.replayDBName,
+      "rds": this.state.replayRDSInstance,
       "captureName": this.state.captureToReplay,
       "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
+      "username": this.state.replayDBUsername,
+      "password": this.state.replayDBPassword,
       //"startTime": "now",
       "fastMode": this.state.fastMode,
       "restoreDb": false
@@ -180,16 +186,28 @@ class Replay extends React.Component {
     this.setState({ captureToReplay: e.target.value });
   }
 
-  updateReplayDB(e) {
-    this.setState({ replayDBInstance: e.target.value });
+  updateReplayRDS(e) {
+    this.setState({ replayRDSInstance: e.target.value });
+  }
+
+  handleDBNameChange(event) {
+    this.setState({ replayDBName: event.target.value })
+  }
+
+  handleDBUsernameChange(event) {
+    this.setState({ replayDBUsername: event.target.value })
+  }
+
+  handleDBPasswordChange(event) {
+    this.setState({ replayDBPassword: event.target.value })
   }
 
   analyze(captureName, replayName) {
     var bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
-    for(let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
+    for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
       let currReplay = currentReplayNames[i];
-      if(currReplay == replayName) {
+      if (currReplay == replayName) {
         bools[i] = true
       }
       else {
@@ -259,7 +277,7 @@ class Replay extends React.Component {
   }
 
   getReplayTableOrLoader() {
-    if(this.state.completedReplayList == null) {
+    if (this.state.completedReplayList == null) {
       return <div id="loader"></div>
     } else {
       return (
@@ -312,17 +330,31 @@ class Replay extends React.Component {
                 <FormControl.Feedback />
                 <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
               </FormGroup>
-              <FormGroup controlId="formControlsSelect">
+              <FormGroup controlId="formControlsSelectCapture">
                 <ControlLabel>Capture To Replay</ControlLabel>
                 <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
                   {this.state.captureOptions}
                 </FormControl>
               </FormGroup>
-              <FormGroup controlId="formControlsSelect">
-                <ControlLabel>Database Instance</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.replayDBInstance} onChange={this.updateReplayDB}>
+              <FormGroup controlId="formControlsSelectRDS">
+                <ControlLabel>RDS Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
                   {this.state.databaseInstanceOptions}
                 </FormControl>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>DB Name</ControlLabel>
+                <FormControl type="text" placeholder="Enter name" value={this.state.replayDBName} onChange={this.handleDBNameChange} />
+              </FormGroup>
+              <FormGroup id="dbInfoForm">
+                <Col className="dbInfoFormCol" sm={6}>
+                  <ControlLabel>DB Username</ControlLabel>
+                  <FormControl type="text" placeholder="Enter username" value={this.state.replayDBUsername} onChange={this.handleDBUsernameChange} />
+                </Col>
+                <Col className="dbInfoFormCol" sm={6}>
+                  <ControlLabel>DB Password</ControlLabel>
+                  <FormControl type="password" placeholder="Enter password" value={this.state.replayDBPassword} onChange={this.handleDBPasswordChange} />
+                </Col>
               </FormGroup>
               <FormGroup>
                 <div>
