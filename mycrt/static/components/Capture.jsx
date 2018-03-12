@@ -19,6 +19,7 @@ class Capture extends React.Component {
     super(props)
 
     this.state = {
+      showAlert: false,
       show: false,
       capture: this.props.capture,
       activeCaptures: this.props.activeCaptures,
@@ -42,6 +43,8 @@ class Capture extends React.Component {
     }
 
     //binding required for callback
+    this.handleShowAlert = this.handleShowAlert.bind(this);
+    this.handleCloseAlert = this.handleCloseAlert.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.startNewCapture = this.startNewCapture.bind(this)
@@ -67,6 +70,14 @@ class Capture extends React.Component {
   componentDidMount() {
     this.loadDatabaseInstances()
     this.displayAllCaptures()
+  }
+
+  handleCloseAlert() {
+    this.setState({ showAlert: false });
+  }
+
+  handleShowAlert() {
+    this.setState({ showAlert: true });
   }
 
   handleClose() {
@@ -119,7 +130,7 @@ class Capture extends React.Component {
         that.displayAllCaptures()
       })
       .fail(function (data) {
-
+        that.handleShowAlert()
       })
 
   }
@@ -460,22 +471,18 @@ class Capture extends React.Component {
     }
 
     let uniqueNameAlert = null;
-    if (this.state.show) {
-      uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleDismiss}>
+    if (this.state.showAlert) {
+      uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
         <h4>Oh snap! You got an error!</h4>
         <p>
-          Change this and that and try again. Duis mollis, est non commodo
-          luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-          Cras mattis consectetur purus sit amet fermentum.
-            </p>
+          Looks like the capture name you provided is not unique.
+          Please provide a unique capture name.
+        </p>
         <p>
-          <Button bsStyle="danger">Take this action</Button>
-          <span> or </span>
-          <Button onClick={this.handleDismiss}>Hide Alert</Button>
+          <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
         </p>
       </Alert>
     }
-
 
 
     return (
@@ -497,6 +504,7 @@ class Capture extends React.Component {
             </Button>
           </div>
         </div>
+
 
         <Modal show={this.state.show} onHide={this.handleClose} backdrop='static' enforceFocus={false}>
           <Modal.Header closeButton>
@@ -561,6 +569,8 @@ class Capture extends React.Component {
         <br />
 
         <div id="captureBody">
+          {uniqueNameAlert}
+
           <CaptureList
             activeCaptures={this.state.activeCaptureList}
             completedCaptures={this.state.completedCaptureList}

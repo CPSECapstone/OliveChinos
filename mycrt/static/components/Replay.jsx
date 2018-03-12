@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay } from '../actions'
@@ -18,6 +18,7 @@ class Replay extends React.Component {
     super(props)
 
     this.state = {
+      showAlert: false,
       show: false,
       replay: this.props.replay,
       activeReplays: this.props.activeReplays,
@@ -35,6 +36,8 @@ class Replay extends React.Component {
     }
 
     //binding required for callback
+    this.handleShowAlert = this.handleShowAlert.bind(this);
+    this.handleCloseAlert = this.handleCloseAlert.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.addReplay = this.addReplay.bind(this)
@@ -45,6 +48,20 @@ class Replay extends React.Component {
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
+
+    this.updateReplayRDS = this.updateCaptureRDS.bind(this)
+    this.handleDBNameChange = this.handleDBNameChange.bind(this)
+    this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
+    this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
+
+  }
+
+  handleCloseAlert() {
+    this.setState({ showAlert: false });
+  }
+
+  handleShowAlert() {
+    this.setState({ showAlert: true });
   }
 
   handleClose() {
@@ -177,8 +194,11 @@ class Replay extends React.Component {
     }).done(function (data) {
       that.props.dispatch(stopReplay())
       that.displayReplays()
-
     })
+      .fail(function (data) {
+        that.handleShowAlert()
+      })
+
 
   }
 
@@ -289,6 +309,20 @@ class Replay extends React.Component {
   }
 
   render() {
+    let uniqueNameAlert = null;
+    if (this.state.showAlert) {
+      uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
+        <h4>Oh snap! You got an error!</h4>
+        <p>
+          Looks like the replay name you provided is not unique.
+          Please provide a unique replay name.
+        </p>
+        <p>
+          <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+        </p>
+      </Alert>
+    }
+
     return (
       <div>
         <div>
@@ -377,6 +411,8 @@ class Replay extends React.Component {
         <br />
 
         <div id="replayBody">
+          {uniqueNameAlert}
+
           <div>{this.getReplayTableOrLoader()}</div>
         </div>
       </div>
