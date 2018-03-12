@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 //import { Flatpickr } from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
@@ -28,7 +28,10 @@ class Capture extends React.Component {
       captureName: '',
       inputHelpBlock: 'Optional. If not provided, name will be generated.',
       databaseInstanceOptions: ["No instances available"],
-      captureDBInstance: '',
+      captureRDSInstance: '',
+      captureDBName: '',
+      captureDBUsername: '',
+      captureDBPassword: '',
       activeCaptureObjects: [],
       activeCaptureList: [],
       completedCaptureList: [],
@@ -46,9 +49,14 @@ class Capture extends React.Component {
     // this.getCaptures = this.getCaptures.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
     this.sendQuery = this.sendQuery.bind(this)
+
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
+    this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
+    this.handleDBNameChange = this.handleDBNameChange.bind(this)
+    this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
+    this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
+
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
-    this.updateCaptureDB = this.updateCaptureDB.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
@@ -81,16 +89,22 @@ class Capture extends React.Component {
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
       postData = {
-        "db": this.state.captureDBInstance,
+        "db": this.state.captureDBName,
+        "rds": this.state.captureRDSInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
+        "username": this.state.captureDBUsername,
+        "password": this.state.captureDBPassword,
         "startTime": this.state.startTime,
         "endTime": this.state.endTime
       }
     }
     else {
       postData = {
-        "db": this.state.captureDBInstance,
+        "db": this.state.captureDBName,
+        "rds": this.state.captureRDSInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
+        "username": this.state.captureDBUsername,
+        "password": this.state.captureDBPassword,
       }
     }
     var that = this
@@ -114,25 +128,15 @@ class Capture extends React.Component {
     //console.log("Capture stopped: ", captureName, " at index ", index)
     //this.setState({ capture: 'Capture Stopped' })
     //console.log('capture ended: ', captureName)
-    let editAction;
-    if (action === 'STOP') {
-      editAction = 'end'
-    }
-    else if (action === 'CANCEL') {
-      editAction = 'cancel'
-    }
-    else {
-      editAction = 'delete'
-    }
     this.props.dispatch(stopCapture())
     var postData = {
       "db": captureDB,
       "captureName": captureName
     }
     var that = this;
-    if (action === 'STOP' || action === 'CANCEL') {
+    if (action === 'end' || action === 'cancel') {
       jquery.ajax({
-        url: window.location.href + 'capture/' + editAction,
+        url: window.location.href + 'capture/' + action,
         type: 'POST',
         data: JSON.stringify(postData),
         contentType: 'application/json',
@@ -225,6 +229,18 @@ class Capture extends React.Component {
     this.setState({ captureName: event.target.value });
   }
 
+  handleDBNameChange(event) {
+    this.setState({ captureDBName: event.target.value })
+  }
+
+  handleDBUsernameChange(event) {
+    this.setState({ captureDBUsername: event.target.value })
+  }
+
+  handleDBPasswordChange(event) {
+    this.setState({ captureDBPassword: event.target.value })
+  }
+
   handleModeChange(event) {
     this.setState({ captureMode: event })
   }
@@ -255,12 +271,12 @@ class Capture extends React.Component {
       that.setState({
         databaseInstanceOptions: returnList
       })
-      that.setState({ captureDBInstance: returnList[0].props.value })
+      that.setState({ captureRDSInstance: returnList[0].props.value })
     })
   }
 
-  updateCaptureDB(e) {
-    this.setState({ captureDBInstance: e.target.value });
+  updateCaptureRDS(e) {
+    this.setState({ captureRDSInstance: e.target.value });
   }
 
   sendQuery() {
@@ -291,7 +307,7 @@ class Capture extends React.Component {
               REPLAY
           </Button>
             <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'DELETE')}
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'delete')}
             >
               DELETE
           </Button>
@@ -302,7 +318,7 @@ class Capture extends React.Component {
         return (
           <div className='row'>
             <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'STOP')}
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'end')}
             >
               STOP
           </Button>
@@ -313,7 +329,7 @@ class Capture extends React.Component {
         return (
           <div className='row'>
             <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'CANCEL')}
+              onClick={() => that.editCapture(row["captureName"], row["db"], 'cancel')}
             >
               CANCEL
           </Button>
@@ -504,13 +520,27 @@ class Capture extends React.Component {
                 <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
               </FormGroup>
               <FormGroup controlId="formControlsSelect">
-                <ControlLabel>Database Instance</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.captureDBInstance} onChange={this.updateCaptureDB}>
+                <ControlLabel>RDS Instance</ControlLabel>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
                   {this.state.databaseInstanceOptions}
                 </FormControl>
               </FormGroup>
               <FormGroup>
-                <div>
+                <ControlLabel>DB Name</ControlLabel>
+                <FormControl type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
+              </FormGroup>
+              <FormGroup id="dbInfoForm">
+                <Col className="dbInfoFormCol" sm={6}>
+                  <ControlLabel>DB Username</ControlLabel>
+                  <FormControl type="text" placeholder="Enter username" value={this.state.captureDBUsername} onChange={this.handleDBUsernameChange} />
+                </Col>
+                <Col className="dbInfoFormCol" sm={6}>
+                  <ControlLabel>DB Password</ControlLabel>
+                  <FormControl type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <div className="modeButtonContainer">
                   <ButtonToolbar>
                     <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
                       <ToggleButton value={'interactive'}>Interactive Mode</ToggleButton>
