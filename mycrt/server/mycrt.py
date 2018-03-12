@@ -256,6 +256,11 @@ def get_all_replays():
     capture_replays = get_capture_replay_list(credentials)    
     return jsonify(capture_replays)
 
+@application.route("/replay/active_list", methods=["GET"])
+def get_active_replays():
+    replays = get_active_replays()
+    return jsonify(replays)
+
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
     #Need a capture name and replay name in order to delete replay
