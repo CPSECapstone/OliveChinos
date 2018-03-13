@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
-//import { Flatpickr } from 'react-flatpickr'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
 import Flatpickr from 'react-flatpickr'
@@ -11,8 +10,6 @@ import { setCaptureCount, startCapture, stopCapture, changeStateForComponents } 
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
-
-/* Use this element as a reference when creating components*/
 
 class Capture extends React.Component {
   constructor(props) {
@@ -50,8 +47,6 @@ class Capture extends React.Component {
     this.startNewCapture = this.startNewCapture.bind(this)
     this.editCapture = this.editCapture.bind(this)
     // this.getCaptures = this.getCaptures.bind(this)
-    this.handleQueryChange = this.handleQueryChange.bind(this)
-    this.sendQuery = this.sendQuery.bind(this)
 
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
     this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
@@ -67,36 +62,43 @@ class Capture extends React.Component {
 
   }
 
+  // Refreshs database instances and capture lists when component fully renders
   componentDidMount() {
     this.loadDatabaseInstances()
     this.displayAllCaptures()
   }
 
+  // Sets state of error alert to close
   handleCloseAlert() {
     this.setState({ showAlert: false });
   }
 
+  // Sets state of error alert to show
   handleShowAlert() {
     this.setState({ showAlert: true });
   }
 
+  // Closes the new capture modal
   handleClose() {
     this.setState({ show: false });
   }
 
+  // Starts a new capture and closes the new capture modal
   handleCloseAndStartCapture() {
     this.startNewCapture();
     this.setState({ show: false });
   }
 
+  // Sets the state to show the new capture modal
   handleShow() {
     this.setState({ show: true });
   }
 
+  // Starts a new capture by calling a get request to the server
   startNewCapture() {
     this.setState({ capture: 'New Capture Started' })
     this.props.dispatch(startCapture())
-    var postData;
+    let postData;
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
       postData = {
@@ -105,8 +107,8 @@ class Capture extends React.Component {
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
-        "startTime": this.state.startTime,
-        "endTime": this.state.endTime
+        "startTime": this.state.captureStartTime,
+        "endTime": this.state.captureEndTime
       }
     }
     else {
@@ -118,7 +120,7 @@ class Capture extends React.Component {
         "password": this.state.captureDBPassword,
       }
     }
-    var that = this
+    let that = this
     jquery.ajax({
       url: window.location.href + 'capture/start',
       type: 'POST',
@@ -135,16 +137,14 @@ class Capture extends React.Component {
 
   }
 
+  // Consumes a capture name, capture db, and action and calls that action on the specified capture
   editCapture(captureName, captureDB, action) {
-    //console.log("Capture stopped: ", captureName, " at index ", index)
-    //this.setState({ capture: 'Capture Stopped' })
-    //console.log('capture ended: ', captureName)
     this.props.dispatch(stopCapture())
-    var postData = {
+    let postData = {
       "db": captureDB,
       "captureName": captureName
     }
-    var that = this;
+    let that = this;
     if (action === 'end' || action === 'cancel') {
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
@@ -161,7 +161,7 @@ class Capture extends React.Component {
       this.props.dispatch(changeStateForComponents("onReplay"))
     }
     else {
-      var deleteData = {
+      let deleteData = {
         "capture": captureName
       }
       jquery.ajax({
@@ -171,7 +171,6 @@ class Capture extends React.Component {
         contentType: 'application/json',
         dataType: 'json'
       }).done(function (data) {
-        //console.log(data)
         that.displayAllCaptures()
       })
 
@@ -179,42 +178,10 @@ class Capture extends React.Component {
 
   }
 
-  cancelCapture(captureName, captureDB) {
-    var postData = {
-      "db": captureDB,
-      "captureName": captureName
-    }
-    var that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/end',
-      type: 'POST',
-      data: JSON.stringify(postData),
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      //console.log(data)
-      that.displayAllCaptures()
-    })
-
-  }
-
-  renderCaptureData() {
-    if (this.state.haveCaptureData == true) {
-      return (
-        <h4 style={{ marginLeft: '20px', border: '1px solid' }}>
-          <div
-            style={{ overflowY: 'scroll', height: '24vh', resize: 'vertical' }}
-          >
-            <pre>{JSON.stringify(this.state.captureData, null, 2)}</pre>
-          </div>
-        </h4>
-      )
-    }
-  }
-
+  // Changes the help text for the capture name form
   getValidationState() {
-    if (this.state.captureName.indexOf(' ') >= 0) {
-      this.state.inputHelpBlock = 'No spaces allowed in name. Please try again';
+    if (this.state.captureName.indexOf(' ') >= 0 || this.state.captureName.indexOf('/') >= 0) {
+      this.state.inputHelpBlock = 'No spaces or / allowed in name. Please try again';
       return 'error';
     }
     else if (this.state.captureName.length > 0) {
@@ -228,39 +195,40 @@ class Capture extends React.Component {
     else return null;
   }
 
-
-  handleQueryChange(event) {
-    this.setState({ query: event.target.value })
-  }
-
+  // Sets the state of the capture name to show changes in the capture name form
   handleCaptureNameChange(event) {
     this.setState({ captureName: event.target.value });
   }
 
+  // Sets the state of the Database name to show changes in the capture db name form
   handleDBNameChange(event) {
     this.setState({ captureDBName: event.target.value })
   }
 
+  // Sets the state of the username to show changes in the capture username form
   handleDBUsernameChange(event) {
     this.setState({ captureDBUsername: event.target.value })
   }
 
+  // Sets the state of the password to show changes in the capture password form
   handleDBPasswordChange(event) {
     this.setState({ captureDBPassword: event.target.value })
   }
 
+  // Changes the capture mode between interactive and scheduled
   handleModeChange(event) {
     console.log(event)
     this.setState({ captureMode: event })
     console.log(this.state.captureMode)
   }
 
+  // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
-    var dbInstances = data["databases"];
+    let dbInstances = data["databases"];
     let dbList = [];
-    for (var i = 0; i < dbInstances.length; i++) {
-      var instance = dbInstances[i];
-      var selectOption = (<option value={instance} key={i}>
+    for (let i = 0; i < dbInstances.length; i++) {
+      let instance = dbInstances[i];
+      let selectOption = (<option value={instance} key={i}>
         {instance}
       </option>)
       dbList.push(selectOption)
@@ -268,8 +236,9 @@ class Capture extends React.Component {
     return dbList
   }
 
+  // Retrieves a list of available rds instances and initializes the form to choose the instances
   loadDatabaseInstances() {
-    var that = this;
+    let that = this;
     let returnList = []
     jquery.ajax({
       url: window.location.href + 'databaseInstances',
@@ -285,28 +254,17 @@ class Capture extends React.Component {
     })
   }
 
+  // Changes the selected rds instance for capture
   updateCaptureRDS(e) {
     this.setState({ captureRDSInstance: e.target.value });
   }
 
-  sendQuery() {
-    var queryJSON = {
-      query: this.state.query
-    }
-    var returnVal = jquery.ajax({
-      url: window.location.href + 'capture/executeQuery',
-      type: 'POST',
-      data: JSON.stringify(queryJSON),
-      contentType: 'application/json',
-      dataType: 'json'
-    })
-  }
-
+  // Consumes a list of capture details and a capture state and produces a button of action 
   getCapturesTable(data, captureState) {
-    var currentCaptures = [];
-    var current;
-    var captureEditAction;
-    var that = this;
+    let currentCaptures = [];
+    let current;
+    let captureEditAction;
+    let that = this;
     function buttonFormatter(cell, row) {
       if (captureState === 'past') {
         return (
@@ -360,7 +318,7 @@ class Capture extends React.Component {
       </BootstrapTable>
     }
     else {
-      var tester = [{
+      let tester = [{
         something: 1,
       }]
       return <BootstrapTable data={[]} search={true} multiColumnSearch={true} >
@@ -375,6 +333,7 @@ class Capture extends React.Component {
     }
   }
 
+  // Consumes a capture type and produces a table of captures retrieved from the server
   displayCaptures(captureType) {
     let captureRoute;
     if (captureType === 'active') {
@@ -387,14 +346,14 @@ class Capture extends React.Component {
       captureRoute = 'list_completed'
     }
 
-    var that = this;
+    let that = this;
     jquery.ajax({
       url: window.location.href + 'capture/' + captureRoute,
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      var resultList = that.getCapturesTable(data, captureType)
+      let resultList = that.getCapturesTable(data, captureType)
       if (captureType === 'active') {
         that.props.dispatch(setCaptureCount(data.captures.length))
         console.log('SETTING THE ACTIVES')
@@ -411,38 +370,11 @@ class Capture extends React.Component {
     })
   }
 
+  // Creates the tables for all capture types
   displayAllCaptures() {
     this.displayCaptures('active')
     this.displayCaptures('scheduled')
     this.displayCaptures('past')
-  }
-
-
-
-  displayCaptureScheduler() {
-    var displayForm;
-    if (this.state.captureMode == 'schedule') {
-      displayForm = (<FormGroup>
-        <ControlLabel>Capture Schedule</ControlLabel>
-        <table>
-          <tbody>
-            <tr><td id='captureStartTimeContainer'><div>Start Time</div>
-              <Flatpickr data-enable-time
-                value={this.state.captureStartTime}
-                onChange={date => {
-                  this.setState({ captureStartTime: date })
-                }} /></td>
-              <td><div>End Time</div>
-                <Flatpickr data-enable-time
-                  value={this.state.captureEndTime}
-                  onChange={date => {
-                    this.setState({ captureEndTime: date })
-                  }} /></td></tr>
-          </tbody>
-        </table>
-      </FormGroup>)
-    }
-    return displayForm
   }
 
   render() {

@@ -158,8 +158,10 @@ def capture_start():
     rds_name = data['rds']
     username = data['username']
     password = data['password']
- 
+
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
+    if isinstance(start_time, list):
+        start_time = start_time[0]
        
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
@@ -170,7 +172,18 @@ def capture_start():
       abort(400)
 
     end_time = data.get('endTime', 'No end time..')
+    if isinstance(end_time, list):
+        end_time = end_time[0]
     
+    print("==============", file = sys.stderr)
+    print(capture_name, file = sys.stderr)
+    print(password, file = sys.stderr)
+    print(username, file = sys.stderr)
+    print(rds_name, file = sys.stderr)
+    print(db_name, file = sys.stderr)
+    print(start_time, file = sys.stderr)
+    print(end_time, file = sys.stderr)
+    print("--------------", file = sys.stderr)
     start_capture(capture_name, rds_name, db_name, username, password)
     return jsonify({
         "status": "started",
@@ -277,8 +290,8 @@ def delete_capture_http():
 @application.route("/analytics", methods=["GET"])
 def analytics():
     #analyticsNumber = request.args.get('id')
-    print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
-    print(credentials, file=sys.stderr)
+    #print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
+    #print(credentials, file=sys.stderr)
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
