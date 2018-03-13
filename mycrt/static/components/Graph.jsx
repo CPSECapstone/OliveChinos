@@ -8,6 +8,7 @@ import FileSaver from 'file-saver'
 
 import {
    ResponsiveContainer,
+   Label,
    LineChart,
    AreaChart,
    CartesianGrid,
@@ -19,6 +20,7 @@ import {
    ReferenceArea
 } from 'recharts'
 import {connect} from 'react-redux'
+import { DropdownButton, MenuItem} from 'react-bootstrap'
 
 class Graph extends Component {
    constructor(props) {
@@ -349,6 +351,35 @@ class Graph extends Component {
          }
       }
 
+      const AxisLabel = ({ axisType, x, y, width, height, stroke, children }) => {
+        const isVert = axisType === 'yAxis';
+        const cx = isVert ? x : x + (width / 2);
+        const cy = isVert ? (height / 2) + y : y + height + 10;
+        const rot = isVert ? `270 ${cx} ${cy}` : 0;
+        return (
+          <text x={cx} y={cy} transform={`rotate(${rot})`} textAnchor="middle" stroke={stroke}>
+            {children}
+          </text>
+        );
+      };
+      let yAxisLabel = "";
+      let yAxisPadding = 40;
+
+      if (this.props.metricForGraph === "CPUUtilization") {
+        yAxisLabel = "Percentage";
+        yAxisPadding = 40;
+      }
+      else if (this.props.metricForGraph === "FreeableMemory") {
+        yAxisLabel = "Bytes";
+        yAxisPadding = 100;
+      }
+      else if (this.props.metricForGraph === "ReadIOPS" || this.props.metricForGraph === "WriteIOPS") {
+        yAxisLabel = "Transactions / Second";
+        yAxisPadding = 60;
+      }
+      
+
+
 
       console.log(this.state);
       console.log(this.props);
@@ -357,7 +388,25 @@ class Graph extends Component {
         <div id="graphContainer">
           <div>
             <div>
-              <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
+              <div height="10%" style={{ textAlign: 'right' }}>
+                <h3 style={{ marginLeft: '20px', float:'left', fontWeight: 'bold'}}>{this.props.metricForGraph} for {this.props.currentCaptureForGraph}</h3>
+
+                <a
+                  style={{backgroundColor: 'aliceblue', float: 'right'}}
+                  href="javascript: void(0);"
+                  className="btn update"
+                  onClick={this.zoomOut.bind(this)}
+                >
+                  {' '}
+                  Reset Zoom
+                </a>
+
+                <DropdownButton bsStyle={'primary'} title="Download">
+                  <MenuItem  onClick={this.downloadObjectAsJson.bind(this)}>Download JSON Data</MenuItem>
+                  <MenuItem  onClick={this.exportChart.bind(this)}>Download as Image (SVG)</MenuItem>
+                </DropdownButton>
+              
+              </div>
 
                <ResponsiveContainer width="100%" height="40%" overflow="visible">
 
@@ -375,19 +424,22 @@ class Graph extends Component {
                 <XAxis
                   allowDataOverflow={true}
                   dataKey="seconds"
+                  label="Seconds"
+                  height={60}
                   domain={[leftMin, rightMax]}
                   type="number"
                 />
+
                 <YAxis
                   allowDataOverflow={true}
-                  label={{
-                    value: this.props.yLabel,
-                    angle: -90,
-                    position: 'insideLeft'
-                  }}
+                  
+                  width={yAxisPadding}
                   domain={[bottomMin, topMax]}
 
-                />
+                >
+                  <Label angle={-90} value={yAxisLabel} position='insideLeft' style={{textAnchor: 'middle'}} />
+                </YAxis>
+
                 <Tooltip />
                 <Legend />
                 {
@@ -398,33 +450,7 @@ class Graph extends Component {
               </LineChart>
               </ResponsiveContainer>
 
-              <div height="10%">
-              <a
-                href="javascript: void(0);"
-                className="btn update"
-                onClick={this.zoomOut.bind(this)}
-              >
-                {' '}
-                Reset
-              </a>
-              <a
-                href="javascript: void(0);"
-                className="btn update"
-                onClick={this.exportChart.bind(this)}
-              >
-                {' '}
-                Download Graph
-              </a>
-              <a
-                href="javascript: void(0);"
-                className="btn update"
-                onClick={this.downloadObjectAsJson.bind(this)}
-              >
-                {' '}
-                Download JSON
-              </a>
-              </div>
-
+              
               
             </div>
           </div>

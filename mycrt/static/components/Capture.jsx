@@ -324,7 +324,7 @@ class Capture extends React.Component {
 
     console.log("DATA!!!\n", data["captures"])
     if (data["captures"].length > 0) {
-      return <BootstrapTable containerStyle={ {position: 'absolute'} } search={true} multiColumnSearch={true} data={data["captures"]}>
+      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } search={true} multiColumnSearch={true} data={data["captures"]}>
         <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
         <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
@@ -337,7 +337,7 @@ class Capture extends React.Component {
       var tester = [{
         something: 1,
       }]
-      return <BootstrapTable containerStyle={ {position: 'absolute'} } bodyStyle={ {overflow: 'auto'} } data={[]} search={true} multiColumnSearch={true} >
+      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } bodyStyle={ {overflow: 'auto'} } data={[]} search={true} multiColumnSearch={true} >
         <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
         <TableHeaderColumn >Capture Name</TableHeaderColumn>

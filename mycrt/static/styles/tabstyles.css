@@ -40,7 +40,7 @@
 /* Style the tab content */
 .tabcontent {
   float: left;
-  padding: 0px 12px;
+  padding: 0px 20px;
   width: 80%;
   overflow: auto;
   position: absolute;
@@ -51,4 +51,7 @@
 
 #activeAction {
   background-color: #77e686;
+}
+.activeTab {
+  background-color: #ddd !important;
 }
