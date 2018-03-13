@@ -235,7 +235,11 @@ def view(capture_name, replay_names, metric_name, raw):
     if raw: 
         for replay in replay_names: 
             click.echo('\nMetric data for \'' + str(replay) + '\'')
-            click.echo(format_json(json_input[capture_name][replay]))
+            for metric in metric_name: 
+                output = '\"'+ metric + '\": '
+                click.echo(output + format_json(json_input[capture_name][replay][metric]))
+            if len(metric_name)==0: #no metric specified - display all
+                click.echo(format_json(json_input[capture_name][replay]))
         click.echo()
     else :
         try:
