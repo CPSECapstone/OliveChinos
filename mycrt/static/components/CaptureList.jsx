@@ -4,13 +4,13 @@ import { Button, ListGroup, ListGroupItem } from 'react-bootstrap'
 import '../styles/captureliststyles.css'
 import '../styles/capturestyles.css'
 import '../styles/loader.css'
-import {ButtonToolbar, ToggleButtonGroup, ToggleButton} from 'react-bootstrap'
+import { ButtonToolbar, ToggleButtonGroup, ToggleButton } from 'react-bootstrap'
 
 
 export default class CaptureList extends React.Component {
     constructor(props) {
         super(props);
-        this. state = {
+        this.state = {
             captureType: 'Active'
         }
 
@@ -18,45 +18,45 @@ export default class CaptureList extends React.Component {
     }
 
     handleCaptureTypeChange(event) {
-        this.setState( {captureType: event})
+        this.setState({ captureType: event })
     }
 
     renderRadioButtons() {
         return (
-            <ButtonToolbar>
-            <ToggleButtonGroup type="radio" name="options" value={this.state.captureType} onChange={this.handleCaptureTypeChange}>
-                <ToggleButton id="toggle" value='Active' >
-                    Active
+            <ButtonToolbar className="buttonToolbar">
+                <ToggleButtonGroup type="radio" name="options" value={this.state.captureType} onChange={this.handleCaptureTypeChange}>
+                    <ToggleButton className="toggleButton" id="toggle" value='Active' >
+                        Active
                 </ToggleButton>
-                <ToggleButton id="toggle" value='Scheduled' >
-                    Scheduled
+                    <ToggleButton className="toggleButton" id="toggle" value='Scheduled' >
+                        Scheduled
                 </ToggleButton>
-                <ToggleButton id="toggle" value='Completed' >
-                    Completed
+                    <ToggleButton className="toggleButton" id="toggle" value='Completed' >
+                        Completed
                 </ToggleButton>
-            </ToggleButtonGroup>
+                </ToggleButtonGroup>
             </ButtonToolbar>
         )
     }
 
     renderTable() {
         console.log('THE CAPTURE TYPE IS: ', this.state.captureType)
-        if(this.state.captureType == 'Active') {
+        if (this.state.captureType == 'Active') {
             return (
                 <div>
-                {this.props.activeCaptures}
+                    {this.props.activeCaptures}
                 </div>
             )
         }
-        else if(this.state.captureType == 'Scheduled') {
+        else if (this.state.captureType == 'Scheduled') {
             return (
                 <div>
-            {this.props.scheduledCaptures}
-            </div>
+                    {this.props.scheduledCaptures}
+                </div>
             )
         }
-        else if(this.state.captureType == 'Completed') {
-            if(this.props["completedCaptures"].length <= 0) {
+        else if (this.state.captureType == 'Completed') {
+            if (this.props["completedCaptures"].length <= 0) {
                 return (
                     <div id="loader" className='col'></div>
                 )
@@ -64,26 +64,26 @@ export default class CaptureList extends React.Component {
             else {
                 return (
                     <div>
-                {this.props.completedCaptures}
-                </div>
+                        {this.props.completedCaptures}
+                    </div>
                 )
             }
         }
     }
     render() {
-        if(this.props["activeCaptures"].length <= 0) {
+        if (this.props["activeCaptures"].length <= 0) {
             return (
                 <div>
-                { this.renderRadioButtons() }
-                <div id="loader" className='col'></div>
+                    {this.renderRadioButtons()}
+                    <div id="loader" className='col'></div>
                 </div>
             )
         }
         else return (
             <div>
-            { this.renderRadioButtons() }
-             { this.renderTable() }
-             </div>
+                {this.renderRadioButtons()}
+                {this.renderTable()}
+            </div>
         )
     }
 }

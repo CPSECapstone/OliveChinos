@@ -28,3 +28,14 @@
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
+.toggleButton {
+    border: 1px solid #ccc !important;
+}
+
+.buttonToolbar {
+    margin: 0 auto;
+    width: 500px;
+    padding-right: 5vw;
+    padding-left: 5vw;
+}
