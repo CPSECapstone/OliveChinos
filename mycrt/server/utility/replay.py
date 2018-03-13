@@ -17,10 +17,19 @@ password = "olivechinos"
 database = "CRDB"
 period = 10
 
-manager = Manager()
-replays_in_progress = manager.dict()
-db_in_use = manager.dict()
-lock = Lock()
+manager = None
+replays_in_progress = None
+db_in_use = None
+lock = None
+
+
+def init_replay():
+  manager = Manager()
+  replays_in_progress = manager.dict()
+  db_in_use = manager.dict()
+  lock = Lock()
+
+
 
 def _get_hostname(rds_client, db_id):
   instances = rds_client.describe_db_instances(DBInstanceIdentifier=db_id)

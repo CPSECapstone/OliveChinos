@@ -23,7 +23,7 @@ export default class CaptureList extends React.Component {
 
     renderRadioButtons() {
         return (
-            <ButtonToolbar borderColor='#ccc'>
+            <ButtonToolbar>
             <ToggleButtonGroup type="radio" name="options" value={this.state.captureType} onChange={this.handleCaptureTypeChange}>
                 <ToggleButton id="toggle" value='Active' >
                     Active
