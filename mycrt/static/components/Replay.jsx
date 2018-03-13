@@ -271,7 +271,7 @@ class Replay extends React.Component {
     }
 
     if (data["replays"].length > 0) {
-      return <BootstrapTable search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
+      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
         <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db'>Database</TableHeaderColumn>
@@ -280,7 +280,7 @@ class Replay extends React.Component {
       </BootstrapTable>
     }
     else {
-      return <BootstrapTable data={[]} search={true} multiColumnSearch={true} options={options}>
+      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } data={[]} search={true} multiColumnSearch={true} options={options}>
         <TableHeaderColumn isKey dataField='something'>Replay Name</TableHeaderColumn>
         <TableHeaderColumn >Capture</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
