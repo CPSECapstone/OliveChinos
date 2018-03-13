@@ -247,6 +247,25 @@ class Replay extends React.Component {
     this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
   }
 
+  deleteReplay(captureName, replayName) {
+    //Callback for deleting a replay
+    let deleteData = {
+      "capture": captureName,
+      "replay": replayName
+    }
+    let that = this;
+    jquery.ajax({
+      url: window.location.href + 'replay/delete',
+      type: 'DELETE',
+      data: JSON.stringify(deleteData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      that.displayReplays()
+    })
+
+  }
+
   getReplayTable(data) {
     var currentCaptures = [];
     var current;
@@ -261,10 +280,17 @@ class Replay extends React.Component {
     function buttonFormatter(cell, row) {
       return (
         <div className='row'>
-          <Button className='btn-info btn-sm'
+          <Button 
+            className='btn-info'
             onClick={() => that.analyze(row["capture"], row["replay"])}
           >
             ANALYZE
+        </Button>
+        <Button
+        className='btn-danger'
+        onClick={() => that.deleteReplay(row["capture"], row["replay"])}
+        >
+          DELETE
         </Button>
         </div>
       );
