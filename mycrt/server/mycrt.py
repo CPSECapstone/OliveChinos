@@ -9,12 +9,14 @@ try:
     from .utility.analytics import *
     from .utility.replay import *
     from .utility.login import *
+    from .utility.scheduler import *
 except:
     
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
     from utility.login import * 
+    from utility.scheduler import *
 
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -124,7 +126,7 @@ def captureListScheduled():
     if pubKey is None or privateKey is None:
         abort(400)
     if verify_login(pubKey, privateKey):
-        capture_list = [] # Replace later when scheduled is implemented
+        capture_list = get_all_scheduled_capture_details()
 
         return jsonify({
             "captures" : capture_list
@@ -159,10 +161,10 @@ def capture_start():
     username = data['username']
     password = data['password']
 
-    start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
-    if isinstance(start_time, list):
-        start_time = start_time[0]
-       
+    now = [convertDatetimeToString(datetime.utcnow())]
+    start_time = data.get('startTime', now)
+    start_time = start_time[0]
+    
     #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
     if capture_name == "":
@@ -171,10 +173,12 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name):
       abort(400)
 
-    end_time = data.get('endTime', 'No end time..')
-    if isinstance(end_time, list):
-        end_time = end_time[0]
     
+
+    end_time = data.get('endTime', [None])
+    end_time = end_time[0]
+    is_scheduled = end_time is not None
+
     print("==============", file = sys.stderr)
     print(capture_name, file = sys.stderr)
     print(password, file = sys.stderr)
@@ -184,7 +188,11 @@ def capture_start():
     print(start_time, file = sys.stderr)
     print(end_time, file = sys.stderr)
     print("--------------", file = sys.stderr)
-    start_capture(capture_name, rds_name, db_name, username, password)
+
+
+    new_capture_process(is_scheduled, credentials, capture_name, 
+                            db_name, start_time, end_time, rds_name, username, password)
+   
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -200,6 +208,8 @@ def capture_end():
     capture_name = data['captureName']
     end_time = convertDatetimeToString(datetime.utcnow())
     
+    #if capture was scheduled, make sure to end process
+    #start up a new process for end capture rather than just running function
     capture_details, start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
@@ -299,3 +309,4 @@ def analytics():
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
+

@@ -379,6 +379,7 @@ class Capture extends React.Component {
 
   render() {
     let captureScheduler = null;
+    let that = this; 
     if (this.state.captureMode == 'schedule') {
       captureScheduler = <FormGroup>
         <ControlLabel>Capture Schedule</ControlLabel>
