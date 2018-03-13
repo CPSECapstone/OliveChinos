@@ -11,8 +11,6 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import '../styles/loader.css';
 
-/* Use this element as a reference when creating components*/
-
 class Replay extends React.Component {
   constructor(props) {
     super(props)
@@ -35,7 +33,6 @@ class Replay extends React.Component {
       fastMode: true
     }
 
-    //binding required for callback
     this.handleShowAlert = this.handleShowAlert.bind(this);
     this.handleCloseAlert = this.handleCloseAlert.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -48,54 +45,59 @@ class Replay extends React.Component {
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
-
-    this.updateReplayRDS = this.updateCaptureRDS.bind(this)
+    this.updateReplayRDS = this.updateReplayRDS.bind(this)
     this.handleDBNameChange = this.handleDBNameChange.bind(this)
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
-
   }
 
+  // Function to hide alert message
   handleCloseAlert() {
     this.setState({ showAlert: false });
   }
 
+  // Function to show alert message
   handleShowAlert() {
     this.setState({ showAlert: true });
   }
 
+  // Function to close "New Replay" popup-form
   handleClose() {
     this.setState({ show: false });
   }
 
+  // Function to close "New Replay" popup-form and start a new replay
   handleCloseAndAddReplay() {
     this.setState({ show: false });
-    // THIS IS WHAT NEEDS TO BE FIXED
-    console.log('THIS IS WHAT WE ARE SENDING TO ADD REPLAY:', this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance)
     this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
   }
 
+  // Function to show "New Replay" popup-form
   handleShow() {
     this.setState({ show: true });
   }
 
+  // Function to refresh the list of replays
   componentDidMount() {
     this.loadDatabaseInstances()
     this.loadCapturesToReplay()
     this.displayReplays()
   }
 
+  // Function to change replay name
   handleReplayNameChange(event) {
     this.setState({ replayName: event.target.value });
   }
 
+  // Function to change replay mode
   handleModeChange(event) {
     this.setState({ fastMode: !this.state.fastMode })
   }
 
+  // Function to check if capture name is valid
   getValidationState() {
-    if (this.state.replayName.indexOf(' ') >= 0) {
-      this.state.inputHelpBlock = 'No spaces allowed in name. Please try again';
+    if (this.state.replayName.indexOf(' ') >= 0 || this.state.replayName.indexOf(' ') >= 0) {
+      this.state.inputHelpBlock = 'No spaces or / allowed in name. Please try again';
       return 'error';
     }
     else if (this.state.replayName.length > 0) {
@@ -109,7 +111,7 @@ class Replay extends React.Component {
     else return null;
   }
 
-
+  // Function to display the list of available captures to replay on
   createCapturesSelect(data) {
     var captures = data
     let captureList = [];
@@ -123,6 +125,7 @@ class Replay extends React.Component {
     return captureList
   }
 
+  // Function to fetch the list of captures available to replay on
   loadCapturesToReplay() {
     var that = this;
     jquery.ajax({
@@ -138,7 +141,7 @@ class Replay extends React.Component {
     })
   }
 
-
+  // Function to display the list of available DB instances
   createDBInstancesSelect(data) {
     var dbInstances = data["databases"];
     let dbList = [];
@@ -152,6 +155,7 @@ class Replay extends React.Component {
     return dbList
   }
 
+  // Function to fetch the list of DB instances
   loadDatabaseInstances() {
     var that = this;
     let returnList = []
@@ -169,7 +173,7 @@ class Replay extends React.Component {
     })
   }
 
-
+  // Function to start a new replay
   addReplay(replayName, captureName, replayDB) {
     this.setState({ replay: 'Replay Active' })
     this.props.dispatch(startNewReplay())
@@ -191,37 +195,43 @@ class Replay extends React.Component {
       data: JSON.stringify(postData),
       contentType: 'application/json',
       dataType: 'json'
-    }).done(function (data) {
-      that.props.dispatch(stopReplay())
-      that.displayReplays()
     })
+      .done(function (data) {
+        that.props.dispatch(stopReplay())
+        that.displayReplays()
+      })
       .fail(function (data) {
         that.handleShowAlert()
+        console.log("ALERT: " + that.showAlert)
       })
-
-
   }
 
+  // Function to update the list of captures available
   updateCaptureToReplay(e) {
     this.setState({ captureToReplay: e.target.value });
   }
 
+  // Function to update the RDS instance
   updateReplayRDS(e) {
     this.setState({ replayRDSInstance: e.target.value });
   }
 
+  // Function to change the name of a DB instance
   handleDBNameChange(event) {
     this.setState({ replayDBName: event.target.value })
   }
 
+  // Function to change the name of a DB instance username
   handleDBUsernameChange(event) {
     this.setState({ replayDBUsername: event.target.value })
   }
 
+  // Function to change the name of a DB instance password
   handleDBPasswordChange(event) {
     this.setState({ replayDBPassword: event.target.value })
   }
 
+  // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
     var bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
@@ -234,7 +244,6 @@ class Replay extends React.Component {
         bools[i] = false
       }
     }
-
     this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
   }
 
@@ -248,6 +257,7 @@ class Replay extends React.Component {
       defaultSortName: 'capture',  // default sort column name
       defaultSortOrder: 'desc'  // default sort order
     };
+
     function buttonFormatter(cell, row) {
       return (
         <div className='row'>
@@ -260,7 +270,6 @@ class Replay extends React.Component {
       );
     }
 
-    console.log("DATA****\n", data["replays"])
     if (data["replays"].length > 0) {
       return <BootstrapTable search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
         <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
@@ -282,6 +291,7 @@ class Replay extends React.Component {
     }
   }
 
+  // Function to display the list of replays
   displayReplays() {
     var that = this;
     jquery.ajax({
@@ -290,12 +300,12 @@ class Replay extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      // var resultList = that.getReplays(data)
       var resultList = that.getReplayTable(data)
       that.setState({ completedReplayList: resultList })
     })
   }
 
+  // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
     if (this.state.completedReplayList == null) {
       return <div id="loader"></div>
@@ -333,7 +343,6 @@ class Replay extends React.Component {
           <div id="newReplayBtnContainer">
             <Button
               id="newReplayBtn"
-              //style={{ marginLeft: '' }}
               bsSize="xsmall"
               bsStyle="primary"
               onClick={this.handleShow}
@@ -350,7 +359,6 @@ class Replay extends React.Component {
           <Modal.Body>
             <form>
               <FormGroup
-                //controlId="formBasicText"
                 validationState={this.getValidationState()}
               >
                 <ControlLabel>Replay Name</ControlLabel>
