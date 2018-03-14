@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
 require('../styles/tabstyles.css')
 import '../styles/homestyles.css'
+import jquery from 'jquery';
 import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
-import { changeStateForComponents } from '../actions/index';
+import { changeStateForComponents, setAnalyticsForGraph } from '../actions/index';
 import { connect } from 'react-redux'
 
-class MakeshiftHome extends Component {
+class Home extends Component {
   constructor(props) {
     super(props)
 
@@ -17,8 +18,30 @@ class MakeshiftHome extends Component {
       onReplay: false,
       onAnalyze: false,
       activeCaptures: this.props.activeCaptures,
-      activeReplays: this.props.activeReplays
+      activeReplays: this.props.activeReplays,
+      captureTab: 'blue',
+      replayTab: 'red',
+      analyticsTab: 'orange'
     }
+
+    this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
+
+  }
+
+  getPythonAnalytics() {
+    jquery.get(window.location.href + 'analytics', (data) => {
+      this.setState({analytics: data}, this.render);
+      this.props.dispatch(setAnalyticsForGraph(data))
+    });
+    
+  }
+
+  componentWillMount() {
+    this.getPythonAnalytics();
+  }
+  
+  componentWillReceiveProps() {
+    this.getPythonAnalytics();
   }
 
   renderPage() {
@@ -71,6 +94,8 @@ class MakeshiftHome extends Component {
       this.props.data.activeCaptures > 0 ? styles.active : styles.notActive
     var replayActiveStyle =
       this.props.data.activeReplays > 0 ? styles.active : styles.notActive
+    var tabActiveStyle = this.props.stateForComponents;
+    var classNames = require('classnames');
     return (
       <div>
         <div className="headerContainer">
@@ -103,19 +128,20 @@ class MakeshiftHome extends Component {
           </div>
         </div>
         <div>
-          <div className="tab">
+          <div className="tab" >
             <button
-              className="tablinks"
-              onClick={() => this.props.dispatch(changeStateForComponents("onCapture"))}
-              id="button"
+              className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onCapture'})}
+              onClick={() => {console.log(this.props.stateType); this.props.dispatch(changeStateForComponents("onCapture"))}}
               type="button"
             >
               Capture
             </button>
-            <button className="tablinks" onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
+            <button className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onReplay'})}
+              onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
               Replay
             </button>
-            <button className="tablinks" onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
+            <button className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze'})}
+              onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
               Analyze
             </button>
           </div>
@@ -126,10 +152,12 @@ class MakeshiftHome extends Component {
   }
 }
 
+
+
 const mapStateToProps = state => ({
   data: state,
   stateType: state.stateType,
-
+  analyticsForGraph: state.analyticsForGraph
 })
 
-export default connect(mapStateToProps)(MakeshiftHome)
+export default connect(mapStateToProps)(Home)
