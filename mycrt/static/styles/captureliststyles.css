@@ -29,7 +29,7 @@
     padding-bottom: 20px;
 }
 
-.toggleButton {
+#toggle {
     border: 1px solid #ccc !important;
 }
 
@@ -39,3 +39,11 @@
     padding-right: 5vw;
     padding-left: 5vw;
 }
+
+.refreshCaptureButton {
+    padding: 5px;
+    border: 1px solid #ccc !important;
+    border-radius: 5px;
+    background-color: none;
+}
+
