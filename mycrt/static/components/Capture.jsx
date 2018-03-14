@@ -273,7 +273,7 @@ class Capture extends React.Component {
             >
               REPLAY
           </Button>
-            <Button className='btn-danger'
+            <Button className='btn-danger' style={{marginLeft: '10px'}}
               onClick={() => that.editCapture(row["captureName"], row["db"], 'delete')}
             >
               DELETE
@@ -308,10 +308,10 @@ class Capture extends React.Component {
     console.log("DATA!!!\n", data["captures"])
     if (data["captures"].length > 0) {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["captures"]}>
-        <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
-        <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
-        <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
+        <TableHeaderColumn dataField='captureName' isKey dataSort>Capture Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='startTime' dataSort>Start Time</TableHeaderColumn>
+        <TableHeaderColumn dataField='endTime' dataSort>End Time</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
     }
@@ -430,7 +430,7 @@ class Capture extends React.Component {
             <Button
               id="newCaptureBtn"
               //style={{ marginLeft: '' }}
-              bsSize="xsmall"
+              
               bsStyle="primary"
               onClick={this.handleShow}
             >

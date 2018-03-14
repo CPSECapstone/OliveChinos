@@ -43,7 +43,7 @@ class MetricSelector extends React.Component {
 
     render() {
         return(
-        <div className='row'>
+        <div className='row' style={{textAlign: 'center'}}>
             <ToggleButtonGroup type="radio" name="options" value={this.state.metric} onChange={this.handleMetricChange}>
                 <ToggleButton id="toggle" value={'cpuUtilization'} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
                 <img src="https://cdn4.iconfinder.com/data/icons/computer-hardware-line-icons-1/48/08-512.png" id='icon' />
