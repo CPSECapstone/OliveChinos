@@ -50,14 +50,14 @@ def _get_capture_list(status):
     return format_json(captures.json())
 
 @capture.command(short_help='-start capturing a database workload')
-@click.argument('db-instance')
+@click.argument('credentials-file', type=click.File('rb'))
 @click.option('-n', '--capture-name', 
         help='-a unique name for the capture')
 @click.option('-s', '--start-time',
-        help='-time to start a scheduled capture, format: YYYY/MM/DD_HH:MM:SS')
+        help='-time to start a scheduled capture, format: YYYY-MM-DDTHH:MM:SS.xZ')
 @click.option('-e', '--end-time',
-        help='-time to end a scheduled capture, format: YYYY/MM/DD_HH:MM:SS')
-def start(db_instance, capture_name, start_time, end_time): 
+        help='-time to end a scheduled capture, format: YYYY-MM-DDTHH:MM:SS.xZ')
+def start(credentials_file, capture_name, start_time, end_time): 
     '''-start capturing a database workload 
         
         To start an interactive capture, specify an Amazon RDS instance identifier
@@ -68,12 +68,17 @@ def start(db_instance, capture_name, start_time, end_time):
         a start and end time if you desire to schedule a capture.
     '''
 
+    credential_dict = json.load(credentials_file)
+
     if not start_time: #interactive capture
         click.echo('got here')
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
         start_time=date_time.split('_')[1]
 
-    task = {'db': db_instance, 
+    task = {'db': credential_dict['db-name'], 
+            'rds': credential_dict['rds-instance'],
+            'username': credential_dict['username'],
+            'password': credential_dict['password'],
             'captureName': capture_name,
             'startTime': [start_time], 
             'endTime': [end_time]
@@ -82,9 +87,14 @@ def start(db_instance, capture_name, start_time, end_time):
     resp = requests.post('http://localhost:5000/capture/start', json=task)
 
     if resp.status_code != 200:
+        if resp.status_code == 400: #capture name must be unique
+            click.echo('This capture name has already been used.')
+            return
+
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
-    click.echo('Capture \'' + capture_name + '\' on database \'' + db_instance + '\' was scheduled or started.')
+    click.echo('Capture \'' + capture_name + '\' on database \'' + 
+            credential_dict['db-name'] + '\' was scheduled or started.')
 
 
 @capture.command(short_help='-end an ongoing capture')
