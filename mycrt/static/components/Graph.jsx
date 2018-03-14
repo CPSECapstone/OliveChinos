@@ -54,8 +54,10 @@ class Graph extends Component {
    }
 
    downloadObjectAsJson(){
-      var newDate = new Date().toISOString().split('T')[0];
-      var newTime = new Date().toISOString().split('T')[1].split('.')[0];
+      var date = new Date();
+      var newDate = date.toISOString().split('T')[0];
+      var isoDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
+      var newTime = isoDate.split('T')[1].split('.')[0];
 
       var exportObj = {
          "Metric": this.props.metricForGraph,
@@ -377,7 +379,7 @@ class Graph extends Component {
         yAxisLabel = "Transactions / Second";
         yAxisPadding = 60;
       }
-      
+
 
 
 
@@ -405,7 +407,7 @@ class Graph extends Component {
                   <MenuItem  onClick={this.downloadObjectAsJson.bind(this)}>Download JSON Data</MenuItem>
                   <MenuItem  onClick={this.exportChart.bind(this)}>Download as Image (SVG)</MenuItem>
                 </DropdownButton>
-              
+
               </div>
 
                <ResponsiveContainer width="100%" height="40%" overflow="visible">
@@ -432,7 +434,7 @@ class Graph extends Component {
 
                 <YAxis
                   allowDataOverflow={true}
-                  
+
                   width={yAxisPadding}
                   domain={[bottomMin, topMax]}
 
@@ -450,8 +452,8 @@ class Graph extends Component {
               </LineChart>
               </ResponsiveContainer>
 
-              
-              
+
+
             </div>
           </div>
         </div>
