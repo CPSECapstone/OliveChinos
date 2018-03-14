@@ -59,7 +59,6 @@ class Capture extends React.Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
     this.getCapturesTable = this.getCapturesTable.bind(this)
-
   }
 
   // Refreshs database instances and capture lists when component fully renders
@@ -308,10 +307,9 @@ class Capture extends React.Component {
 
     console.log("DATA!!!\n", data["captures"])
     if (data["captures"].length > 0) {
-      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } search={true} multiColumnSearch={true} data={data["captures"]}>
+      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["captures"]}>
         <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
@@ -321,7 +319,7 @@ class Capture extends React.Component {
       let tester = [{
         something: 1,
       }]
-      return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } bodyStyle={ {overflow: 'auto'} } data={[]} search={true} multiColumnSearch={true} >
+      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
         <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
         <TableHeaderColumn >Capture Name</TableHeaderColumn>
@@ -377,9 +375,14 @@ class Capture extends React.Component {
     this.displayCaptures('past')
   }
 
+  refreshStuff() {
+    console.log("you have refreshed this table")
+    this.displayAllCaptures()
+  }
+
   render() {
     let captureScheduler = null;
-    let that = this; 
+    let that = this;
     if (this.state.captureMode == 'schedule') {
       captureScheduler = <FormGroup>
         <ControlLabel>Capture Schedule</ControlLabel>
@@ -415,7 +418,6 @@ class Capture extends React.Component {
         </p>
       </Alert>
     }
-
 
     return (
       <div>
@@ -504,6 +506,7 @@ class Capture extends React.Component {
           {uniqueNameAlert}
 
           <CaptureList
+            refreshAction={() => this.displayAllCaptures()}
             activeCaptures={this.state.activeCaptureList}
             completedCaptures={this.state.completedCaptureList}
             scheduledCaptures={this.state.scheduledCaptureList} />
