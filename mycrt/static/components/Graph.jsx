@@ -363,11 +363,11 @@ class Graph extends Component {
         );
       };
       let yAxisLabel = "";
-      let yAxisPadding = 40;
+      let yAxisPadding = 60;
 
       if (this.props.metricForGraph === "CPUUtilization") {
         yAxisLabel = "Percentage";
-        yAxisPadding = 40;
+        yAxisPadding = 60;
       }
       else if (this.props.metricForGraph === "FreeableMemory") {
         yAxisLabel = "Bytes";
@@ -392,16 +392,16 @@ class Graph extends Component {
                 <h3 style={{ marginLeft: '20px', float:'left', fontWeight: 'bold'}}>{this.props.metricForGraph} for {this.props.currentCaptureForGraph}</h3>
 
                 <a
-                  style={{backgroundColor: 'aliceblue', float: 'right'}}
+                  style={{backgroundColor: 'aliceblue', float: 'right', marginLeft: '5px', padding: '5px 10px'}}
                   href="javascript: void(0);"
-                  className="btn update"
+                  className="btn btn-sm update"
                   onClick={this.zoomOut.bind(this)}
                 >
                   {' '}
-                  Reset Zoom
+                  Reset Zoom 
                 </a>
 
-                <DropdownButton bsStyle={'primary'} title="Download">
+                <DropdownButton id="downloadBtn" bsSize={'small'} bsStyle={'primary'} title="Download">
                   <MenuItem  onClick={this.downloadObjectAsJson.bind(this)}>Download JSON Data</MenuItem>
                   <MenuItem  onClick={this.exportChart.bind(this)}>Download as Image (SVG)</MenuItem>
                 </DropdownButton>
@@ -425,7 +425,7 @@ class Graph extends Component {
                   allowDataOverflow={true}
                   dataKey="seconds"
                   label="Seconds"
-                  height={60}
+                  height={70}
                   domain={[leftMin, rightMax]}
                   type="number"
                 />

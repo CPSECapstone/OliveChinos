@@ -281,13 +281,13 @@ class Replay extends React.Component {
       return (
         <div className='row'>
           <Button
-            className='btn-info'
+            className='btn-info' 
             onClick={() => that.analyze(row["capture"], row["replay"])}
           >
             ANALYZE
         </Button>
           <Button
-            className='btn-danger'
+            className='btn-danger' style={{marginLeft: '10px'}}
             onClick={() => that.deleteReplay(row["capture"], row["replay"])}
           >
             DELETE
@@ -298,10 +298,10 @@ class Replay extends React.Component {
 
     if (data["replays"].length > 0) {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
-        <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
-        <TableHeaderColumn dataField='db'>Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='mode'>Mode</TableHeaderColumn>
+        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='mode' dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
     }
@@ -381,7 +381,7 @@ class Replay extends React.Component {
           <div id="newReplayBtnContainer">
             <Button
               id="newReplayBtn"
-              bsSize="xsmall"
+              
               bsStyle="primary"
               onClick={this.handleShow}
             >
