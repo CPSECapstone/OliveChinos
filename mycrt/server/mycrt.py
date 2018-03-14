@@ -315,9 +315,11 @@ def analytics():
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
+@application.before_first_request
+def _run_on_start():
+    init_replay()
+    init_scheduler()
 
 
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
-    init_replay()
-    init_scheduler()

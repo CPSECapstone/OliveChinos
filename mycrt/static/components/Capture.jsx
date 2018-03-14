@@ -311,7 +311,6 @@ class Capture extends React.Component {
       return <BootstrapTable containerStyle={ {position: 'absolute', padding: '0px 20px 20px 0px'} } search={true} multiColumnSearch={true} data={data["captures"]}>
         <TableHeaderColumn dataField='captureName' isKey>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='db' >Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='captureName'>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='startTime'>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='endTime'>End Time</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
