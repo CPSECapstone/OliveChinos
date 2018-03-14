@@ -1,0 +1,100 @@
+/*#headerLeft {
+    display: inline;
+    float: left;
+    width: 25%;
+}
+
+#headerRight {
+    display: inline;
+    float: right;
+    width: 25%;
+}
+
+#headerCenter {
+    width: 50%;
+    display: inline;
+}*/
+
+.headerContainer {
+    position:relative;
+    width:100%;
+    min-width:315px;
+    height: 100px;
+    background-color: #2e3546;  
+    color: white;  
+    z-index: 1000;
+}
+#headerLeft{
+    padding: 10px;
+    position:absolute;
+    top:0px;
+    left:0px;
+    height:100px;
+    width:25%;
+}
+
+#headerLeft > div >  h4 {
+    margin-top: 0px;
+}
+#headerCenter{
+    padding: 10px;
+    height:100px;
+    width:50%;
+    margin:0px auto;
+    text-align: center;
+    padding-top: 30px;
+}
+
+#headerCenter > h1 {
+    margin-top: 0px;
+    vertical-align: middle;
+}
+#headerRight {
+    padding: 10px;
+    position:absolute;
+    top:0px;
+    right:0px;
+    height:100px;
+    width:25%;
+}
+
+.progressBarContainer {
+    padding-top: 10px;
+}
+
+.progressButton {
+    border-radius: 5px;
+    height: 40px;
+    width: 150px;
+}
+
+button:focus {outline:0;}
+
+#captureProgress {
+    display: inline-block;
+    float: left;
+    width: 50%;
+}
+      
+#replayProgress {
+    float: right;
+    width: 50%;
+    display: inline-block;
+}
+
+#userContainer {
+    float:right;
+    padding: 15px;
+    padding-top: 30px;
+}
+
+/*#userLogoContainer {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgb(216, 211, 211);
+}*/
+
+#userLogo {
+    font-size: 30px;
+}

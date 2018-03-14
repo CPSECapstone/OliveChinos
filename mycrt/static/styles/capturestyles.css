@@ -1,3 +1,23 @@
+#captureTitle {
+    width: 70%;
+    display: inline;
+    float: left;
+}
+
+#newCaptureBtnContainer {
+    float: right;
+    margin-right: 25px;
+    margin-top: 15px;
+}
+
+#newCaptureBtn {
+    padding: 10px 15px;
+}
+
+#captureBody {
+    margin-top: 75px;
+}
+
 .flatpickr-input {
     display: block;
     width: 100%;
@@ -19,3 +39,12 @@
     border-color: #ccc !important;
 }
 
+.toggleButton {
+    border: 1px solid #ccc !important;
+}
+
+.dbInfoFormCol {
+    padding-left: 0px;
+    padding-bottom: 15px;
+
+}

@@ -28,3 +28,22 @@
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
+#toggle {
+    border: 1px solid #ccc !important;
+}
+
+.buttonToolbar {
+    margin: 0 auto;
+    width: 500px;
+    padding-right: 5vw;
+    padding-left: 5vw;
+}
+
+.refreshCaptureButton {
+    padding: 5px;
+    border: 1px solid #ccc !important;
+    border-radius: 5px;
+    background-color: none;
+}
+

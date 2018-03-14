@@ -9,8 +9,6 @@ import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
 import { setCaptureNameForGraph } from '../actions/index';
 import CaptureOptions from './CaptureOptions';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
-import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 
 var selectedColor = "#ADD8E6";
 
@@ -83,7 +81,7 @@ class GraphContainer extends React.Component {
         return(
             <div>
             <div>
-            <div style={{height:'50vh', border:'1px solid black', overflowY:'scroll'}}>
+            <div style={{minHeight:'40vh', padding:'2px'}}>
             <div>
                 <Graph />
             </div>

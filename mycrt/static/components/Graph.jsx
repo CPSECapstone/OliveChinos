@@ -1,10 +1,14 @@
 import React, {Component} from 'react'
+import * as ReactDOM from 'react-dom';
 import {setDataPointsForGraph} from '../actions'
 import Async from 'react-promise'
 import alasql from 'alasql';
 import '../styles/graphComponent.css'
+import FileSaver from 'file-saver'
 
 import {
+   ResponsiveContainer,
+   Label,
    LineChart,
    AreaChart,
    CartesianGrid,
@@ -16,6 +20,7 @@ import {
    ReferenceArea
 } from 'recharts'
 import {connect} from 'react-redux'
+import { DropdownButton, MenuItem} from 'react-bootstrap'
 
 class Graph extends Component {
    constructor(props) {
@@ -48,6 +53,26 @@ class Graph extends Component {
       }
    }
 
+   downloadObjectAsJson(){
+      var date = new Date();
+      var newDate = date.toISOString().split('T')[0];
+      var isoDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
+      var newTime = isoDate.split('T')[1].split('.')[0];
+
+      var exportObj = {
+         "Metric": this.props.metricForGraph,
+         "Date": newDate,
+         "Time": newTime,
+         "DataPoints": this.state.dataPointsForGraph
+      }
+      var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null , 3));
+      var downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", "test.json");
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  }
+
    getAssignments(booleanArray, totalNames, metric, analytics, dataPoints, captureName) {
       let newLinesToGraph = []
       let arrayOfDataJSONS = dataPoints;
@@ -56,6 +81,8 @@ class Graph extends Component {
             newLinesToGraph.push(totalNames[i])
          }
       }
+      console.log("newLines");
+      console.log(newLinesToGraph);
       let numberOfSelectedReplays = newLinesToGraph.length
       if (analytics != false) {
          let totalNumberOfOptionsToChooseFrom = totalNames.length
@@ -71,11 +98,14 @@ class Graph extends Component {
          }
       }
       if (arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
+
          this.setState({dataPointsForGraph: false})
+         return false;
       } else {
          this.setState({
             dataPointsForGraph: arrayOfDataJSONS[arrayOfDataJSONS.length - 1]
          })
+         return arrayOfDataJSONS[arrayOfDataJSONS.length - 1];
       }
    }
 
@@ -155,10 +185,10 @@ class Graph extends Component {
       this.setState({leftRange: refAreaLeft, rightRange: refAreaRight, dataPointsForGraph: dataPointsForGraph.slice(), refAreaLeft: 0, refAreaRight: 0});
    }
    zoomOut() {
-      this.setState(() => ({leftRange: this.getMin(), rightRange: this.getMax(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
+      this.setState(() => ({leftRange: this.getMinXAxis(), rightRange: this.getMaxXAxis(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
    }
 
-   getMin() {
+   getMinXAxis() {
       let totalValues = []
 
       for (let j = 0; j < this.props.totalNames.length; j++) {
@@ -176,12 +206,46 @@ class Graph extends Component {
       return Math.floor(dataMin)
    }
 
-   getMax() {
+   getMaxXAxis() {
       let totalValues = []
       for (let j = 0; j < this.props.totalNames.length; j++) {
          if (this.props.booleansForGraph[j] === true) {
             for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
                totalValues.push(this.state.dataPointsForGraph[i]["seconds"])
+            }
+         }
+      }
+      let dataMax = totalValues.reduce(function(a, b) {
+         return Math.max(a, b)
+      })
+
+      return Math.ceil(dataMax)
+   }
+
+   getMinYAxis() {
+      let totalValues = []
+
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+            }
+         }
+      }
+
+      let dataMin = totalValues.reduce(function(a, b) {
+         return Math.min(a, b)
+      })
+
+      return Math.floor(dataMin)
+   }
+
+   getMaxYAxis() {
+      let totalValues = []
+      for (let j = 0; j < this.props.totalNames.length; j++) {
+         if (this.props.booleansForGraph[j] === true) {
+            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
             }
          }
       }
@@ -217,6 +281,7 @@ class Graph extends Component {
                <h3 style={{
                      marginLeft: '20px'
                   }}/>
+                  <ResponsiveContainer width="100%" height="40%" overflow="visible">
                <LineChart width={1400} height={400}>
                   <CartesianGrid strokeDasharray="3 3"/>
                   <XAxis dataKey="name" domain={[0, 30]}/>
@@ -225,6 +290,7 @@ class Graph extends Component {
                         position: 'insideLeft'
                      }}/>
                </LineChart>
+               </ResponsiveContainer>
             </div>
          </div>
       </div>)
@@ -235,28 +301,47 @@ class Graph extends Component {
       for (let i = 0; i < this.props.booleansForGraph.length; i++) {
          if (this.props.booleansForGraph[i] == true) {
             let currKey = this.props.totalNames[i]
-            let line = (<Line key={i} dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
+            let line = (<Line key={i} id="Legend" dataKey={currKey} animationDuration={500} stroke={this.getRandomColor(i)}/>)
             linesForGraphing.push(line)
          }
       }
       return linesForGraphing
    }
 
+   exportChart(asSVG) {
+
+       let chartSVG = ReactDOM.findDOMNode(this.currentGraph).children[0];
+
+       if (asSVG) {
+           let svgURL = new XMLSerializer().serializeToString(chartSVG);
+           let svgBlob = new Blob([svgURL], {type: "image/svg+xml;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.svg");
+       } else {
+           let svgBlob = new Blob([chartSVG.outerHTML], {type: "text/html;charset=utf-8"});
+           FileSaver.saveAs(svgBlob, "graph.html");
+       }
+   }
+
    getGraphLines() {
-      if (this.state.dataPointsForGraph == false) {
-         this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
-      }
+
       let linecharts = [];
-      var jsonObject = Object.keys(this.state.dataPointsForGraph);
       var testArray = [];
+
+      if (this.state.dataPointsForGraph == false) {
+         this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
+      }
+
       var leftMin;
       var rightMax;
+      var bottomMin = this.getMinYAxis();
+      var topMax = this.getMaxYAxis();
+
       if (this.state.leftRange == 0 && this.state.rightRange == 0) {
          testArray = this.state.dataPointsForGraph;
-         leftMin = this.getMin();
-         rightMax = this.getMax();
+         leftMin = this.getMinXAxis();
+         rightMax = this.getMaxXAxis();
       } else {
-
+         var jsonObject = Object.keys(this.state.dataPointsForGraph);
          leftMin = parseInt(this.state.leftRange);
          rightMax = parseInt(this.state.rightRange);
 
@@ -268,12 +353,68 @@ class Graph extends Component {
          }
       }
 
+      const AxisLabel = ({ axisType, x, y, width, height, stroke, children }) => {
+        const isVert = axisType === 'yAxis';
+        const cx = isVert ? x : x + (width / 2);
+        const cy = isVert ? (height / 2) + y : y + height + 10;
+        const rot = isVert ? `270 ${cx} ${cy}` : 0;
+        return (
+          <text x={cx} y={cy} transform={`rotate(${rot})`} textAnchor="middle" stroke={stroke}>
+            {children}
+          </text>
+        );
+      };
+      let yAxisLabel = "";
+      let yAxisPadding = 40;
+
+      if (this.props.metricForGraph === "CPUUtilization") {
+        yAxisLabel = "Percentage";
+        yAxisPadding = 40;
+      }
+      else if (this.props.metricForGraph === "FreeableMemory") {
+        yAxisLabel = "Bytes";
+        yAxisPadding = 100;
+      }
+      else if (this.props.metricForGraph === "ReadIOPS" || this.props.metricForGraph === "WriteIOPS") {
+        yAxisLabel = "Transactions / Second";
+        yAxisPadding = 60;
+      }
+
+
+
+
+      console.log(this.state);
+      console.log(this.props);
+
       return (
         <div id="graphContainer">
           <div>
             <div>
-              <h3 style={{ marginLeft: '20px' }}>Metric: {this.props.metricForGraph}</h3>
+              <div height="10%" style={{ textAlign: 'right' }}>
+                <h3 style={{ marginLeft: '20px', float:'left', fontWeight: 'bold'}}>{this.props.metricForGraph} for {this.props.currentCaptureForGraph}</h3>
+
+                <a
+                  style={{backgroundColor: 'aliceblue', float: 'right'}}
+                  href="javascript: void(0);"
+                  className="btn update"
+                  onClick={this.zoomOut.bind(this)}
+                >
+                  {' '}
+                  Reset Zoom
+                </a>
+
+                <DropdownButton bsStyle={'primary'} title="Download">
+                  <MenuItem  onClick={this.downloadObjectAsJson.bind(this)}>Download JSON Data</MenuItem>
+                  <MenuItem  onClick={this.exportChart.bind(this)}>Download as Image (SVG)</MenuItem>
+                </DropdownButton>
+
+              </div>
+
+               <ResponsiveContainer width="100%" height="40%" overflow="visible">
+
               <LineChart
+                id="currentGraph"
+                ref={(graph) => this.currentGraph = graph}
                 width={1400}
                 height={400}
                 data={testArray}
@@ -285,17 +426,22 @@ class Graph extends Component {
                 <XAxis
                   allowDataOverflow={true}
                   dataKey="seconds"
+                  label="Seconds"
+                  height={60}
                   domain={[leftMin, rightMax]}
                   type="number"
                 />
+
                 <YAxis
                   allowDataOverflow={true}
-                  label={{
-                    value: this.props.yLabel,
-                    angle: -90,
-                    position: 'insideLeft'
-                  }}
-                />
+
+                  width={yAxisPadding}
+                  domain={[bottomMin, topMax]}
+
+                >
+                  <Label angle={-90} value={yAxisLabel} position='insideLeft' style={{textAnchor: 'middle'}} />
+                </YAxis>
+
                 <Tooltip />
                 <Legend />
                 {
@@ -304,14 +450,10 @@ class Graph extends Component {
                 }
                 {this.getLines().map(line => line)}
               </LineChart>
-              <a
-                href="javascript: void(0);"
-                className="btn update"
-                onClick={this.zoomOut.bind(this)}
-              >
-                {' '}
-                Reset
-              </a>
+              </ResponsiveContainer>
+
+
+
             </div>
           </div>
         </div>

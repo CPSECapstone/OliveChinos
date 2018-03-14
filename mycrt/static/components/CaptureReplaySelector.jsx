@@ -9,6 +9,24 @@ import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents }
 
 var selectedColor = "#ADD8E6";
 
+class ReplayButton extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        <Button
+            type="submit"
+            bsSize="small"
+            bsStyle="success"
+            //@todo: get this working!
+            onClick={this.props.refProps.dispatch(changeStateForComponents("onReplay"))}
+        >
+        Start a New Replay
+        </Button>;
+    }
+}
+
 class CaptureReplaySelector extends React.Component {
     constructor(props) {
         super(props);
@@ -84,26 +102,27 @@ class CaptureReplaySelector extends React.Component {
         var None = [{
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
-        
+
 
         if(this.state.totalReplayNames.length == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
             function buttonFormatter(cell, row){
-                return <Button 
-                            type="submit"
-                            bsSize="small"
-                            bsStyle="success"
-                            //@todo: get this working!
-                            // onClick={refProps.dispatch(changeStateForComponents("onReplay"))}
-                        >
-                        Start a New Replay
-                    </Button>;
+                return (
+                <Button
+                type="submit"
+                bsSize="small"
+                bsStyle="success"
+                onClick={ () => refProps.dispatch(changeStateForComponents("onReplay"))}
+                >
+                Start a New Replay
+                </Button>
+                );
             }
             return (
             <div>
-                <BootstrapTable search={ true } multiColumnSearch={ true } deleteRow options={options} data={ None }>
+                <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } search={ true } multiColumnSearch={ true } deleteRow options={options} data={ None }>
                     <TableHeaderColumn dataFormat={buttonFormatter} dataField='none' isKey>No Replays Recorded For {refProps.currentCaptureForGraph} Yet.</TableHeaderColumn>
                 </BootstrapTable>
             </div>
@@ -126,7 +145,7 @@ class CaptureReplaySelector extends React.Component {
                 replayData.push(replayInfo)
             }
             return(
-                <BootstrapTable deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
+                <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
                     <TableHeaderColumn dataField='Date'>Date</TableHeaderColumn>
                 </BootstrapTable>
@@ -137,7 +156,7 @@ class CaptureReplaySelector extends React.Component {
     //reRenders the capture options by dispatching this action when back button is clicked
     //ignore that it says deleteButton - it is required for react-bootstrap-table
     createCustomDeleteButton (onClick) {
-        console.log('WTF IS THIS: ', this)
+        //console.log('WTF IS THIS: ', this)
         function rerenderCapturesOnBackButton()
         {
             this.props.dispatch(setCaptureNameForGraph("Capture Options"));
@@ -153,7 +172,7 @@ class CaptureReplaySelector extends React.Component {
 
 
     render() {
-        console.log('********this is the props: ', this.props)
+        //console.log('********this is the props: ', this.props)
         return(
             this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)
         );
