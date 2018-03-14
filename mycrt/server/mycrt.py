@@ -315,6 +315,7 @@ def analytics():
 
 @application.before_first_request
 def _run_on_start():
+    init_capture()
     init_replay()
     init_scheduler()
 
