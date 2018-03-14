@@ -221,6 +221,14 @@ def capture_end():
         "endTime": end_time
     })
 
+@application.route("/capture/cancel", methods=["POST"])
+def cancel_capture_http():
+    data = request.get_json()
+    capture_name = data['captureName'] 
+    
+    cancel_capture_process(capture_name)
+    return jsonify({'status': 'complete'})
+
 @application.route("/capture/executeQuery", methods=["POST"])
 def query_execute():
     query = request.get_json()['query']
@@ -294,6 +302,8 @@ def delete_capture_http():
     
     delete_capture(credentials, capture_name)
     return jsonify({'status': 'complete'})
+
+
 
 @application.route("/capture/get_past", methods=["GET"])
 
