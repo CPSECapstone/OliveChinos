@@ -12,6 +12,7 @@ manager = None
 capture_scheduler_pids = None
 
 def init_scheduler():
+    global manager
     manager = multiprocessing.Manager()
 
     '''Dictionary to store pids for scheduler processes
@@ -25,6 +26,7 @@ def init_scheduler():
         Key: capture_name (STRING)
         Value: scheduler_pid (INT)
     '''
+    global capture_scheduler_pids
     capture_scheduler_pids = manager.dict()
 
 
@@ -55,7 +57,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         start_capture(capture_name, rds_name, db_name, start_time, username, password)
 
     else: #scheduled capture
-        scheduler = sched.scheduler(time.time, time.sleep)
+        '''scheduler = sched.scheduler(time.time, time.sleep)
 
         _create_scheduled_event(scheduler, start_capture, 
                 (capture_name, rds_name, db_name, start_time, username, password), start_time)
@@ -66,10 +68,13 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         #remove capture from scheduled captures when end_capture is called
         _create_scheduled_event(scheduler, _remove_from_scheduled_captures, 
                 (capture_name,), end_time)
+        '''
 
         #TODO test to make sure no delay from start time to actual run time
-        schedule_process = multiprocessing.Process(target=scheduler.run, args=tuple())
+        schedule_process = multiprocessing.Process(target=create_and_run_scheduler, 
+            args=(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password))
         schedule_process.start()
+        
 
         #add to dictionary in case user wants to cancel scheduled event
         _add_to_scheduled_captures(capture_name, schedule_process.pid)
@@ -77,7 +82,24 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         #add to db for front-end
         schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password)
           
+
         return SUCCESS
+
+def create_and_run_scheduler(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password):
+    scheduler = sched.scheduler(time.time, time.sleep)
+
+    _create_scheduled_event(scheduler, start_capture, 
+            (capture_name, rds_name, db_name, start_time, username, password), start_time)
+
+    _create_scheduled_event(scheduler, end_capture, 
+            (credentials, capture_name, db_name), end_time)
+
+    #remove capture from scheduled captures when end_capture is called
+    _create_scheduled_event(scheduler, _remove_from_scheduled_captures, 
+            (capture_name,), end_time)
+
+    scheduler.run()
+
 
 def _remove_from_scheduled_captures(capture_name): 
     del capture_scheduler_pids[capture_name]
@@ -103,7 +125,6 @@ def cancel_capture_process(capture_name):
         Args: 
         capture_name: unique name of the capture to be cancelled
     """
-
     #kill scheduler process
     scheduler_pid = capture_scheduler_pids[capture_name]
     os.kill(scheduler_pid, signal.SIGTERM)
