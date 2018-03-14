@@ -295,7 +295,7 @@ def delete_capture_http():
     delete_capture(credentials, capture_name)
     return jsonify({'status': 'complete'})
 
-@application.route("/capture/get_past", methods=["GET"])
+#@application.route("/capture/get_past", methods=["GET"])
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
@@ -305,9 +305,6 @@ def analytics():
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
-
-
 if __name__ == "__main__":
     application.run(debug=True, host='0.0.0.0')
     init_replay()
-    init_scheduler()
