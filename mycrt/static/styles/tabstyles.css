@@ -4,7 +4,12 @@
   border: 1px solid #ccc;
   background-color: #f1f1f1;
   width: 20%;
-  height: 100vh;
+  height: 100%;
+  /* This offsets the height of the navbar*/
+  margin-top: -100px; 
+  padding-top: 100px;
+  padding-bottom: 10px;
+  overflow: hidden;
 }
 
 /* Style the buttons inside the tab */
@@ -35,13 +40,18 @@
 /* Style the tab content */
 .tabcontent {
   float: left;
-  padding: 0px 12px;
-  border: 1px solid #ccc;
-  width: 79%;
-  border-left: none;
-  height: 100%;
+  padding: 0px 20px;
+  width: 80%;
+  overflow: auto;
+  position: absolute;
+  left: 20%;
+  top: 100px;
+  bottom: 0px;
 }
 
 #activeAction {
   background-color: #77e686;
+}
+.activeTab {
+  background-color: #ddd !important;
 }

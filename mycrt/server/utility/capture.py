@@ -219,19 +219,19 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt"):
     Key = log_key
   )
 
-def schedule_capture(capture_name, db_id, start_time, end_time):
+def schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password):
   """Schedules a capture to be logged into the database.
 
   """
 
   print('scheduling capture', file=sys.stderr)
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
-               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled")'''.format(db_id, capture_name, start_time, end_time)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
+               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, rds_name, username, password)
 
   execute_utility_query(query)
 
 
-def start_capture(capture_name, db_id, start_time):
+def start_capture(capture_name, rds_name, db_name, start_time, username, password):
   """Starts a capture.
 
   No real work is done by this function for now other than marking 
@@ -244,13 +244,11 @@ def start_capture(capture_name, db_id, start_time):
 
   print('starting capture', file=sys.stderr)
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing") ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_id, capture_name, start_time)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}') ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_name, capture_name, start_time, rds_name, username, password)
   execute_utility_query(query)
 
-#TODO check if ending scheduled capture
-# this is not currently a process
-def end_capture(credentials, capture_name, db_id):
+def end_capture(credentials, capture_name, db):
   """Ends a specified capture.
 
   Args:
@@ -261,15 +259,15 @@ def end_capture(credentials, capture_name, db_id):
 
   print('ending capture', file=sys.stderr)
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  execute_utility_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE db = '{1}' AND name = '{2}' '''.format(end_time, db_id, capture_name))
+  execute_utility_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE name = '{1}' '''.format(end_time, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query = '''SELECT start_time FROM Captures WHERE db = '{0}' AND name = '{1}' '''.format(db_id, capture_name)
+  query = '''SELECT start_time, rds, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
   query_res = execute_utility_query(query) 
-  start_time = query_res[0][0]
+  start_time, rds, username, password = query_res[0]
   s3_client = boto3.client('s3', **credentials)
   
   databases = list_databases(credentials)
-  address = databases[db_id]
+  address = databases[rds]
   
   query = '''
       SELECT event_time, argument 
@@ -279,10 +277,13 @@ def end_capture(credentials, capture_name, db_id):
       AND command_type = 'Query'
   '''.format(start_time.strftime("%Y/%m/%d %H:%M:%S"), end_time)
 
-  transactions = execute_utility_query(query, hostname = address) # need to give username and password eventually
+  transactions = execute_utility_query(query, hostname = address, username = username, password = password, database = db) # need to give username and password eventually
 
   bucket_id = "my-crt-test-bucket-olive-chinos"
   _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name))
+
+  query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
+  execute_utility_query(query)
 
   return (transactions, start_time)
 

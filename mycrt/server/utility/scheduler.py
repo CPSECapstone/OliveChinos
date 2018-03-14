@@ -8,24 +8,28 @@ from .capture import *
 
 SUCCESS = 0
 
-manager = multiprocessing.Manager()
+manager = None
+capture_scheduler_pids = None
 
-'''Dictionary to store pids for scheduler processes
-    
-Each scheduled capture has a scheduler object which is responsible for calling the
-start- and end-capture functions at the specified start and end times. 
+def init_scheduler():
+    manager = multiprocessing.Manager()
 
-To cancel a capture, simply kill the process responsible for calling these 
-functions.
+    '''Dictionary to store pids for scheduler processes
+        
+    Each scheduled capture has a scheduler object which is responsible for calling the
+    start- and end-capture functions at the specified start and end times. 
 
-    Key: capture_name (STRING)
-    Value: scheduler_pid (INT)
-'''
-capture_scheduler_pids = manager.dict()
+    To cancel a capture, simply kill the process responsible for calling these 
+    functions.
+
+        Key: capture_name (STRING)
+        Value: scheduler_pid (INT)
+    '''
+    capture_scheduler_pids = manager.dict()
 
 
 def new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time): 
+                            db_name, start_time, end_time, rds_name, username, password): 
     """Initiate a capture event. 
     If capture is interactive, a start-capture process will be started immediately.
     If capture is scheduled, an event will be scheduled to run at the specified 
@@ -48,13 +52,13 @@ def new_capture_process(is_scheduled, credentials, capture_name,
     """
 
     if not is_scheduled: #interactive capture
-        start_capture(capture_name, db_name, start_time)
+        start_capture(capture_name, rds_name, db_name, start_time, username, password)
 
     else: #scheduled capture
         scheduler = sched.scheduler(time.time, time.sleep)
 
         _create_scheduled_event(scheduler, start_capture, 
-                (capture_name, db_name, start_time), start_time)
+                (capture_name, rds_name, db_name, start_time, username, password), start_time)
 
         _create_scheduled_event(scheduler, end_capture, 
                 (credentials, capture_name, db_name), end_time)
@@ -71,7 +75,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         _add_to_scheduled_captures(capture_name, schedule_process.pid)
 
         #add to db for front-end
-        schedule_capture(capture_name, db_name, start_time, end_time)
+        schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password)
           
         return SUCCESS
 
