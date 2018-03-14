@@ -17,3 +17,10 @@
 #replayBody {
     margin-top: 75px;
 }
+
+.refreshReplayButton {
+    padding: 5px;
+    border: 1px solid #ccc !important;
+    border-radius: 5px;
+    background-color: none;
+}
