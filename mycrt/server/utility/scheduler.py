@@ -8,20 +8,24 @@ from .capture import *
 
 SUCCESS = 0
 
-manager = multiprocessing.Manager()
+manager = None
+capture_scheduler_pids = None
 
-'''Dictionary to store pids for scheduler processes
-    
-Each scheduled capture has a scheduler object which is responsible for calling the
-start- and end-capture functions at the specified start and end times. 
+def init_scheduler():
+    manager = multiprocessing.Manager()
 
-To cancel a capture, simply kill the process responsible for calling these 
-functions.
+    '''Dictionary to store pids for scheduler processes
+        
+    Each scheduled capture has a scheduler object which is responsible for calling the
+    start- and end-capture functions at the specified start and end times. 
 
-    Key: capture_name (STRING)
-    Value: scheduler_pid (INT)
-'''
-capture_scheduler_pids = manager.dict()
+    To cancel a capture, simply kill the process responsible for calling these 
+    functions.
+
+        Key: capture_name (STRING)
+        Value: scheduler_pid (INT)
+    '''
+    capture_scheduler_pids = manager.dict()
 
 
 def new_capture_process(is_scheduled, credentials, capture_name, 
