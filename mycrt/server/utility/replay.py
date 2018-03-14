@@ -26,7 +26,7 @@ def _get_hostname(rds_client, db_id):
   rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address')
   return rds_host
 
-def _execute_transactions(hostname, transactions, fast_mode):
+def _execute_transactions(hostname, transactions, fast_mode, database, username, password):
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
   cur = connection.cursor()
   start_time = datetime.utcnow()
@@ -112,31 +112,31 @@ def get_active_replays():
 
   return { "replays" : rep_list }
 
-def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
+def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password):
   proc = Process(target = _manage_replay,
-                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock))
+                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock))
   proc.start()
 
-def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
+def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
   pid = os.getpid()
   while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
     time.sleep(3) # sleep three seconds and try again later
   
-  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db)
+  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
 
-def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db):
+def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password):
   rds_client = boto3.client('rds', **credentials)
   s3_client = boto3.client('s3', **credentials)
   cloudwatch_client = boto3.client('cloudwatch', **credentials)
 
-  hostname = _get_hostname(rds_client, db_id)
+  hostname = _get_hostname(rds_client, rds_name)
   path_name = capture_name.replace(".cap", "")
   capture_path = path_name + "/" + path_name + ".cap"
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
-  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode)
+  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
 
   CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time)
   FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time)
