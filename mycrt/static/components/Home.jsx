@@ -30,16 +30,16 @@ class Home extends Component {
 
   getPythonAnalytics() {
     jquery.get(window.location.href + 'analytics', (data) => {
-      this.setState({analytics: data}, this.render);
+      this.setState({ analytics: data }, this.render);
       this.props.dispatch(setAnalyticsForGraph(data))
     });
-    
+
   }
 
   componentWillMount() {
     this.getPythonAnalytics();
   }
-  
+
   componentWillReceiveProps() {
     this.getPythonAnalytics();
   }
@@ -104,12 +104,12 @@ class Home extends Component {
               <h4>In Progress:</h4>
             </div>
             <div id="captureProgress" className="progressBarContainer">
-              <button style={captureActiveStyle} className="progressButton">
+              <button style={captureActiveStyle} onClick={() => this.props.dispatch(changeStateForComponents("onCapture"))} className="progressButton">
                 {this.currentAction('capture')}
               </button>
             </div>
             <div id="replayProgress" className="progressBarContainer">
-              <button style={replayActiveStyle} className="progressButton">
+              <button style={replayActiveStyle} onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))} className="progressButton">
                 {this.currentAction('replay')}
               </button>
             </div>
@@ -130,17 +130,17 @@ class Home extends Component {
         <div>
           <div className="tab" >
             <button
-              className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onCapture'})}
-              onClick={() => {console.log(this.props.stateType); this.props.dispatch(changeStateForComponents("onCapture"))}}
+              className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onCapture' })}
+              onClick={() => { console.log(this.props.stateType); this.props.dispatch(changeStateForComponents("onCapture")) }}
               type="button"
             >
               Capture
             </button>
-            <button className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onReplay'})}
+            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onReplay' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
               Replay
             </button>
-            <button className={classNames({'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze'})}
+            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
               Analyze
             </button>
