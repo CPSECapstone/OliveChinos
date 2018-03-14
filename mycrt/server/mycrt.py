@@ -303,8 +303,6 @@ def delete_capture_http():
     delete_capture(credentials, capture_name)
     return jsonify({'status': 'complete'})
 
-
-
 @application.route("/capture/get_past", methods=["GET"])
 
 @application.route("/analytics", methods=["GET"])
