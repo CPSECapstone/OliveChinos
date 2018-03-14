@@ -68,6 +68,8 @@
     width: 150px;
 }
 
+button:focus {outline:0;}
+
 #captureProgress {
     display: inline-block;
     float: left;
