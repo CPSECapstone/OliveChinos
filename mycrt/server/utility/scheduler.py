@@ -8,7 +8,7 @@ from .capture import *
 
 SUCCESS = 0
 
-manager = multiprocessing.Manager()
+manager = None
 capture_scheduler_pids = None
 
 def init_scheduler():
@@ -19,6 +19,7 @@ def init_scheduler():
         
     Each scheduled capture has a scheduler object which is responsible for calling the
     start- and end-capture functions at the specified start and end times. 
+
     To cancel a capture, simply kill the process responsible for calling these 
     functions.
 
