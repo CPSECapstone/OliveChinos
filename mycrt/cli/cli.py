@@ -98,16 +98,18 @@ def start(credentials_file, capture_name, start_time, end_time):
 
 
 @capture.command(short_help='-end an ongoing capture')
-@click.argument('db-instance')
+@click.argument('credentials-file', type=click.File('rb'))
 @click.argument('capture-name')
-def end(db_instance, capture_name): 
+def end(credentials_file, capture_name): 
     '''-end an ongoing capture
 
     Note the specified capture must currently be in progress in order to end it. 
     '''
+    credential_dict = json.load(credentials_file)
+
     #TODO we might need to add the db_name in here
     task = {'captureName': capture_name,
-            'db': db_instance}
+            'db': credential_dict['db-name']}
 
     resp = requests.post('http://localhost:5000/capture/end', json=task)
 
@@ -116,7 +118,7 @@ def end(db_instance, capture_name):
         click.echo('Please make sure your capture name and db instance are correct.')
         #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
-    click.echo('Capture \'' + capture_name + '\' on database \'' + db_instance + '\' was ended.')
+    click.echo('Capture \'' + capture_name + '\' on database \'' + credential_dict['db-name'] + '\' was ended.')
 
 @capture.command(short_help='-cancel a capture')
 @click.argument('capture-name')
