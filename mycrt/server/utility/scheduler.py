@@ -8,7 +8,7 @@ from .capture import *
 
 SUCCESS = 0
 
-manager = multiprocessing.Manager()
+manager = None
 capture_scheduler_pids = None
 
 def init_scheduler():
@@ -19,6 +19,7 @@ def init_scheduler():
         
     Each scheduled capture has a scheduler object which is responsible for calling the
     start- and end-capture functions at the specified start and end times. 
+
     To cancel a capture, simply kill the process responsible for calling these 
     functions.
 
@@ -142,6 +143,6 @@ def _get_epoch_time(raw_time):
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
-#    eight_hours = timedelta(hours=7).total_seconds()
-    return time.mktime(dt_obj.timetuple()) 
+    time_zone_offset = timedelta(hours=7).total_seconds()
+    return time.mktime(dt_obj.timetuple() - time_zone_offset) 
 

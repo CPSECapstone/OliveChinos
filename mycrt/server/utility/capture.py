@@ -25,6 +25,16 @@ password = "olivechinos"
 database = "CRDB"
 region = "us-east-2"
 
+connection = None
+cur = None 
+
+def init_capture(): 
+  global connection
+  connection = sql.connect(host = hostname, user = username, passwd = password, db = database, autocommit = True)
+
+  global cur
+  cur = connection.cursor()
+
 def execute_utility_query(query, hostname = hostname, username = username, password = password, database = database):
   """Executes a query on the utiltity database by default.
 
@@ -41,8 +51,6 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
     tuple is a value for one column. 
   """
 
-  connection = sql.connect(host = hostname, user = username, passwd = password, db = database, autocommit = True)
-  cur = connection.cursor()
   cur.execute(query)
   results = cur.fetchall()
   connection.close()
