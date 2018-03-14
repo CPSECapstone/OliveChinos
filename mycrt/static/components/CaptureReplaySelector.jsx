@@ -130,6 +130,9 @@ class CaptureReplaySelector extends React.Component {
         }
         else if(this.state.totalReplayNames != false) {
             let replayOptions = this.state.totalReplayNames;
+            console.log("________Date Needed_______")
+            console.log(this.props.analyticsForGraph);
+            console.log("_______________")
             let replayData = [];
             var options = {
                 onRowClick: function(row) {
@@ -139,15 +142,14 @@ class CaptureReplaySelector extends React.Component {
             }
             for(let i = 0; i < replayOptions.length; i++) {
                 let replayInfo = {
-                    Name : replayOptions[i],
-                    Date: "Date"
+                    Name : replayOptions[i]
+                    /* Add in more information for a second column in the future */
                 }
                 replayData.push(replayInfo)
             }
             return(
                 <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
-                    <TableHeaderColumn dataField='Date'>Date</TableHeaderColumn>
                 </BootstrapTable>
             )
         }
