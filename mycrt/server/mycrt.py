@@ -55,11 +55,15 @@ def rest_test():
 @application.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    pubKey = data["publicKey"] 
-    privateKey = data["privateKey"] 
-    if pubKey is None or privateKey is None:
+    given_username = data['username']
+    given_password = data['password']
+    #pubKey = data["publicKey"] 
+    #privateKey = data["privateKey"] 
+    #if pubKey is None or privateKey is None:
+    if given_username is None or given_password is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    #if verify_login(pubKey, privateKey):
+    if global_username == given_username and global_password == given_password:
         return ('', 204)
     else: 
         abort(401) 
@@ -284,9 +288,19 @@ def get_all_replays():
     return jsonify(capture_replays)
 
 @application.route("/replay/active_list", methods=["GET"])
-def get_active_replays():
+def get_active_replays_http():
     replays = get_active_replays()
     return jsonify(replays)
+
+@application.route("/replay/number", methods=["GET"])
+def get_replay_number_http():
+    replays = get_active_replays()
+    return jsonify(replays)
+
+@application.route("/capture/number", methods=["GET"])
+def get_capture_number_http():
+    capture_number = get_capture_number()
+    return jsonify({'numberOfCaptures': capture_number})
 
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
@@ -317,11 +331,19 @@ def analytics():
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
+
 @application.before_first_request
 def _run_on_start():
     init_replay()
     init_scheduler()
 
 
+global_username = "abc"
+global_password = "123"
+
 if __name__ == "__main__":
+    try:
+        global_username, global_password = sys.argv[1:3]
+    except Exception:
+        pass
     application.run(debug=True, host='0.0.0.0')
