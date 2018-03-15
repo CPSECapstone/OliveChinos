@@ -423,9 +423,9 @@ class Capture extends React.Component {
             <h3 style={{ marginLeft: '20px' }}>Captures</h3>
           </div>
 
-          <div class="row captureActionButtonsContainer">
+          <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button bsStyle="secondary" id="refreshCapturesButton" onClick={this.displayAllCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.displayAllCaptures}>
                 Refresh Capture
               </Button>
               <Button
