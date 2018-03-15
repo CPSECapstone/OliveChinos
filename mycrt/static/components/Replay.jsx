@@ -301,6 +301,7 @@ class Replay extends React.Component {
         <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
         <TableHeaderColumn dataField='mode' dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
@@ -310,6 +311,7 @@ class Replay extends React.Component {
         <TableHeaderColumn isKey dataField='something'>Replay Name</TableHeaderColumn>
         <TableHeaderColumn >Capture</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
+        <TableHeaderColumn >RDS Instance</TableHeaderColumn>
         <TableHeaderColumn >Mode</TableHeaderColumn>
         <TableHeaderColumn >Action</TableHeaderColumn>
 
@@ -375,7 +377,7 @@ class Replay extends React.Component {
       <div>
         <div>
           <div id="replayTitle">
-            <h3 style={{ marginLeft: '20px' }}>Replay</h3>
+            <h3 style={{ marginLeft: '20px' }}>Completed Replays</h3>
           </div>
 
           <div id="newReplayBtnContainer">
