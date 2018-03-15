@@ -8,6 +8,7 @@ import {
   SET_AUTH,
   START_CAPTURE,
   SET_CAPTURE_COUNT,
+  SET_REPLAY_COUNT,
   STOP_CAPTURE,
   SET_REPLAY,
   START_NEW_REPLAY,
@@ -95,6 +96,11 @@ function reducer(state = initialState, action) {
     case SET_CAPTURE_COUNT:
       return Object.assign({}, state, {
         activeCaptures: action.count
+      })
+
+    case SET_REPLAY_COUNT:
+      return Object.assign({}, state, {
+        activeReplays: action.count
       })
 
     case STOP_CAPTURE:

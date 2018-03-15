@@ -97,10 +97,13 @@ class Capture extends React.Component {
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
     this.setState({ capture: 'New Capture Started' })
-    this.props.dispatch(startCapture())
+    
     let postData;
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
+      var now = new Date();
+      var timezoneOffset = now.getTimezoneOffset();
+      console.log("Capture start time", this.state.captureStartTime);
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.captureRDSInstance,
@@ -112,6 +115,7 @@ class Capture extends React.Component {
       }
     }
     else {
+      this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.captureRDSInstance,
@@ -139,12 +143,15 @@ class Capture extends React.Component {
 
   // Consumes a capture name, capture db, and action and calls that action on the specified capture
   editCapture(captureName, captureDB, action) {
-    this.props.dispatch(stopCapture())
+
     let postData = {
       "db": captureDB,
       "captureName": captureName
     }
     let that = this;
+    if (action === 'end') {
+      this.props.dispatch(stopCapture())
+    }
     if (action === 'end' || action === 'cancel') {
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
@@ -423,9 +430,9 @@ class Capture extends React.Component {
             <h3 style={{ marginLeft: '20px' }}>Captures</h3>
           </div>
 
-          <div class="row captureActionButtonsContainer">
+          <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button bsStyle="secondary" id="refreshCapturesButton" onClick={this.displayAllCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.displayAllCaptures}>
                 Refresh Capture
               </Button>
               <Button

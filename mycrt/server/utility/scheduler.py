@@ -144,6 +144,6 @@ def _get_epoch_time(raw_time):
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
-    #time_zone_offset = timedelta(hours=7).total_seconds()
+    eight_hours = timedelta(hours=7).total_seconds()
     return time.mktime(dt_obj.timetuple()) 
 

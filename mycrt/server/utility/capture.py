@@ -103,6 +103,13 @@ def get_all_completed_capture_details():
     captures.append(get_capture_details(capture_name))
   return captures
 
+def get_capture_number():
+  query = '''
+    SELECT COUNT(*) from Captures
+    WHERE status = "ongoing"
+  '''
+  results = execute_utility_query(query)
+  return results[0][0]
 
 
 def get_all_ongoing_capture_details():
@@ -158,7 +165,7 @@ def get_capture_details(capture_name):
   if len(results) == 1:
     (db, start_time, end_time, status, rds) = results[0] 
     start_time = start_time.strftime("%Y-%m-%d  %H:%M:%S")
-    end_time = "No end time.." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
+    end_time = "No end time." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
   else:
     db = "Unknown"
     status = db

@@ -198,7 +198,6 @@ class Replay extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        that.props.dispatch(stopReplay())
         that.displayReplays()
       })
       .fail(function (data) {
@@ -371,7 +370,6 @@ class Replay extends React.Component {
           <div id="newReplayBtnContainer">
             <Button
               id="refreshReplayButton"
-              bsStyle="secondary"
               onClick={this.displayReplays}>
               Refresh Replays
             </Button>

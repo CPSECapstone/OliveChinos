@@ -6,7 +6,7 @@ import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
-import { changeStateForComponents, setAnalyticsForGraph } from '../actions/index';
+import { changeStateForComponents, setAnalyticsForGraph, setReplayCount, setCaptureCount } from '../actions/index';
 import { connect } from 'react-redux'
 
 class Home extends Component {
@@ -25,6 +25,9 @@ class Home extends Component {
     }
 
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
+    this.pollingFunction = this.pollingFunction.bind(this);
+    this.getNumberOfCaptures = this.getNumberOfCaptures.bind(this);
+    this.getNumberOfReplays = this.getNumberOfReplays.bind(this);
 
   }
 
@@ -36,13 +39,35 @@ class Home extends Component {
 
   }
 
-  componentWillMount() {
-    this.getPythonAnalytics();
+  getNumberOfReplays() {
+    jquery.get(window.location.href + 'replay/number', (data) => {
+      this.setState({ activeReplays: data.replays.length }, this.render);
+      this.props.dispatch(setReplayCount(data.replays.length))
+    });
   }
 
-  componentWillReceiveProps() {
-    this.getPythonAnalytics();
+  getNumberOfCaptures() {
+    jquery.get(window.location.href + 'capture/number', (data) => {
+      this.setState({ activeCaptures: data.numberOfCaptures }, this.render);
+      this.props.dispatch(setCaptureCount(data.numberOfCaptures))
+    });
   }
+
+  pollingFunction() {
+    this.getPythonAnalytics();
+    this.getNumberOfReplays();
+    this.getNumberOfCaptures();
+  }
+
+  componentWillMount() {
+    this.getPythonAnalytics();
+    this.getNumberOfReplays();
+    this.getNumberOfCaptures();
+    var that = this;
+    setInterval(that.pollingFunction, 10000)
+  }
+
+   
 
   renderPage() {
     if (this.props.stateType === "onCapture") {

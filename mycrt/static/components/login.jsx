@@ -4,22 +4,23 @@ import jquery from 'jquery'
 import { Button, FormGroup, FormControl, ControlLabel } from 'react-bootstrap'
 import Home from './Home'
 import '../styles/loginstyles.css'
+import '../styles/homestyles.css'
 
-import { setAuth, setPublicKey, setPrivateKey } from '../actions'
+import { setAuth } from '../actions'
 
 class Login extends Component {
   constructor(props) {
     super(props)
     this.state = {
       validLogin: this.props.loggedIn,
-      publicKey: this.props.publicKey,
-      privateKey: this.props.privateKey,
+      username: this.props.username,
+      password: this.props.password,
       loginError: false
     }
     this.self = this
     this.validateForm = this.validateForm.bind(this)
-    this.handlePrivateKeyChange = this.handlePrivateKeyChange.bind(this)
-    this.handlePublicKeyChange = this.handlePublicKeyChange.bind(this)
+    this.handlePasswordChange = this.handlePasswordChange.bind(this)
+    this.handleUsernameChange = this.handleUsernameChange.bind(this)
     this.handleLogin = this.handleLogin.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.getPythonLogin = this.getPythonLogin.bind(this)
@@ -31,18 +32,18 @@ class Login extends Component {
     return true
   }
 
-  handlePrivateKeyChange(event) {
-    this.setState({ privateKey: event.target.value })
+  handlePasswordChange(event) {
+    this.setState({ password: event.target.value })
   }
 
-  handlePublicKeyChange(event) {
-    this.setState({ publicKey: event.target.value })
+  handleUsernameChange(event) {
+    this.setState({ username: event.target.value })
   }
 
   getPythonLogin() {
     var loginRequest = {
-      publicKey: this.state.publicKey,
-      privateKey: this.state.privateKey
+      username: this.state.username,
+      password: this.state.password
     }
 
     return jquery.ajax({
@@ -56,8 +57,6 @@ class Login extends Component {
 
   authenticate() {
     this.props.dispatch(setAuth())
-    this.props.dispatch(setPublicKey(this.state.publicKey))
-    this.props.dispatch(setPrivateKey(this.state.privateKey))
   }
 
   handleLogin(event) {
@@ -68,9 +67,6 @@ class Login extends Component {
         that.authenticate()
       })
       .catch(function(error) {
-        if (that.state.publicKey == 'abc' && that.state.privateKey == '123') {
-          that.authenticate()
-        }
         that.setState({ loginError: true })
       })
   }
@@ -81,12 +77,9 @@ class Login extends Component {
     } else {
       return (
         <div
-          style={{
-            color: 'red',
-            position: 'absolute',
-            margin: 'auto',
-            align: 'center'
-          }}
+          style={{color:'red',
+          margin:'auto',
+          textAlign:'center'}}
         >
           Invalid Login Credentials
         </div>
@@ -100,30 +93,44 @@ class Login extends Component {
 
   renderLogin() {
     return (
+      <div>
+      <div>
+        <div className="headerContainer">
+          <div id="headerLeft">
+            
+            
+          </div>
+          <div id="headerCenter">
+            <h1>
+              MyCRT
+          </h1>
+          </div>
+          </div>
+      </div>
       <div
         style={{
           textAlign: 'center',
-          width: '50vw',
+          width: '30vw',
           border: 'thin solid black',
-          padding: '15px'
+          padding: '15px',
+          height: '35vh'
         }}
         className="Login"
       >
         <form onSubmit={this.handleLogin}>
-          <h2>Login to the MyCRT Tool</h2>
-          <hr />
-          <ControlLabel>Public AWS Key</ControlLabel>
+          <ControlLabel>Username</ControlLabel>
           <br />
-          <input type="text" onChange={this.handlePublicKeyChange} />
+          <input type="text" onChange={this.handleUsernameChange} />
           <br />
           <ControlLabel style={{ marginTop: '10px' }}>
-            Private AWS Key
+            Password
           </ControlLabel>
           <br />
-          <input type="text" onChange={this.handlePrivateKeyChange} />
+          <input style={{marginBottom:'30px'}}type="password" onChange={this.handlePasswordChange} />
+          <div className='row'>
           <Button
             block
-            bsSize="large"
+            bsSize="small"
             disabled={!this.validateForm()}
             type="submit"
             onClick={this.handleLogin}
@@ -131,14 +138,16 @@ class Login extends Component {
           >
             Login
           </Button>
+          {this.errorMessage()}
+          </div>
         </form>
-        {this.errorMessage()}
+      </div>
       </div>
     )
   }
 
   renderHome() {
-    if (this.props.loggedIn == false) {
+    if (this.props.loggedIn == true) {
       return <Home />
     } else {
       return this.renderLogin()
@@ -157,8 +166,8 @@ class Login extends Component {
 
 const mapStateToProps = state => ({
   loggedIn: state.loggedIn,
-  publicKey: state.publicKey,
-  privateKey: state.privateKey
+  username: state.username,
+  password: state.password
 })
 
 export default connect(mapStateToProps)(Login)
