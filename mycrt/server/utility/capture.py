@@ -285,7 +285,7 @@ def end_capture(credentials, capture_name, db):
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
   execute_utility_query(query)
 
-  return (transactions, start_time)
+  return start_time
 
 def delete_capture(credentials, capture_name):
   '''Remove all traces of a capture in both S3 and the utility db.

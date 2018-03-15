@@ -254,6 +254,10 @@ def get_all_captures():
 def replay():
     data = request.get_json()
     db_name = data['db'] 
+    rds_name = data['rds']
+    username = data['username']
+    password = data['password']
+
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
 
     replay_name = data.get('replayName', createReplayName(db_name, start_time))
@@ -265,7 +269,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
     return jsonify({
         "status": "started",
         "db": db_name,
