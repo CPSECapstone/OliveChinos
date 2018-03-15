@@ -135,8 +135,8 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
   pid = os.getpid()
-  while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
-    time.sleep(3) # sleep three seconds and try again later
+  #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
+  #  time.sleep(3) # sleep three seconds and try again later
   
   _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
