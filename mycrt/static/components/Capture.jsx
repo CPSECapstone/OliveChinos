@@ -97,7 +97,7 @@ class Capture extends React.Component {
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
     this.setState({ capture: 'New Capture Started' })
-    this.props.dispatch(startCapture())
+    
     let postData;
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
@@ -112,6 +112,7 @@ class Capture extends React.Component {
       }
     }
     else {
+      this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.captureRDSInstance,
