@@ -104,6 +104,7 @@ def _remove_from_scheduled_captures(capture_name):
     del capture_scheduler_pids[capture_name]
 
 def _add_to_scheduled_captures(capture_name, scheduler_process_id): 
+    print('adding to scheduled capture pids', file=sys.stderr)
     capture_scheduler_pids[capture_name] = scheduler_process_id
 
 def _create_scheduled_event(scheduler, func, args, unformatted_time): 
@@ -143,6 +144,6 @@ def _get_epoch_time(raw_time):
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
-    time_zone_offset = timedelta(hours=7).total_seconds()
-    return time.mktime(dt_obj.timetuple() - time_zone_offset) 
+    #time_zone_offset = timedelta(hours=7).total_seconds()
+    return time.mktime(dt_obj.timetuple()) 
 

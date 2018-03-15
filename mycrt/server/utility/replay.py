@@ -24,9 +24,16 @@ lock = None
 
 
 def init_replay():
+  global manager
   manager = Manager()
+
+  global replays_in_progress
   replays_in_progress = manager.dict()
+
+  global db_in_use
   db_in_use = manager.dict()
+
+  global lock
   lock = Lock()
 
 

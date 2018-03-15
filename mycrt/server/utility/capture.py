@@ -53,7 +53,6 @@ def execute_utility_query(query, hostname = hostname, username = username, passw
 
   cur.execute(query)
   results = cur.fetchall()
-  connection.close()
   return results
 
 def get_all_scheduled_capture_details():

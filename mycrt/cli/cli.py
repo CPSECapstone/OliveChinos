@@ -1,6 +1,7 @@
 import click
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 import requests #rest api
 import json
 
@@ -75,6 +76,10 @@ def start(credentials_file, capture_name, start_time, end_time):
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
         start_time=date_time.split('_')[1]
 
+    else: #make the times GMT to fix compatibility issue on back-end
+        start_time = _make_compatible(start_time)
+        end_time = _make_compatible(end_time)
+
     task = {'db': credential_dict['db-name'], 
             'rds': credential_dict['rds-instance'],
             'username': credential_dict['username'],
@@ -95,6 +100,13 @@ def start(credentials_file, capture_name, start_time, end_time):
 
     click.echo('Capture \'' + capture_name + '\' on database \'' + 
             credential_dict['db-name'] + '\' was scheduled or started.')
+
+def _make_compatible(raw_time): 
+    dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+    time_zone_offset = timedelta(hours=7).total_seconds()
+    gmt_time = time.mktime(dt_obj.timetuple()) + time_zone_offset 
+    formatted_gmt = datetime.fromtimestamp(gmt_time).isoformat() + '.0Z'
+    return formatted_gmt
 
 
 @capture.command(short_help='-end an ongoing capture')
@@ -133,8 +145,15 @@ def cancel(capture_name):
     also be used to cancel an upcoming scheduled capture or a scheduled capture 
     that is currently in progress.
     """
-    #TODO hook up the endpoint
-    pass
+    task = {'captureName': capture_name}
+
+    resp = requests.post('http://localhost:5000/capture/cancel', json=task)
+     
+    if resp.status_code != 200: 
+        click.echo('Please make sure the name is correct.')
+
+    else:   
+        click.echo('Capture ' + capture_name + ' was cancelled.')
 
 @capture.command(short_help='-delete a completed capture')
 @click.argument('capture-name')
@@ -162,14 +181,16 @@ def replay():
 @replay.command()
 @click.argument('capture-name')
 @click.argument('db-instance')
-@click.option('-n', '--name', 
+@click.option('-n', '--replay-name', 
         help='-name for the replay; default name will be given if not specified')
 @click.option('-f', '--fast-mode', is_flag=True,
         help='-skip over time periods with low activity while replaying')
 @click.option('-r', '--restore', is_flag=True,
         help='-restore initial database state upon replay completion')
-def start(replay_name, db_instance, capture_name, fast_mode, restore): 
+def start(capture_name, db_instance, replay_name, fast_mode, restore): 
     '''-start a new replay immediately'''
+
+
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
