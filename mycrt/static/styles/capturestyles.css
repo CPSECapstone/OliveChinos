@@ -5,9 +5,16 @@
 }
 
 #newCaptureBtnContainer {
-    float: right;
     margin-right: 25px;
     margin-top: 15px;
+}
+
+#refreshCapturesButton {
+    margin-right: 12px;
+}
+
+#ref {
+    float: right;    
 }
 
 #newCaptureBtn {
@@ -47,4 +54,8 @@
     padding-left: 0px;
     padding-bottom: 15px;
 
+}
+
+.captureActionButtonsContainer {
+   float: right;
 }
