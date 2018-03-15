@@ -6,6 +6,8 @@ import json
 #from mycrt import application
 from .context import *
 
+#TOTAL NUMBER OF FUNCTIONS FROM CAPTURE FILE: 1
+#TOTAL NUMBER OF FUNCTIONS TESTED: 1
 
 """
 if __name__ == '__main__':
@@ -24,9 +26,7 @@ class TestFlaskApi(unittest.TestCase):
     def setUp(self):
         self.app = server.mycrt.application.test_client()
 
-    def test_rest_endpoint(self):
-        response = self.app.get('/test')
-        responseData = response.data.decode('UTF-8')
-        self.assertEqual(responseData, "Test REST endpoint.")
+    def test_verify_login_false(self):
+        self.assertFalse(server.utility.login.verify_login("invalidusername", "invalidpassword"))
 
     
