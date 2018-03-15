@@ -101,6 +101,9 @@ class Capture extends React.Component {
     let postData;
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
+      var now = new Date();
+      var timezoneOffset = now.getTimezoneOffset();
+      console.log("Capture start time", this.state.captureStartTime);
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.captureRDSInstance,
