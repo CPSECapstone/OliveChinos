@@ -284,7 +284,7 @@ def get_all_replays():
     return jsonify(capture_replays)
 
 @application.route("/replay/active_list", methods=["GET"])
-def get_active_replays():
+def get_active_replay_list():
     replays = get_active_replays()
     return jsonify(replays)
 
