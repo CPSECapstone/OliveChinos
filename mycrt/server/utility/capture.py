@@ -294,7 +294,7 @@ def end_capture(credentials, capture_name, db):
   query_res = execute_utility_query(query) 
   start_time, rds, username, password = query_res[0]
   s3_client = boto3.client('s3', **credentials)
-  
+
   databases = list_databases(credentials)
   address = databases[rds]
   
