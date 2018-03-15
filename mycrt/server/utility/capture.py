@@ -187,7 +187,7 @@ def check_if_capture_name_is_unique(name):
   Returns:
     A True if the name is unqiue, False otherwise
   """
-  query = '''select * from Captures where name = '{0}' '''
+  query = '''select * from Captures where name = '{0}' '''.format(name)
   results = execute_utility_query(query)
   return len(results) == 0
 
