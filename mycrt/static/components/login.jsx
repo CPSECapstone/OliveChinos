@@ -126,7 +126,7 @@ class Login extends Component {
             Password
           </ControlLabel>
           <br />
-          <input style={{marginBottom:'30px'}}type="text" onChange={this.handlePasswordChange} />
+          <input style={{marginBottom:'30px'}}type="password" onChange={this.handlePasswordChange} />
           <div className='row'>
           <Button
             block

@@ -288,9 +288,19 @@ def get_all_replays():
     return jsonify(capture_replays)
 
 @application.route("/replay/active_list", methods=["GET"])
-def get_active_replays():
+def get_active_replays_http():
     replays = get_active_replays()
     return jsonify(replays)
+
+@application.route("/replay/number", methods=["GET"])
+def get_replay_number_http():
+    replays = get_active_replays()
+    return jsonify(replays)
+
+@application.route("/capture/number", methods=["GET"])
+def get_capture_number_http():
+    capture_number = get_capture_number()
+    return jsonify({'numberOfCaptures': capture_number})
 
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():

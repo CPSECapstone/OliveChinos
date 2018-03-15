@@ -198,7 +198,6 @@ class Replay extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        that.props.dispatch(stopReplay())
         that.displayReplays()
       })
       .fail(function (data) {

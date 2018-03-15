@@ -8,6 +8,7 @@ import {
   SET_AUTH,
   START_CAPTURE,
   SET_CAPTURE_COUNT,
+  SET_REPLAY_COUNT,
   STOP_CAPTURE,
   SET_REPLAY,
   START_NEW_REPLAY,
@@ -52,6 +53,10 @@ export function startCapture() {
 
 export function setCaptureCount(count) {
   return { type: SET_CAPTURE_COUNT, count }
+}
+
+export function setReplayCount(count) {
+  return { type: SET_REPLAY_COUNT, count }
 }
 
 export function stopCapture() {

@@ -139,12 +139,15 @@ class Capture extends React.Component {
 
   // Consumes a capture name, capture db, and action and calls that action on the specified capture
   editCapture(captureName, captureDB, action) {
-    this.props.dispatch(stopCapture())
+
     let postData = {
       "db": captureDB,
       "captureName": captureName
     }
     let that = this;
+    if (action === 'end') {
+      this.props.dispatch(stopCapture())
+    }
     if (action === 'end' || action === 'cancel') {
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
