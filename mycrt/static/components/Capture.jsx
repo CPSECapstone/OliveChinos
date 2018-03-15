@@ -59,6 +59,7 @@ class Capture extends React.Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
     this.getCapturesTable = this.getCapturesTable.bind(this)
+    this.displayAllCaptures = this.displayAllCaptures.bind(this)
   }
 
   // Refreshs database instances and capture lists when component fully renders
@@ -273,7 +274,7 @@ class Capture extends React.Component {
             >
               REPLAY
           </Button>
-            <Button className='btn-danger' style={{marginLeft: '10px'}}
+            <Button className='btn-danger' style={{ marginLeft: '10px' }}
               onClick={() => that.editCapture(row["captureName"], row["db"], 'delete')}
             >
               DELETE
@@ -376,11 +377,6 @@ class Capture extends React.Component {
     this.displayCaptures('past')
   }
 
-  refreshStuff() {
-    console.log("you have refreshed this table")
-    this.displayAllCaptures()
-  }
-
   render() {
     let captureScheduler = null;
     let that = this;
@@ -427,16 +423,21 @@ class Capture extends React.Component {
             <h3 style={{ marginLeft: '20px' }}>Captures</h3>
           </div>
 
-          <div id="newCaptureBtnContainer">
-            <Button
-              id="newCaptureBtn"
-              //style={{ marginLeft: '' }}
-              
-              bsStyle="primary"
-              onClick={this.handleShow}
-            >
-              New Capture
+          <div class="row captureActionButtonsContainer">
+            <div id="newCaptureBtnContainer">
+              <Button bsStyle="secondary" id="refreshCapturesButton" onClick={this.displayAllCaptures}>
+                Refresh Capture
+              </Button>
+              <Button
+                id="newCaptureBtn"
+                //style={{ marginLeft: '' }}
+
+                bsStyle="primary"
+                onClick={this.handleShow}
+              >
+                New Capture
             </Button>
+            </div>
           </div>
         </div>
 
@@ -507,7 +508,6 @@ class Capture extends React.Component {
           {uniqueNameAlert}
 
           <CaptureList
-            refreshAction={() => this.displayAllCaptures()}
             activeCaptures={this.state.activeCaptureList}
             completedCaptures={this.state.completedCaptureList}
             scheduledCaptures={this.state.scheduledCaptureList} />
