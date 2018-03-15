@@ -24,7 +24,6 @@ lock = None
 
 
 def init_replay():
-  print("INITIALIZE REPLAY!!!!!!!!", file = sys.stderr)
   global manager
   global replays_in_progress
   global db_in_use
@@ -96,6 +95,7 @@ def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chi
     Key = log_key
   )
 
+#Need to add "rds" if ever going to poll for replays in progress
 def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
   replays_in_progress[capture_name + "/" + replay_name] = {
       "replayName" : replay_name,
@@ -171,7 +171,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
 
   _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
  
-  query = """INSERT INTO Replays (replay, capture, db, mode) VALUES ('{0}', '{1}', '{2}', '{3}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time")
+  query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   execute_utility_query(query)
   
 def delete_replay(credentials, capture_name, replay_name):
@@ -197,9 +197,9 @@ def delete_replay(credentials, capture_name, replay_name):
     print("Replay to delete does not exist.", file=sys.stderr)
 
 def get_replays_from_table():
-  query = "select * from Replays"
+  query = "select replay, capture, db, mode, rds from Replays"
   results = execute_utility_query(query)
-  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode} for (replay, capture, db, mode) in results]
+  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds} for (replay, capture, db, mode, rds) in results]
   return {"replays" : replays}
 
 def _populate_replay_table():
@@ -211,7 +211,7 @@ def _populate_replay_table():
     for replay in replays:
       replay = replay.replace(".replay", "")
       if (capture, replay) not in table_replays:
-        query = '''INSERT INTO Replays (replay, capture, db, mode) 
-                   VALUES ('{0}', '{1}', 'unknown', 'unknown')'''.format(replay, capture)
+        query = '''INSERT INTO Replays (replay, capture, db, mode, rds) 
+                   VALUES ('{0}', '{1}', 'unknown', 'unknown', 'unknown')'''.format(replay, capture)
         execute_utility_query(query)
 

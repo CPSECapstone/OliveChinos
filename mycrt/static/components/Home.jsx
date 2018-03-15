@@ -41,7 +41,7 @@ class Home extends Component {
   }
 
   componentWillReceiveProps() {
-    this.getPythonAnalytics();
+    //this.getPythonAnalytics();
   }
 
   renderPage() {
@@ -60,7 +60,7 @@ class Home extends Component {
     } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Analyze</h3>
+          <h3 style={{ marginLeft: '20px' }}>Analytics</h3>
           <Analytics />
         </div>
       )

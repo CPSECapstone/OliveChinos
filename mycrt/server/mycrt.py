@@ -82,6 +82,7 @@ def databaseInstances():
     else: 
         abort(401) 
 
+#TODO JAKE
 @application.route("/capture/list_ongoing", methods=["GET"])
 def captureListOngoing():
     headers = request.headers
@@ -100,7 +101,7 @@ def captureListOngoing():
     else:
         abort(401)
 
-
+#TODO JAKE
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
     headers = request.headers
@@ -117,7 +118,7 @@ def captureListCompleted():
     else:
         abort(401)
 
-
+#TODO JAKE
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():
     headers = request.headers
@@ -134,6 +135,7 @@ def captureListScheduled():
     else:
         abort(401)
 
+#TODO JAKE
 @application.route("/capture/replayList", methods=["GET"])
 def replayListForSpecificCapture():
     headers = request.headers
@@ -245,6 +247,7 @@ def query_execute():
                 "query" : query
             })
 
+#TODO JAKE
 @application.route("/capture/completed_list", methods=["GET"])
 def get_all_captures():
   captures = get_capture_list(credentials)    
