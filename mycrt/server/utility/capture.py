@@ -76,7 +76,7 @@ def get_all_scheduled_capture_details():
   return captures
 
 def get_all_completed_capture_details():
-  """Get all scheduled capture details from utility database.
+  """Get all completed capture details from utility database.
 
   Returns: 
     A list containing details of captures that are ongoing.

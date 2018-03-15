@@ -41,7 +41,7 @@ class Home extends Component {
   }
 
   componentWillReceiveProps() {
-    //this.getPythonAnalytics();
+    this.getPythonAnalytics();
   }
 
   renderPage() {
