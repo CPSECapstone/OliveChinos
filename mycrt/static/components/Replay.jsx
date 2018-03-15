@@ -281,13 +281,13 @@ class Replay extends React.Component {
       return (
         <div className='row'>
           <Button
-            className='btn-info' 
+            className='btn-info'
             onClick={() => that.analyze(row["capture"], row["replay"])}
           >
             ANALYZE
         </Button>
           <Button
-            className='btn-danger' style={{marginLeft: '10px'}}
+            className='btn-danger' style={{ marginLeft: '10px' }}
             onClick={() => that.deleteReplay(row["capture"], row["replay"])}
           >
             DELETE
@@ -333,15 +333,6 @@ class Replay extends React.Component {
     })
   }
 
-  // Render the refresh button to refresh the list of replays
-  renderRefreshButton() {
-    return (
-      <Button className="refreshReplayButton" onClick={this.displayReplays}>
-        <span className="glyphicon glyphicon-refresh refreshIcon"></span>
-      </Button>
-    )
-  }
-
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
     if (this.state.completedReplayList == null) {
@@ -349,9 +340,6 @@ class Replay extends React.Component {
     } else {
       return (
         <div>
-          <div>
-            {this.renderRefreshButton()}
-          </div>
           {this.state.completedReplayList}
         </div>
       );
@@ -382,8 +370,13 @@ class Replay extends React.Component {
 
           <div id="newReplayBtnContainer">
             <Button
+              id="refreshReplayButton"
+              bsStyle="secondary"
+              onClick={this.displayReplays}>
+              Refresh Replays
+            </Button>
+            <Button
               id="newReplayBtn"
-              
               bsStyle="primary"
               onClick={this.handleShow}
             >

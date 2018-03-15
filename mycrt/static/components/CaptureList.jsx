@@ -39,14 +39,6 @@ export default class CaptureList extends React.Component {
         )
     }
 
-    renderRefreshButton() {
-        return (
-            <Button className="refreshCaptureButton" onClick={this.props.refreshAction}>
-                <span className="glyphicon glyphicon-refresh refreshIcon"></span>
-            </Button>
-        )
-    }
-
     renderTable() {
         console.log('THE CAPTURE TYPE IS: ', this.state.captureType)
         if (this.state.captureType == 'Active') {
@@ -90,7 +82,6 @@ export default class CaptureList extends React.Component {
         else return (
             <div>
                 {this.renderRadioButtons()}
-                {this.renderRefreshButton()}
                 {this.renderTable()}
             </div>
         )
