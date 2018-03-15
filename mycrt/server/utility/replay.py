@@ -97,13 +97,6 @@ def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chi
   )
 
 def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
-  print(db_id, file = sys.stderr)
-  print(replay_name, file = sys.stderr)
-  print(capture_name, file = sys.stderr)
-  print(fast_mode, file = sys.stderr)
-  print(restore_db, file = sys.stderr)
-  print(db_in_use, file = sys.stderr)
-  print(replays_in_progress, file = sys.stderr)
   replays_in_progress[capture_name + "/" + replay_name] = {
       "replayName" : replay_name,
       "captureName" : capture_name,
