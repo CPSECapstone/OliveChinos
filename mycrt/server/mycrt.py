@@ -100,7 +100,6 @@ def captureListOngoing():
     else:
         abort(401)
 
-
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
     headers = request.headers
@@ -116,7 +115,6 @@ def captureListCompleted():
         })
     else:
         abort(401)
-
 
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():

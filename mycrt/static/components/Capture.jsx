@@ -310,6 +310,7 @@ class Capture extends React.Component {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["captures"]}>
         <TableHeaderColumn dataField='captureName' isKey dataSort>Capture Name</TableHeaderColumn>
         <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
         <TableHeaderColumn dataField='startTime' dataSort>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='endTime' dataSort>End Time</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
@@ -322,7 +323,7 @@ class Capture extends React.Component {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
         <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
-        <TableHeaderColumn >Capture Name</TableHeaderColumn>
+        <TableHeaderColumn >RDS Instance</TableHeaderColumn>
         <TableHeaderColumn >Start Time</TableHeaderColumn>
         <TableHeaderColumn >End Time</TableHeaderColumn>
         <TableHeaderColumn >Action</TableHeaderColumn>
@@ -423,7 +424,7 @@ class Capture extends React.Component {
       <div>
         <div>
           <div id="captureTitle">
-            <h3 style={{ marginLeft: '20px' }}>Capture</h3>
+            <h3 style={{ marginLeft: '20px' }}>Captures</h3>
           </div>
 
           <div id="newCaptureBtnContainer">
