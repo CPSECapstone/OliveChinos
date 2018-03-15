@@ -72,7 +72,6 @@ def start(credentials_file, capture_name, start_time, end_time):
     credential_dict = json.load(credentials_file)
 
     if not start_time: #interactive capture
-        click.echo('got here')
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
         start_time=date_time.split('_')[1]
 
@@ -215,6 +214,10 @@ def start(credentials_file, capture_name, replay_name, fast_mode, restore):
     if resp.status_code != 200:
         raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
 
+    else: 
+        click.echo('Replay ' + replay_name + ' on ' + credentials_dict['db-name'] 
+                + ' was started.')
+
 @replay.command(short_help='-delete a completed replay')
 @click.argument('capture-name')
 @click.argument('replay-name')
@@ -223,25 +226,50 @@ def delete(capture_name, replay_name):
     
     Deleting a replay will delete all data affiliated with it
     '''
-    task={'captureName': capture_name, 
-            'replayName': replay_name
+    task={'capture': capture_name, 
+            'replay': replay_name
     }
     resp = requests.delete('http://localhost:5000/replay/delete', json=task)
 
     if resp.status_code != 200:
         click.echo('Please make sure the capture name is correct.')
         #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+    else: 
+        click.echo('Replay ' + replay_name + ' was deleted.')
 
 
 @replay.command()
-def view(): 
-    '''-view ongoing replays'''
-    replays = requests.get('http://localhost:5000/replay/list')
+@click.option('-o', '--ongoing', is_flag=True, 
+        help='list ongoing replays')
+@click.option('-c', '--completed', is_flag=True, 
+        help='list completed replays')
+def view(ongoing, completed): 
+    '''-view ongoing and completed replays'''
+    if ongoing: 
+        ongoing_replays = requests.get('http://localhost:5000/replay/active_list')
 
-    if replays.status_code != 200: #there was an error
-        raise requests.HTTPError('GET /replay/list {}'.format(captures.status_code))
+        if ongoing_replays.status_code != 200: #there was an error
+            raise requests.HTTPError('GET /replay/list {}'.format(ongoing_replays.status_code))
+        else: 
+            click.echo(format_json(ongoing_replays.json()))
 
-    click.echo(format_json(replays.json()))
+    if completed: 
+        completed_replays = requests.get('http://localhost:5000/replay/list')
+
+        if completed_replays.status_code != 200: #there was an error
+            raise requests.HTTPError('GET /replay/list {}'.format(completed_replays.status_code))
+        else: 
+            click.echo(format_json(completed_replays.json()))
+
+    if not completed and not ongoing: 
+        ongoing_replays = requests.get('http://localhost:5000/replay/active_list')
+        completed_replays = requests.get('http://localhost:5000/replay/list')
+
+        if completed_replays.status_code != 200:
+            raise requests.HTTPError('GET /replay/list {}'.format(completed_replays.status_code))
+        if ongoing_replays.status_code != 200: 
+            raise requests.HTTPError('GET /replay/active_list {}'.format(ongoing_replays.status_code))
+
 
 '''-------------ANALYZE-------------'''
 @cli.group()
