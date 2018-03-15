@@ -129,6 +129,7 @@ def end(credentials_file, capture_name):
         click.echo('There was an error.')
         click.echo('Please make sure your capture name and db instance are correct.')
         #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        return
 
     click.echo('Capture \'' + capture_name + '\' on database \'' + credential_dict['db-name'] + '\' was ended.')
 
@@ -179,22 +180,26 @@ def replay():
     pass
 
 @replay.command()
+@click.argument('credentials-file', type=click.File('rb'))
 @click.argument('capture-name')
-@click.argument('db-instance')
 @click.option('-n', '--replay-name', 
         help='-name for the replay; default name will be given if not specified')
 @click.option('-f', '--fast-mode', is_flag=True,
         help='-skip over time periods with low activity while replaying')
 @click.option('-r', '--restore', is_flag=True,
         help='-restore initial database state upon replay completion')
-def start(capture_name, db_instance, replay_name, fast_mode, restore): 
+def start(credentials_file, capture_name, replay_name, fast_mode, restore): 
     '''-start a new replay immediately'''
 
+    credentials_dict = json.load(credentials_file)
 
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
-    task={'db': db_instance, 
+    task={'db': credentials_dict['db-name'], 
+            'rds': credentials_dict['rds-instance'],
+            'username': credentials_dict['username'],
+            'password': credentials_dict['password'],
             'captureName': capture_name,
             'fastMode': fast_mode,
             'restoreDb': restore,

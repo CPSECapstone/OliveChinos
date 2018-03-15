@@ -208,13 +208,13 @@ def capture_end():
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
-    capture_details, start_time = end_capture(credentials, capture_name, db_name)
+    start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
         "status": "ended",
         "db": db_name,
         "captureName": capture_name,
-        "captureDetails": capture_details,
+        "captureDetails": start_time,
         "startTime": start_time,
         "endTime": end_time
     })
@@ -317,7 +317,6 @@ def analytics():
 
 @application.before_first_request
 def _run_on_start():
-    init_capture()
     init_replay()
     init_scheduler()
 
