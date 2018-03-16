@@ -113,11 +113,11 @@ class Replay extends React.Component {
 
   // Function to display the list of available captures to replay on
   createCapturesSelect(data) {
-    var captures = data
+    let captures = data
     let captureList = [];
-    for (var i = 0; i < captures.length; i++) {
-      var capture_name = captures[i];
-      var selectOption = (<option value={capture_name} key={i}>
+    for (let i = 0; i < captures.length; i++) {
+      let capture_name = captures[i];
+      let selectOption = (<option value={capture_name} key={i}>
         {capture_name}
       </option>)
       captureList.push(selectOption)
@@ -127,14 +127,14 @@ class Replay extends React.Component {
 
   // Function to fetch the list of captures available to replay on
   loadCapturesToReplay() {
-    var that = this;
+    let that = this;
     jquery.ajax({
       url: window.location.href + 'capture/completed_list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      var resultList = that.createCapturesSelect(data)
+      let resultList = that.createCapturesSelect(data)
       that.setState({ captureOptions: resultList })
       that.setState({ captureToReplay: resultList[0].props.value })
 
@@ -143,11 +143,11 @@ class Replay extends React.Component {
 
   // Function to display the list of available DB instances
   createDBInstancesSelect(data) {
-    var dbInstances = data["databases"];
+    let dbInstances = data["databases"];
     let dbList = [];
-    for (var i = 0; i < dbInstances.length; i++) {
-      var instance = dbInstances[i];
-      var selectOption = (<option value={instance} key={i}>
+    for (let i = 0; i < dbInstances.length; i++) {
+      let instance = dbInstances[i];
+      let selectOption = (<option value={instance} key={i}>
         {instance}
       </option>)
       dbList.push(selectOption)
@@ -157,7 +157,7 @@ class Replay extends React.Component {
 
   // Function to fetch the list of DB instances
   loadDatabaseInstances() {
-    var that = this;
+    let that = this;
     let returnList = []
     jquery.ajax({
       url: window.location.href + 'databaseInstances',
@@ -177,7 +177,7 @@ class Replay extends React.Component {
   addReplay(replayName, captureName, replayDB) {
     this.setState({ replay: 'Replay Active' })
     this.props.dispatch(startNewReplay())
-    var postData = {
+    let postData = {
       "db": this.state.replayDBName,
       "rds": this.state.replayRDSInstance,
       "captureName": this.state.captureToReplay,
@@ -188,7 +188,7 @@ class Replay extends React.Component {
       "fastMode": this.state.fastMode,
       "restoreDb": false
     }
-    var that = this;
+    let that = this;
     jquery.ajax({
       url: window.location.href + 'replay',
       type: 'POST',
@@ -202,7 +202,6 @@ class Replay extends React.Component {
       })
       .fail(function (data) {
         that.handleShowAlert()
-        console.log("ALERT: " + that.showAlert)
       })
   }
 
@@ -233,7 +232,7 @@ class Replay extends React.Component {
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
-    var bools = new Array(this.props.analyticsForGraph[captureName].length)
+    let bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
     for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
       let currReplay = currentReplayNames[i];
@@ -248,12 +247,12 @@ class Replay extends React.Component {
   }
 
   getReplayTable(data) {
-    var currentCaptures = [];
-    var current;
-    var captureEditAction;
-    var that = this;
+    let currentCaptures = [];
+    let current;
+    let captureEditAction;
+    let that = this;
 
-    var options = {
+    let options = {
       defaultSortName: 'capture',  // default sort column name
       defaultSortOrder: 'desc'  // default sort order
     };
@@ -293,14 +292,14 @@ class Replay extends React.Component {
 
   // Function to display the list of replays
   displayReplays() {
-    var that = this;
+    let that = this;
     jquery.ajax({
       url: window.location.href + 'replay/list',
       type: 'GET',
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      var resultList = that.getReplayTable(data)
+      let resultList = that.getReplayTable(data)
       that.setState({ completedReplayList: resultList })
     })
   }
