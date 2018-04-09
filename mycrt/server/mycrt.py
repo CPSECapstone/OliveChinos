@@ -266,6 +266,9 @@ def replay():
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
+    if check_replay_name_is_unique(capture_name, replay_name):
+        abort(400)
+
 
     capture_name = data['captureName']
     fast_mode = data.get('fastMode', False)

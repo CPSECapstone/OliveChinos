@@ -71,6 +71,11 @@ def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", 
 
   return transactions
 
+def check_if_replay_name_is_unique(capture_name, replay_name):
+   query = '''SELECT * FROM Replays WHERE capture='{0}' and replay='{1}')'''.format(capture_name, replay_name)
+   
+   return len(execute_utility_query(query)) == 0
+
 def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
   return cloudwatch_client.get_metric_statistics(
       Namespace='AWS/RDS',
