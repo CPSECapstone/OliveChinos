@@ -189,9 +189,6 @@ class Graph extends Component {
    getMinXAxis() {
       let totalValues = []
 
-      console.log("XAXIS");
-      console.log(this.props.booleansForGraph);
-
       for (let j = 0; j < this.props.totalNames.length; j++) {
          if (this.props.booleansForGraph[j] === true) {
             for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
@@ -350,16 +347,14 @@ class Graph extends Component {
          this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
       }
 
-      var leftMin;
-      var rightMax;
+      var leftMin = this.getMinXAxis();
+      var rightMax = this.getMaxXAxis();
       var bottomMin = this.getMinYAxis();
       var topMax = this.getMaxYAxis();
       var currentPoint;
 
       if (this.state.leftRange === 0 && this.state.rightRange === 0) {
          testArray = this.state.dataPointsForGraph;
-         leftMin = this.getMinXAxis();
-         rightMax = this.getMaxXAxis();
       } else {
          var jsonObject = Object.keys(this.state.dataPointsForGraph);
          leftMin = parseInt(this.state.leftRange);
