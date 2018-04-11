@@ -81,8 +81,7 @@ class Graph extends Component {
             newLinesToGraph.push(totalNames[i])
          }
       }
-      console.log("newLines");
-      console.log(newLinesToGraph);
+
       let numberOfSelectedReplays = newLinesToGraph.length
       if (analytics != false) {
          let totalNumberOfOptionsToChooseFrom = totalNames.length
@@ -97,8 +96,8 @@ class Graph extends Component {
             }
          }
       }
-      if (arrayOfDataJSONS == undefined || arrayOfDataJSONS == false) {
 
+      if (arrayOfDataJSONS == false) {
          this.setState({dataPointsForGraph: false})
          return false;
       } else {
@@ -112,7 +111,8 @@ class Graph extends Component {
    getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
       let currMetric = metric;
       let listOfAnalytics = analytics[captureName];
-      if (booleanArray != false && currMetric != false) {
+
+      if (booleanArray !== false && currMetric !== false) {
          for (let outer = 0; outer < booleanArray.length; outer++) {
             let pointsValues = []
             if (booleanArray[outer]) {
@@ -124,7 +124,7 @@ class Graph extends Component {
                   currPoint[uniqueName] = listOfAnalytics[currIndex][currMetric][i].Average
                   pointsValues.push(currPoint)
                }
-               if (dataPoints != false && dataPoints != undefined) {
+               if (dataPoints !== false && dataPoints !== undefined) {
                   return this.updateFinalJSONObject(pointsValues, numLines, dataPoints, captureName)
                } else {
                   return pointsValues
@@ -148,7 +148,6 @@ class Graph extends Component {
       let values = [];
       for (let i = 0; i < this.props.booleansForGraph.length; i++) {
          if (this.props.booleansForGraph[i]) {
-            // debugger;
             values.push(this.props.totalNames[i])
          }
       }
@@ -179,10 +178,9 @@ class Graph extends Component {
 
       if (refAreaLeft === refAreaRight || refAreaRight === 0 || refAreaLeft > refAreaRight) {
          this.setState(() => ({refAreaLeft: 0, refAreaRight: 0}));
-         return;
+      } else {
+         this.setState({leftRange: refAreaLeft, rightRange: refAreaRight, dataPointsForGraph: dataPointsForGraph.slice(), refAreaLeft: 0, refAreaRight: 0});
       }
-
-      this.setState({leftRange: refAreaLeft, rightRange: refAreaRight, dataPointsForGraph: dataPointsForGraph.slice(), refAreaLeft: 0, refAreaRight: 0});
    }
    zoomOut() {
       this.setState(() => ({leftRange: this.getMinXAxis(), rightRange: this.getMaxXAxis(), refAreaLeft: 0, refAreaRight: 0, dataPointsForGraph: this.state.dataPointsForGraph.slice()}));
@@ -191,12 +189,19 @@ class Graph extends Component {
    getMinXAxis() {
       let totalValues = []
 
+      console.log("XAXIS");
+      console.log(this.props.booleansForGraph);
+
       for (let j = 0; j < this.props.totalNames.length; j++) {
          if (this.props.booleansForGraph[j] === true) {
             for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
                totalValues.push(this.state.dataPointsForGraph[i]["seconds"])
             }
          }
+      }
+
+      if (totalValues.length === 0) {
+         return 0;
       }
 
       let dataMin = totalValues.reduce(function(a, b) {
@@ -215,6 +220,11 @@ class Graph extends Component {
             }
          }
       }
+
+      if (totalValues.length === 0) {
+         return 0;
+      }
+
       let dataMax = totalValues.reduce(function(a, b) {
          return Math.max(a, b)
       })
@@ -233,6 +243,10 @@ class Graph extends Component {
          }
       }
 
+      if (totalValues.length === 0) {
+         return 0;
+      }
+
       let dataMin = totalValues.reduce(function(a, b) {
          return Math.min(a, b)
       })
@@ -249,6 +263,11 @@ class Graph extends Component {
             }
          }
       }
+
+      if (totalValues.length === 0) {
+         return 0;
+      }
+
       let dataMax = totalValues.reduce(function(a, b) {
          return Math.max(a, b)
       })
@@ -327,7 +346,7 @@ class Graph extends Component {
       let linecharts = [];
       var testArray = [];
 
-      if (this.state.dataPointsForGraph == false) {
+      if (this.state.dataPointsForGraph === false) {
          this.state.dataPointsForGraph = this.getAssignments(this.props.booleansForGraph, this.props.totalNames, this.props.metricForGraph, this.props.analyticsForGraph, this.state.dataPointsForGraph, this.props.currentCaptureForGraph)
       }
 
@@ -335,8 +354,9 @@ class Graph extends Component {
       var rightMax;
       var bottomMin = this.getMinYAxis();
       var topMax = this.getMaxYAxis();
+      var currentPoint;
 
-      if (this.state.leftRange == 0 && this.state.rightRange == 0) {
+      if (this.state.leftRange === 0 && this.state.rightRange === 0) {
          testArray = this.state.dataPointsForGraph;
          leftMin = this.getMinXAxis();
          rightMax = this.getMaxXAxis();
@@ -346,7 +366,7 @@ class Graph extends Component {
          rightMax = parseInt(this.state.rightRange);
 
          for (var i = 0; i < jsonObject.length; i++) {
-            var currentPoint = this.state.dataPointsForGraph[i];
+            currentPoint = this.state.dataPointsForGraph[i];
             if (currentPoint.seconds <= this.state.rightRange && currentPoint.seconds >= this.state.leftRange) {
                testArray.push(currentPoint);
             }
@@ -380,12 +400,6 @@ class Graph extends Component {
         yAxisPadding = 60;
       }
 
-
-
-
-      console.log(this.state);
-      console.log(this.props);
-
       return (
         <div id="graphContainer">
           <div>
@@ -400,7 +414,7 @@ class Graph extends Component {
                   onClick={this.zoomOut.bind(this)}
                 >
                   {' '}
-                  Reset Zoom 
+                  Reset Zoom
                 </a>
 
                 <DropdownButton id="downloadBtn" bsSize={'small'} bsStyle={'primary'} title="Download">
@@ -434,14 +448,11 @@ class Graph extends Component {
 
                 <YAxis
                   allowDataOverflow={true}
-
                   width={yAxisPadding}
                   domain={[bottomMin, topMax]}
-
                 >
                   <Label angle={-90} value={yAxisLabel} position='insideLeft' style={{textAnchor: 'middle'}} />
                 </YAxis>
-
                 <Tooltip />
                 <Legend />
                 {
@@ -451,8 +462,6 @@ class Graph extends Component {
                 {this.getLines().map(line => line)}
               </LineChart>
               </ResponsiveContainer>
-
-
 
             </div>
           </div>
@@ -475,7 +484,6 @@ const mapStateToProps = state => ({
    currentCaptureForGraph: state.currentCaptureForGraph,
    analyticsForGraph: state.analyticsForGraph,
    totalNames: state.totalNames
-
 })
 
 export default connect(mapStateToProps)(Graph)
