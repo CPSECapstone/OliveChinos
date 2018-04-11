@@ -44,7 +44,8 @@ let initialState = {
   analyticsForGraph: false,
   totalNames: false,
   currentCaptureForGraph: 'Capture Options',
-  stateType: 'onCapture'
+  stateType: 'onCapture',
+  selectedReplay: false
 }
 
 function reducer(state = initialState, action) {
@@ -155,12 +156,14 @@ function reducer(state = initialState, action) {
 
     case SET_GRAPH_DATA_FROM_REPLAY:
     console.log('DISPATCHING THIS ACTION: ', action)
+    console.log('****** HERE!!!! ****', action.selectedReplay)
       return Object.assign({}, state, {
         booleansForGraph: action.booleans,
         currentCaptureForGraph: action.captureName,
         metricForGraph: action.metricName,
         stateType: action.stateName,
-        totalNames: action.totNames
+        totalNames: action.totNames,
+        selectedReplay: action.selectedReplay
       })
 
     default:

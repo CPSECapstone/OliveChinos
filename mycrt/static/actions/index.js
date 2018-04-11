@@ -98,6 +98,6 @@ export function setCaptureNameForGraph(key) {
   return {type: SET_CAPTURE_NAME_FOR_GRAPH, key}
 }
 
-export function setGraphDataFromReplay(bools, capture, metric, state, names) {
-  return {type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names}
+export function setGraphDataFromReplay(bools, capture, metric, state, names, selReplay) {
+  return {type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names, selectedReplay: selReplay}
 }
