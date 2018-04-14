@@ -2,7 +2,25 @@
 import sys
 import configparser
 import json
+import pprint
 from flask import Flask, render_template, request, abort, jsonify
+from flask_mail import Mail
+from flask_mail import Message
+
+application = Flask(__name__)
+
+application.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME = 'olivechinosmycrt@gmail.com',
+    MAIL_PASSWORD = 'alexsjawline',
+    MAIL_DEFAULT_SENDER = 'olivechinosmycrt@gmail.com'
+)
+
+mail = Mail(application)
+mail.init_app(application)
+
 
 try:
     from .utility.capture import *
@@ -46,6 +64,19 @@ def createReplayName(dbName, formattedTime):
 @application.route("/")
 def index():
     return render_template("index.html")
+
+@application.route("/issueReport", methods=["POST"])
+def sendIssueReport():
+    data = request.get_json()
+    msg = Message(data['title'],
+                  sender="olivechinosmycrt@gmail.com",
+                  recipients=["to@example.com"])
+
+    msg.recipients = ["smithygirl@gmail.com", "jakepickett67@gmail.com", "andrewcofano@gmail.com", "alex.jboyd@yahoo.com", "yengkerngtan@gmail.com", "costinpirvu64@gmail.com", "c.leigh.b@gmail.com"]
+    print(pprint.pprint(data), file = sys.stderr)
+    msg.body = 'Version: %s\nType: %s\nPriority: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['description'])
+    mail.send(msg)
+    return "Success"
 
 @application.route("/test")
 def rest_test():

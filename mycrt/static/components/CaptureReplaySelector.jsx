@@ -5,7 +5,7 @@ import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents } from '../actions'
+import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay } from '../actions'
 
 var selectedColor = "#ADD8E6";
 
@@ -95,6 +95,9 @@ class CaptureReplaySelector extends React.Component {
                 if(totalNameOptions[i] == uniqueName) {
                     newBooleans[i] = !(newBooleans[i])
                 }
+            }
+            if(refProps.selectedReplay != false) {
+                refProps.dispatch(setSelectedReplay(false))
             }
             refProps.dispatch(setBooleansForGraph(newBooleans));
         }
