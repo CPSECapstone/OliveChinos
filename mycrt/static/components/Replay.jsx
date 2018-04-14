@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import '../styles/replaystyles.css'
@@ -232,6 +232,9 @@ class Replay extends React.Component {
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
+    console.log('DEBUGGING: capture name', captureName)
+    console.log('DEBUGGING: replay name', replayName)
+    console.log('analytics at ', this.props.analyticsForGraph)
     let bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
     for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
@@ -243,7 +246,8 @@ class Replay extends React.Component {
         bools[i] = false
       }
     }
-    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
+    console.log('***** OKAY WAIT!!!! ***** ', replayName)
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]), new Array(replayName)));
   }
 
   deleteReplay(captureName, replayName) {
