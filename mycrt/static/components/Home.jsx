@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 require('../styles/tabstyles.css')
 import '../styles/homestyles.css'
-import { Button } from 'react-bootstrap';
+import { Button, Glyphicon } from 'react-bootstrap';
 import jquery from 'jquery';
 import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
@@ -10,6 +10,7 @@ import Replay from './Replay'
 import { changeStateForComponents, setAnalyticsForGraph, setReplayCount, setCaptureCount } from '../actions/index';
 import { connect } from 'react-redux'
 import  IssueModal  from  './issueModal'
+import InfoAnalytics from './infoAnalytics'
 
 class Home extends Component {
   constructor(props) {
@@ -24,7 +25,8 @@ class Home extends Component {
       captureTab: 'blue',
       replayTab: 'red',
       analyticsTab: 'orange',
-      issueShow: false
+      issueShow: false,
+      analyticsInfoShow: false
     }
 
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
@@ -88,7 +90,10 @@ class Home extends Component {
     } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Analytics</h3>
+          <h3 style={{ marginLeft: '20px' }}>Analytics 
+          <Glyphicon style={{paddingLeft:'20px', cursor:'pointer'}} glyph="info-sign" 
+          onClick={() => this.setState({ analyticsInfoShow: true })}/>
+          </h3>
           <Analytics />
         </div>
       )
@@ -125,6 +130,7 @@ class Home extends Component {
     var tabActiveStyle = this.props.stateForComponents;
     var classNames = require('classnames');
     let issueClose = () => this.setState({ issueShow: false });
+    let analyticsInfoClose = () => this.setState({ analyticsInfoShow: false})
     return (
       <div>
         <div className="headerContainer">
@@ -185,6 +191,7 @@ class Home extends Component {
           </div>
           {this.renderPage()}
           <IssueModal show={this.state.issueShow} onHide={issueClose}/>
+          <InfoAnalytics show={this.state.analyticsInfoShow} onHide={analyticsInfoClose}/>
           
         </div>
       </div >
