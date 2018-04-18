@@ -12,7 +12,7 @@ In consideration of your agreement to the following
 terms, and your use, installation, modification or redistribution of
 this Olive Chino software constitutes acceptance of these terms.  If you do
 not agree with these terms, please do not use, install, modify or
-redistribute this Apple software.
+redistribute this software.
 
 In consideration of your agreement to abide by the following terms, and
 subject to these terms, Olive Chino's grants you a personal, non-exclusive
