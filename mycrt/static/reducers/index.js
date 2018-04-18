@@ -20,7 +20,8 @@ import {
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
-  SET_GRAPH_DATA_FROM_REPLAY
+  SET_GRAPH_DATA_FROM_REPLAY,
+  SET_SELECTED_REPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -164,6 +165,11 @@ function reducer(state = initialState, action) {
         stateType: action.stateName,
         totalNames: action.totNames,
         selectedReplay: action.selectedReplay
+      })
+
+    case SET_SELECTED_REPLAY:
+      return Object.assign({}, state, {
+        selectedReplay: action.key
       })
 
     default:

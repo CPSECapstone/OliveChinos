@@ -76,7 +76,6 @@ export default class IssueModal extends Component {
             <Modal.Title id="contained-modal-title-lg">Submit an Issue</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <h4>Something here?</h4>
             <form>
                <FormGroup
                 controlId="formBasicText"
