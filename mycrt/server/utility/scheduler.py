@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import signal
 
+from .communications import ComManager
 from .capture import *
 
 SUCCESS = 0
@@ -31,7 +32,7 @@ def init_scheduler():
 
 
 def new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, rds_name, username, password): 
+                            db_name, start_time, end_time, rds_name, username, password, cm): 
     """Initiate a capture event. 
     If capture is interactive, a start-capture process will be started immediately.
     If capture is scheduled, an event will be scheduled to run at the specified 
@@ -54,7 +55,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
     """
 
     if not is_scheduled: #interactive capture
-        start_capture(capture_name, rds_name, db_name, start_time, username, password)
+        start_capture(capture_name, rds_name, db_name, start_time, username, password, cm)
 
     else: #scheduled capture
         '''scheduler = sched.scheduler(time.time, time.sleep)
@@ -72,7 +73,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
 
         #TODO test to make sure no delay from start time to actual run time
         schedule_process = multiprocessing.Process(target=create_and_run_scheduler, 
-            args=(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password))
+            args=(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password, ComManager()))
         schedule_process.start()
         
 
@@ -80,19 +81,19 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         _add_to_scheduled_captures(capture_name, schedule_process.pid)
 
         #add to db for front-end
-        schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password)
+        schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password, cm)
           
 
         return SUCCESS
 
-def create_and_run_scheduler(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password):
+def create_and_run_scheduler(credentials, capture_name, rds_name, db_name, start_time, end_time, username, password, cm):
     scheduler = sched.scheduler(time.time, time.sleep)
 
     _create_scheduled_event(scheduler, start_capture, 
-            (capture_name, rds_name, db_name, start_time, username, password), start_time)
+            (capture_name, rds_name, db_name, start_time, username, password, cm), start_time)
 
     _create_scheduled_event(scheduler, end_capture, 
-            (credentials, capture_name, db_name), end_time)
+            (credentials, capture_name, db_name, cm), end_time)
 
     #remove capture from scheduled captures when end_capture is called
     _create_scheduled_event(scheduler, _remove_from_scheduled_captures, 
@@ -115,7 +116,7 @@ def _create_scheduled_event(scheduler, func, args, unformatted_time):
 
 
 #currently unused, useful later on
-def cancel_capture_process(capture_name): 
+def cancel_capture_process(capture_name, cm): 
     """ Unschedule or terminate a capture process.
 
     Since no work happens for the capture until end_capture, all we have to 
@@ -130,7 +131,7 @@ def cancel_capture_process(capture_name):
     os.kill(scheduler_pid, signal.SIGTERM)
 
     #remove record from utility db
-    cancel_capture(capture_name)
+    cancel_capture(capture_name, cm)
 
 def _get_epoch_time(raw_time): 
     """ convert datetime string to seconds since epoch given a date and time
