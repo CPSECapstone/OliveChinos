@@ -189,10 +189,6 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   cm.execute_query(query)
   
-def check_if_replay_name_is_unique(capture_name, replay_name): 
-    query = '''SELECT * FROM Replays WHERE capture='{0}' and replay='{1}')'''.format(capture_name, replay_name)
-    return len(execute_utility_query(query)) == 0
-
 def delete_replay(credentials, capture_name, replay_name, cm):
   '''Remove all traces of a replay in S3.
 
