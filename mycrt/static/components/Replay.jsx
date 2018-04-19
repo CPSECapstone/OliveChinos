@@ -177,7 +177,7 @@ class Replay extends React.Component {
   // Function to start a new replay
   addReplay(replayName, captureName, replayDB) {
     this.setState({ replay: 'Replay Active' })
-    this.props.dispatch(startNewReplay())
+    //this.props.dispatch(startNewReplay())
     let postData = {
       "db": this.state.replayDBName,
       "rds": this.state.replayRDSInstance,

@@ -138,7 +138,6 @@ class Capture extends React.Component {
       .fail(function (data) {
         that.handleShowAlert()
       })
-
   }
 
   // Consumes a capture name, capture db, and action and calls that action on the specified capture
