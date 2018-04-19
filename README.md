@@ -38,8 +38,6 @@ THE SOFTWARE.
 
 
 ## License
-[MIT](LICENSE)
-
 [ci-image]: https://secure.travis-ci.org/jared-stilwell/escomplex.png?branch=master
 [ci-status]: http://travis-ci.org/#!/jared-stilwell/escomplex
 [mocha]:https://github.com/mochajs/mocha
