@@ -46,13 +46,14 @@ def _get_capture_list(status):
     captures = requests.get('http://localhost:5000/capture/'+endpoint)
 
     if captures.status_code != 200: #there was an error
-        raise requests.HTTPError('GET /captures/ {}'.format(captures.status_code))
+        click.echo('''There was an error connecting to your database.''')
+        return
 
     return format_json(captures.json())
 
 @capture.command(short_help='-start capturing a database workload')
 @click.argument('credentials-file', type=click.File('rb'))
-@click.option('-n', '--capture-name', 
+@click.option('-n', '--capture-name', type=str, 
         help='-a unique name for the capture')
 @click.option('-s', '--start-time',
         help='-time to start a scheduled capture, format: YYYY-MM-DDTHH:MM:SS.xZ')
@@ -69,15 +70,29 @@ def start(credentials_file, capture_name, start_time, end_time):
         a start and end time if you desire to schedule a capture.
     '''
 
-    credential_dict = json.load(credentials_file)
+    credential_dict = None
+    try: 
+        credential_dict = json.load(credentials_file)
+
+    except JSONDecodeError: 
+        click.echo("Please check the format of the given credentials file.")
+        return
 
     if not start_time: #interactive capture
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
         start_time=date_time.split('_')[1]
 
-    else: #make the times GMT to fix compatibility issue on back-end
-        start_time = _make_compatible(start_time)
-        end_time = _make_compatible(end_time)
+    else: 
+        if bool(start_time) ^ bool(end_time): 
+            click.echo('''You must provide a start and end time for a scheduled capture.''')
+            return
+
+        try: #make the times GMT to handle compatibility issue on back-end 
+            start_time = _make_compatible(start_time)
+            end_time = _make_compatible(end_time)
+        except ValueError: 
+            click.echo('''The input start and/or end times do not match the specified format. See \'help\' for example.''')
+            return
 
     task = {'db': credential_dict['db-name'], 
             'rds': credential_dict['rds-instance'],
@@ -92,15 +107,21 @@ def start(credentials_file, capture_name, start_time, end_time):
 
     if resp.status_code != 200:
         if resp.status_code == 400: #capture name must be unique
-            click.echo('This capture name has already been used.')
+            click.echo('The name \'' + capture_name + '\' has already been used.')
             return
 
-        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        click.echo('''There was an error. Please make sure all parameters were given.''')
+        return
 
     click.echo('Capture \'' + capture_name + '\' on database \'' + 
             credential_dict['db-name'] + '\' was scheduled or started.')
 
 def _make_compatible(raw_time): 
+    '''Function to make a time in the format YYYY-MM-DDTHH:MM:SS.XZ into 
+    compatible GMT time 
+    - Throws ValueError in the case that the input raw_time does not match the 
+    format given above 
+    '''
     dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
     time_zone_offset = timedelta(hours=7).total_seconds()
     gmt_time = time.mktime(dt_obj.timetuple()) + time_zone_offset 
@@ -116,26 +137,31 @@ def end(credentials_file, capture_name):
 
     Note the specified capture must currently be in progress in order to end it. 
     '''
-    credential_dict = json.load(credentials_file)
+    credential_dict = None
+    try: 
+        credential_dict = json.load(credentials_file)
 
-    #TODO we might need to add the db_name in here
+    except JSONDecodeError: 
+        click.echo("Please check the format of the given credentials file.")
+        return
+
     task = {'captureName': capture_name,
             'db': credential_dict['db-name']}
 
     resp = requests.post('http://localhost:5000/capture/end', json=task)
 
+    #TODO may need to add more checking here - capture exists 
     if resp.status_code != 200: 
         click.echo('There was an error.')
-        click.echo('Please make sure your capture name and db instance are correct.')
-        #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        click.echo('''Please make sure the capture name and db instance are correct and that the capture is ongoing.''')
         return
 
     click.echo('Capture \'' + capture_name + '\' on database \'' + credential_dict['db-name'] + '\' was ended.')
 
-@capture.command(short_help='-cancel a capture')
+@capture.command(short_help='-cancel an ongoing capture')
 @click.argument('capture-name')
 def cancel(capture_name): 
-    """-cancel a capture 
+    """-cancel an ongoing capture 
 
     Cancelling a capture will prevent the system from processing the 
     capture details. No record of the capture will be stored. 
@@ -149,8 +175,10 @@ def cancel(capture_name):
 
     resp = requests.post('http://localhost:5000/capture/cancel', json=task)
      
+    #Check if the capture exists 
     if resp.status_code != 200: 
-        click.echo('Please make sure the name is correct.')
+        click.echo('''There was an error. Please make sure the capture name is correct and is ongoing.''')
+        return
 
     else:   
         click.echo('Capture ' + capture_name + ' was cancelled.')
@@ -168,7 +196,8 @@ def delete(capture_name):
     resp = requests.delete('http://localhost:5000/capture/delete', json=task)
 
     if resp.status_code != 200: 
-        raise requests.HTTPError('DELETE /capture/delete/ {}'.format(resp.status_code))
+        click.echo('''There was an error. Please make sure the capture name is correct and that the specified capture has completed.''')
+        return
 
     click.echo('Capture ' + capture_name + ' was deleted.')
 
@@ -188,34 +217,41 @@ def replay():
 @click.option('-r', '--restore', is_flag=True,
         help='-restore initial database state upon replay completion')
 def start(credentials_file, capture_name, replay_name, fast_mode, restore): 
-    '''-start a new replay immediately'''
+    '''-start a new replay immediately
+    
+    Scheduled replays are not currently supported.
+    '''
 
-    credentials_dict = json.load(credentials_file)
+    credential_dict = None
+    try: 
+        credential_dict = json.load(credentials_file)
+
+    except JSONDecodeError: 
+        click.echo('''There was an error. Please check the format of the given credentials file.''')
+        return
 
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
-    task={'db': credentials_dict['db-name'], 
-            'rds': credentials_dict['rds-instance'],
-            'username': credentials_dict['username'],
-            'password': credentials_dict['password'],
+    task={'db': credential_dict['db-name'], 
+            'rds': credential_dict['rds-instance'],
+            'username': credential_dict['username'],
+            'password': credential_dict['password'],
             'captureName': capture_name,
             'fastMode': fast_mode,
             'restoreDb': restore,
             'startTime': start_time,
-            'replayName':''
+            'replayName': (replay_name if replay_name else '') 
     }
-
-    if replay_name: 
-        task['replayName'] = replay_name
 
     resp = requests.post('http://localhost:5000/replay', json=task)
 
-    if resp.status_code != 200:
-        raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+    if resp.status_code != 200: #TODO will this error out if replay name not unique?
+        click.echo('''There was an error. Please make sure the specified capture name exists and check the database credentials.''')
+        return
 
     else: 
-        click.echo('Replay ' + replay_name + ' on ' + credentials_dict['db-name'] 
+        click.echo('Replay ' + replay_name + ' on ' + credential_dict['db-name'] 
                 + ' was started.')
 
 @replay.command(short_help='-delete a completed replay')
@@ -232,10 +268,11 @@ def delete(capture_name, replay_name):
     resp = requests.delete('http://localhost:5000/replay/delete', json=task)
 
     if resp.status_code != 200:
-        click.echo('Please make sure the capture name is correct.')
-        #raise requests.HTTPError('POST /tasks/ {}'.format(resp.status_code))
+        click.echo('Please make sure the capture and replay names are correct.')
+        return
     else: 
-        click.echo('Replay ' + replay_name + ' was deleted.')
+        click.echo('Replay \'' + replay_name + '\' of capture \'' + capture_name + 
+                '\' was deleted.')
 
 
 @replay.command()
@@ -246,30 +283,28 @@ def delete(capture_name, replay_name):
 def view(ongoing, completed): 
     '''-view ongoing and completed replays'''
     if ongoing: 
-        ongoing_replays = requests.get('http://localhost:5000/replay/active_list')
-
-        if ongoing_replays.status_code != 200: #there was an error
-            raise requests.HTTPError('GET /replay/list {}'.format(ongoing_replays.status_code))
-        else: 
-            click.echo(format_json(ongoing_replays.json()))
+        click.echo('---Ongoing Replays---')
+        _echo_replay_list(true)
 
     if completed: 
-        completed_replays = requests.get('http://localhost:5000/replay/list')
-
-        if completed_replays.status_code != 200: #there was an error
-            raise requests.HTTPError('GET /replay/list {}'.format(completed_replays.status_code))
-        else: 
-            click.echo(format_json(completed_replays.json()))
+        click.echo('---Completed Replays---')
+        _echo_replay_list(false)
 
     if not completed and not ongoing: 
-        ongoing_replays = requests.get('http://localhost:5000/replay/active_list')
-        completed_replays = requests.get('http://localhost:5000/replay/list')
+        click.echo('---Ongoing Replays---')
+        _echo_replay_list(true)
+        click.echo('---Completed Replays---')
+        _echo_replay_list(false)
 
-        if completed_replays.status_code != 200:
-            raise requests.HTTPError('GET /replay/list {}'.format(completed_replays.status_code))
-        if ongoing_replays.status_code != 200: 
-            raise requests.HTTPError('GET /replay/active_list {}'.format(ongoing_replays.status_code))
-
+def _echo_replay_list(is_ongoing): 
+    path = 'list'
+    if is_ongoing: 
+        path = 'active_' + path
+    replay_list = requests.get('http://localhost:5000/replay/' + path)
+    if replay_list.status_code != 200: 
+        click.echo('''There was an error connecting to the server. Check your credentials.''')
+        return
+    click.echo(format_json(replay_list.json()))
 
 '''-------------ANALYZE-------------'''
 @cli.group()
@@ -280,7 +315,7 @@ def analyze():
 @analyze.command(name='list-metrics')
 def list_metrics(): 
     '''-list the metrics available to analyze'''
-    metric_options = 'CPUUtilization\nFreeableMemory\nReadIOPS\nWriteIOPS'
+    metric_options = '-CPUUtilization\n-FreeableMemory\n-ReadIOPS\n-WriteIOPS'
     click.echo('Available Metrics:\n' + metric_options)
 
 @analyze.command()
@@ -290,24 +325,28 @@ def list_metrics():
         help='-the name of the metric; use command "list-metrics to see supported options"')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(capture_name, replay_names, metric_name, raw):
+def view(capture_name, replay_names, metric_names, raw):
     '''-view metrics for any number of replays'''
 
     analytics = requests.get('http://localhost:5000/analytics')
     if analytics.status_code != 200: #there was an error
-        raise ApiError('GET /analytics/ {}'.format(analytics.status_code))
+        click.echo('''There was an error connecting to the server. Check your credentials.''')
+        return
 
     json_input = analytics.json()
-    if raw: 
+    if raw: #print metrics in json format
         for replay in replay_names: 
             click.echo('\nMetric data for \'' + str(replay) + '\'')
-            for metric in metric_name: 
-                output = '\"'+ metric + '\": '
-                click.echo(output + format_json(json_input[capture_name][replay][metric]))
-            if len(metric_name)==0: #no metric specified - display all
+            if len(metric_names)==0: #no metric specified - display all
                 click.echo(format_json(json_input[capture_name][replay]))
+            else: #print only specified metrics
+                for metric in metric_names: 
+                    output = '\"'+ metric + '\": '
+                    click.echo(output + 
+                            format_json(json_input[capture_name][replay][metric]))
         click.echo()
-    else :
+
+    else : #compute metric averages for each replay
         try:
             '''Current bucket structure:
                capture
@@ -319,24 +358,27 @@ def view(capture_name, replay_names, metric_name, raw):
             capture_folder = json_input[capture_name]
             for replay in replay_names: 
                 click.echo('\nMetric Data for \'' + str(replay) + '\'') 
-                metrics = capture_folder[replay]
-                cpu_util = get_average(metrics['CPUUtilization'])
-                freeable_mem = get_average(metrics['FreeableMemory'])
-                read_iops = get_average(metrics['ReadIOPS'])
-                write_iops = get_average(metrics['WriteIOPS'])
-
-                click.echo('Start Time: ' + str(metrics['start_time']))
-                click.echo('End Time: ' + str(metrics['end_time']))
-                click.echo('---METRIC AVERAGES---')
-                click.echo('CPU Utilization (%): ' + str(cpu_util))
-                click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-                click.echo('Read IOPS (count/sec): ' + str(read_iops))
-                click.echo('Write IOPS (count/sec): ' + str(write_iops))
-
-            click.echo()
+                replay_data_points = capture_folder[replay]
+                _print_metric_averages(replay_data_points)
 
         except (ValueError, KeyError, TypeError): 
-            traceback.print_exc() 
+            click.echo('''One or more of the specified replay names do not exist. Please try again.''')
+            return
+
+def _print_metric_averages(metric_data_points): 
+    cpu_util = get_average(metric_data_points['CPUUtilization'])
+    freeable_mem = get_average(metric_data_points['FreeableMemory'])
+    read_iops = get_average(metric_data_points['ReadIOPS'])
+    write_iops = get_average(metric_data_points['WriteIOPS'])
+
+    click.echo('Start Time: ' + str(metric_data_points['start_time']))
+    click.echo('End Time: ' + str(metric_data_points['end_time']))
+    click.echo('---METRIC AVERAGES---')
+    click.echo('CPU Utilization (%): ' + str(cpu_util))
+    click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
+    click.echo('Read IOPS (count/sec): ' + str(read_iops))
+    click.echo('Write IOPS (count/sec): ' + str(write_iops))
+    click.echo()
 
 # Compute the average of all the average metric data points 
 def get_average(metric_list): 
