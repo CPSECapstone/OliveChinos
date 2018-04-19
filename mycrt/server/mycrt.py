@@ -297,7 +297,7 @@ def replay():
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
-    if check_replay_name_is_unique(capture_name, replay_name):
+    if not check_replay_name_is_unique(capture_name, replay_name):
         abort(400)
 
 

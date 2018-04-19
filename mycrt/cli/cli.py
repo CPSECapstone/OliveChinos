@@ -284,17 +284,17 @@ def view(ongoing, completed):
     '''-view ongoing and completed replays'''
     if ongoing: 
         click.echo('---Ongoing Replays---')
-        _echo_replay_list(true)
+        _echo_replay_list(True)
 
     if completed: 
         click.echo('---Completed Replays---')
-        _echo_replay_list(false)
+        _echo_replay_list(False)
 
     if not completed and not ongoing: 
         click.echo('---Ongoing Replays---')
-        _echo_replay_list(true)
+        _echo_replay_list(True)
         click.echo('---Completed Replays---')
-        _echo_replay_list(false)
+        _echo_replay_list(False)
 
 def _echo_replay_list(is_ongoing): 
     path = 'list'
