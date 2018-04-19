@@ -145,5 +145,5 @@ def _get_epoch_time(raw_time):
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
     eight_hours = timedelta(hours=7).total_seconds()
-    return time.mktime(dt_obj.timetuple()) - eight_hours
+    return time.mktime(dt_obj.timetuple()) 
 

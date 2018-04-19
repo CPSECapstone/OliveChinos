@@ -2,7 +2,25 @@
 import sys
 import configparser
 import json
+import pprint
 from flask import Flask, render_template, request, abort, jsonify
+from flask_mail import Mail
+from flask_mail import Message
+
+application = Flask(__name__)
+
+application.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME = 'olivechinosmycrt@gmail.com',
+    MAIL_PASSWORD = 'alexsjawline',
+    MAIL_DEFAULT_SENDER = 'olivechinosmycrt@gmail.com'
+)
+
+mail = Mail(application)
+mail.init_app(application)
+
 
 try:
     from .utility.capture import *
@@ -47,6 +65,19 @@ def createReplayName(dbName, formattedTime):
 def index():
     return render_template("index.html")
 
+@application.route("/issueReport", methods=["POST"])
+def sendIssueReport():
+    data = request.get_json()
+    msg = Message(data['title'],
+                  sender="olivechinosmycrt@gmail.com",
+                  recipients=["to@example.com"])
+
+    msg.recipients = ["smithygirl@gmail.com", "jakepickett67@gmail.com", "andrewcofano@gmail.com", "alex.jboyd@yahoo.com", "yengkerngtan@gmail.com", "costinpirvu64@gmail.com", "c.leigh.b@gmail.com"]
+    print(pprint.pprint(data), file = sys.stderr)
+    msg.body = 'Version: %s\nType: %s\nPriority: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['description'])
+    mail.send(msg)
+    return "Success"
+
 @application.route("/test")
 def rest_test():
     return "Test REST endpoint."
@@ -55,11 +86,15 @@ def rest_test():
 @application.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    pubKey = data["publicKey"] 
-    privateKey = data["privateKey"] 
-    if pubKey is None or privateKey is None:
+    given_username = data['username']
+    given_password = data['password']
+    #pubKey = data["publicKey"] 
+    #privateKey = data["privateKey"] 
+    #if pubKey is None or privateKey is None:
+    if given_username is None or given_password is None:
         abort(400)
-    if verify_login(pubKey, privateKey):
+    #if verify_login(pubKey, privateKey):
+    if global_username == given_username and global_password == given_password:
         return ('', 204)
     else: 
         abort(401) 
@@ -100,7 +135,6 @@ def captureListOngoing():
     else:
         abort(401)
 
-
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
     headers = request.headers
@@ -116,7 +150,6 @@ def captureListCompleted():
         })
     else:
         abort(401)
-
 
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():
@@ -210,13 +243,13 @@ def capture_end():
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
-    capture_details, start_time = end_capture(credentials, capture_name, db_name)
+    start_time = end_capture(credentials, capture_name, db_name)
 
     return jsonify({
         "status": "ended",
         "db": db_name,
         "captureName": capture_name,
-        "captureDetails": capture_details,
+        "captureDetails": start_time,
         "startTime": start_time,
         "endTime": end_time
     })
@@ -254,18 +287,25 @@ def get_all_captures():
 def replay():
     data = request.get_json()
     db_name = data['db'] 
+    rds_name = data['rds']
+    username = data['username']
+    password = data['password']
+
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
 
     replay_name = data.get('replayName', createReplayName(db_name, start_time))
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
+    if check_replay_name_is_unique(capture_name, replay_name):
+        abort(400)
+
 
     capture_name = data['captureName']
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -282,9 +322,19 @@ def get_all_replays():
     return jsonify(capture_replays)
 
 @application.route("/replay/active_list", methods=["GET"])
-def get_active_replays():
+def get_active_replays_http():
     replays = get_active_replays()
     return jsonify(replays)
+
+@application.route("/replay/number", methods=["GET"])
+def get_replay_number_http():
+    replays = get_active_replays()
+    return jsonify(replays)
+
+@application.route("/capture/number", methods=["GET"])
+def get_capture_number_http():
+    capture_number = get_capture_number()
+    return jsonify({'numberOfCaptures': capture_number})
 
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
@@ -315,11 +365,19 @@ def analytics():
     metrics = get_analytics(credentials)
     return jsonify(metrics)
 
+
 @application.before_first_request
 def _run_on_start():
     init_replay()
     init_scheduler()
 
 
+global_username = "abc"
+global_password = "123"
+
 if __name__ == "__main__":
+    try:
+        global_username, global_password = sys.argv[1:3]
+    except Exception:
+        pass
     application.run(debug=True, host='0.0.0.0')

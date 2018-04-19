@@ -8,6 +8,7 @@ import {
   SET_AUTH,
   START_CAPTURE,
   SET_CAPTURE_COUNT,
+  SET_REPLAY_COUNT,
   STOP_CAPTURE,
   SET_REPLAY,
   START_NEW_REPLAY,
@@ -19,7 +20,8 @@ import {
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
-  SET_GRAPH_DATA_FROM_REPLAY
+  SET_GRAPH_DATA_FROM_REPLAY,
+  SET_SELECTED_REPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -43,7 +45,8 @@ let initialState = {
   analyticsForGraph: false,
   totalNames: false,
   currentCaptureForGraph: 'Capture Options',
-  stateType: 'onCapture'
+  stateType: 'onCapture',
+  selectedReplay: false
 }
 
 function reducer(state = initialState, action) {
@@ -95,6 +98,11 @@ function reducer(state = initialState, action) {
     case SET_CAPTURE_COUNT:
       return Object.assign({}, state, {
         activeCaptures: action.count
+      })
+
+    case SET_REPLAY_COUNT:
+      return Object.assign({}, state, {
+        activeReplays: action.count
       })
 
     case STOP_CAPTURE:
@@ -149,12 +157,19 @@ function reducer(state = initialState, action) {
 
     case SET_GRAPH_DATA_FROM_REPLAY:
     console.log('DISPATCHING THIS ACTION: ', action)
+    console.log('****** HERE!!!! ****', action.selectedReplay)
       return Object.assign({}, state, {
         booleansForGraph: action.booleans,
         currentCaptureForGraph: action.captureName,
         metricForGraph: action.metricName,
         stateType: action.stateName,
-        totalNames: action.totNames
+        totalNames: action.totNames,
+        selectedReplay: action.selectedReplay
+      })
+
+    case SET_SELECTED_REPLAY:
+      return Object.assign({}, state, {
+        selectedReplay: action.key
       })
 
     default:

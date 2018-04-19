@@ -75,6 +75,41 @@ def get_all_scheduled_capture_details():
     captures.append(get_capture_details(capture_name))
   return captures
 
+def get_all_completed_capture_details():
+  """Get all completed capture details from utility database.
+
+  Returns: 
+    A list containing details of captures that are ongoing.
+    These details are represented by a dictionary. The dictionary
+    will have the following format:
+      {
+        "captureName" : String,
+        "db" : String,
+        "endTime" : None,
+        "startTime" : String,
+        "status" : Boolean
+      } 
+  """
+
+  # FIX LATER (is inefficient)
+  query = '''
+    SELECT name from Captures
+    WHERE status = "completed"
+  '''
+  results = execute_utility_query(query)
+  captures = []
+  for (capture_name,) in results:
+    captures.append(get_capture_details(capture_name))
+  return captures
+
+def get_capture_number():
+  query = '''
+    SELECT COUNT(*) from Captures
+    WHERE status = "ongoing"
+  '''
+  results = execute_utility_query(query)
+  return results[0][0]
+
 
 def get_all_ongoing_capture_details():
   """Get all ongoing capture details from utility database.
@@ -121,16 +156,15 @@ def get_capture_details(capture_name):
 
 
   query = '''
-    SELECT db, start_time, end_time FROM Captures
+    SELECT db, start_time, end_time, status, rds FROM Captures
     WHERE name = '{0}'
   '''.format(capture_name)
 
   results = execute_utility_query(query)
   if len(results) == 1:
-    (db, start_time, end_time) = results[0] 
-    status = "started" if end_time is None else "completed"
-    start_time = start_time.strftime("%Y-%m-%d_%H:%M:%S")
-    end_time = "No end time.." if end_time is None else end_time.strftime("%Y-%m-%d_%H:%M:%S")
+    (db, start_time, end_time, status, rds) = results[0] 
+    start_time = start_time.strftime("%Y-%m-%d  %H:%M:%S")
+    end_time = "No end time." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
   else:
     db = "Unknown"
     status = db
@@ -142,7 +176,8 @@ def get_capture_details(capture_name):
     "db" : db,
     "endTime" : end_time,
     "startTime" : start_time,
-    "status" : status
+    "status" : status,
+    "rds": rds
   }  
 
 
@@ -152,7 +187,7 @@ def check_if_capture_name_is_unique(name):
   Returns:
     A True if the name is unqiue, False otherwise
   """
-  query = '''select * from Captures where name = '{0}' '''
+  query = '''select * from Captures where name = '{0}' '''.format(name)
   results = execute_utility_query(query)
   return len(results) == 0
 
@@ -285,7 +320,7 @@ def end_capture(credentials, capture_name, db):
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
   execute_utility_query(query)
 
-  return (transactions, start_time)
+  return start_time
 
 def delete_capture(credentials, capture_name):
   '''Remove all traces of a capture in both S3 and the utility db.

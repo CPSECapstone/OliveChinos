@@ -30,11 +30,14 @@ class CaptureOptions extends React.Component {
         }
 
         let CaptureOptions = Object.keys(this.props.analyticsForGraph);
+        console.log("________DatabaseName needed_______")
+        console.log(this.props.analyticsForGraph);
+        console.log("_______________")
         var CaptureData = [];
         for(let i = 0; i < CaptureOptions.length; i++) {
             let captureInfo = {
-                Name : CaptureOptions[i],
-                DataBase : 'Database Name'
+                Name : CaptureOptions[i]
+                /* Add in more information for a second column in the future */
             }
             CaptureData.push(captureInfo)
         }
@@ -42,7 +45,6 @@ class CaptureOptions extends React.Component {
             return (
             <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
                 <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
-                <TableHeaderColumn dataField='DataBase'>Database Instance</TableHeaderColumn>
             </BootstrapTable>
             );
         }

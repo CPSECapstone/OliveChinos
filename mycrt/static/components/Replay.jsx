@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import '../styles/replaystyles.css'
@@ -198,7 +198,6 @@ class Replay extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        that.props.dispatch(stopReplay())
         that.displayReplays()
       })
       .fail(function (data) {
@@ -233,6 +232,9 @@ class Replay extends React.Component {
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
+    console.log('DEBUGGING: capture name', captureName)
+    console.log('DEBUGGING: replay name', replayName)
+    console.log('analytics at ', this.props.analyticsForGraph)
     let bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
     for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
@@ -244,7 +246,8 @@ class Replay extends React.Component {
         bools[i] = false
       }
     }
-    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
+    console.log('***** OKAY WAIT!!!! ***** ', replayName)
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]), new Array(replayName)));
   }
 
   deleteReplay(captureName, replayName) {
@@ -287,7 +290,7 @@ class Replay extends React.Component {
             ANALYZE
         </Button>
           <Button
-            className='btn-danger'
+            className='btn-danger' style={{ marginLeft: '10px' }}
             onClick={() => that.deleteReplay(row["capture"], row["replay"])}
           >
             DELETE
@@ -298,10 +301,11 @@ class Replay extends React.Component {
 
     if (data["replays"].length > 0) {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
-        <TableHeaderColumn dataField='replay' isKey>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
-        <TableHeaderColumn dataField='db'>Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='mode'>Mode</TableHeaderColumn>
+        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
+        <TableHeaderColumn dataField='mode' dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
     }
@@ -310,6 +314,7 @@ class Replay extends React.Component {
         <TableHeaderColumn isKey dataField='something'>Replay Name</TableHeaderColumn>
         <TableHeaderColumn >Capture</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
+        <TableHeaderColumn >RDS Instance</TableHeaderColumn>
         <TableHeaderColumn >Mode</TableHeaderColumn>
         <TableHeaderColumn >Action</TableHeaderColumn>
 
@@ -331,15 +336,6 @@ class Replay extends React.Component {
     })
   }
 
-  // Render the refresh button to refresh the list of replays
-  renderRefreshButton() {
-    return (
-      <Button className="refreshReplayButton" onClick={this.displayReplays}>
-        <span className="glyphicon glyphicon-refresh refreshIcon"></span>
-      </Button>
-    )
-  }
-
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
     if (this.state.completedReplayList == null) {
@@ -347,9 +343,6 @@ class Replay extends React.Component {
     } else {
       return (
         <div>
-          <div>
-            {this.renderRefreshButton()}
-          </div>
           {this.state.completedReplayList}
         </div>
       );
@@ -375,13 +368,17 @@ class Replay extends React.Component {
       <div>
         <div>
           <div id="replayTitle">
-            <h3 style={{ marginLeft: '20px' }}>Replay</h3>
+            <h3 style={{ marginLeft: '20px' }}>Completed Replays</h3>
           </div>
 
           <div id="newReplayBtnContainer">
             <Button
+              id="refreshReplayButton"
+              onClick={this.displayReplays}>
+              Refresh Replays
+            </Button>
+            <Button
               id="newReplayBtn"
-              bsSize="xsmall"
               bsStyle="primary"
               onClick={this.handleShow}
             >

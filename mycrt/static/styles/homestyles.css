@@ -30,7 +30,6 @@
     top:0px;
     left:0px;
     height:100px;
-    width:25%;
 }
 
 #headerLeft > div >  h4 {
@@ -39,7 +38,7 @@
 #headerCenter{
     padding: 10px;
     height:100px;
-    width:50%;
+    
     margin:0px auto;
     text-align: center;
     padding-top: 30px;
@@ -73,19 +72,33 @@ button:focus {outline:0;}
 #captureProgress {
     display: inline-block;
     float: left;
-    width: 50%;
+    width: 100px;
 }
       
 #replayProgress {
-    float: right;
-    width: 50%;
+    width: 100px;
     display: inline-block;
+    margin-left: 60px;
 }
 
 #userContainer {
     float:right;
     padding: 15px;
     padding-top: 30px;
+}
+
+#issueContainer {
+    float: right;
+    padding: 15px;
+    padding-top: 30px;
+}
+
+.issueButton:hover {
+    background: darksalmon;
+}
+
+.issueButton:focus {
+    outline:0;
 }
 
 /*#userLogoContainer {
@@ -97,4 +110,8 @@ button:focus {outline:0;}
 
 #userLogo {
     font-size: 30px;
+}
+
+button.btn {
+    padding: 5px 10px !important;
 }
