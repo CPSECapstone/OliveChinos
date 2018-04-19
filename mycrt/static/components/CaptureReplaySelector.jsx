@@ -5,7 +5,7 @@ import alasql from 'alasql';
 require('../styles/graphstyles.css');
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents } from '../actions'
+import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay } from '../actions'
 
 var selectedColor = "#ADD8E6";
 
@@ -81,7 +81,8 @@ class CaptureReplaySelector extends React.Component {
             mode: 'checkbox',
             bgColor: selectedColor, // you should give a bgcolor, otherwise, you can't regonize which row has been selected
             hideSelectColumn: true,  // enable hide selection column.
-            clickToSelect: true  // you should enable clickToSelect, otherwise, you can't select column.
+            clickToSelect: true,  // you should enable clickToSelect, otherwise, you can't select column.
+            selected: this.props.selectedReplay
           };
 
         //callback function for onclick of something to graph or not graph
@@ -94,6 +95,9 @@ class CaptureReplaySelector extends React.Component {
                 if(totalNameOptions[i] == uniqueName) {
                     newBooleans[i] = !(newBooleans[i])
                 }
+            }
+            if(refProps.selectedReplay != false) {
+                refProps.dispatch(setSelectedReplay(false))
             }
             refProps.dispatch(setBooleansForGraph(newBooleans));
         }
@@ -147,8 +151,9 @@ class CaptureReplaySelector extends React.Component {
                 }
                 replayData.push(replayInfo)
             }
+            console.log('THE SELECTED REPLAY IS: ', this.props.selectedReplay)
             return(
-                <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
+                <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
                 </BootstrapTable>
             )
@@ -158,7 +163,6 @@ class CaptureReplaySelector extends React.Component {
     //reRenders the capture options by dispatching this action when back button is clicked
     //ignore that it says deleteButton - it is required for react-bootstrap-table
     createCustomDeleteButton (onClick) {
-        //console.log('WTF IS THIS: ', this)
         function rerenderCapturesOnBackButton()
         {
             this.props.dispatch(setCaptureNameForGraph("Capture Options"));
@@ -185,7 +189,8 @@ class CaptureReplaySelector extends React.Component {
 const mapStateToProps = state => ({
     booleansForGraph: state.booleansForGraph,
     analyticsForGraph: state.analyticsForGraph,
-    currentCaptureForGraph: state.currentCaptureForGraph
+    currentCaptureForGraph: state.currentCaptureForGraph,
+    selectedReplay: state.selectedReplay
   })
 
   export default connect(mapStateToProps)(CaptureReplaySelector)

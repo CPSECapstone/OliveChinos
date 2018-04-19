@@ -87,6 +87,20 @@ button:focus {outline:0;}
     padding-top: 30px;
 }
 
+#issueContainer {
+    float: right;
+    padding: 15px;
+    padding-top: 30px;
+}
+
+.issueButton:hover {
+    background: darksalmon;
+}
+
+.issueButton:focus {
+    outline:0;
+}
+
 /*#userLogoContainer {
     border-radius: 50%;
     width: 30px;
