@@ -60,7 +60,10 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
   connection.close()
   return start_time, end_time
 
-def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-log.txt"):
+def _get_transactions(s3_client, bucket_id = None, log_key = "test-log.txt"):
+  if bucket_id is None:
+    bucket_id = ComManager.S3name
+
   bucket_obj = s3_client.get_object(
     Bucket = bucket_id,
     Key = log_key
@@ -94,7 +97,9 @@ def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
      ]
   )
 
-def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-folder/test-metrics"):
+def _store_metrics(s3_client, metrics, bucket_id = None, log_key = "test-folder/test-metrics"):
+  if bucket_id is None:
+    bucket_id = ComManager.S3name
 
   byte_log = pickle.dumps(metrics)
 
@@ -203,7 +208,7 @@ def delete_replay(credentials, capture_name, replay_name, cm):
   cm.execute_query(query)
 
   s3_resource = cm.get_boto('s3')
-  bucket_id = "my-crt-test-bucket-olive-chinos"
+  bucket_id = ComManager.S3name
 
   try:
     s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()

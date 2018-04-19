@@ -8,6 +8,7 @@ class ComManager:
     # Class level values
     # Will be set in the main mycrt.py upon runtime
     util_db = None
+    S3name = None
     credentials = None 
 
     def __init__(self):
