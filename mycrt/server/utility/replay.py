@@ -30,11 +30,8 @@ def init_replay():
   global db_in_use
   global lock
   manager = Manager()
-
   replays_in_progress = manager.dict()
-
   db_in_use = manager.dict()
-
   lock = Lock()
 
 
@@ -165,7 +162,6 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   capture_path = path_name + "/" + path_name + ".cap"
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
-  print(hostname, db_id, username, password, file=sys.stderr)
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
 
   CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time)

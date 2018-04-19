@@ -30,6 +30,7 @@ def init_scheduler():
     global capture_scheduler_pids
     capture_scheduler_pids = manager.dict()
 
+
 def new_capture_process(is_scheduled, credentials, capture_name, 
                             db_name, start_time, end_time, rds_name, username, password, cm): 
     """Initiate a capture event. 
@@ -105,7 +106,6 @@ def _remove_from_scheduled_captures(capture_name):
     del capture_scheduler_pids[capture_name]
 
 def _add_to_scheduled_captures(capture_name, scheduler_process_id): 
-    print('adding to scheduled capture pids', file=sys.stderr)
     capture_scheduler_pids[capture_name] = scheduler_process_id
 
 def _create_scheduled_event(scheduler, func, args, unformatted_time): 
