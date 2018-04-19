@@ -49,7 +49,10 @@ if config['DEFAULT']:
     privateKey = config['DEFAULT']['privateKey']
     region = config['DEFAULT']['region']
 
-credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
+    credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
+else if config["REGION_ONLY"]:
+    region = config["REGION_ONLY"]['region']
+    credentials = {'region_name' : region}
 
 utilitydb = configparser.ConfigParser()
 utilitydb.read('utilitydb.ini')
