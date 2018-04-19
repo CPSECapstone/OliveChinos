@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import re
 import sys
+from .communications import ComManager
 
 
 # Example of credentials dictionary
@@ -203,7 +204,7 @@ def _create_bucket(s3_client):
     s3_client: An opened S3 client from Boto3
   """
 
-  bucket_id = "my-crt-test-bucket-olive-chinos"
+  bucket_id = ComManager.S3name
   try:
     # Ensure only one bucket exists
     s3_client.delete_bucket(bucket_id)
@@ -296,7 +297,8 @@ def end_capture(credentials, capture_name, db, cm):
 
   transactions = cm.execute_query(query, hostname = address, username = username, password = password, database = db) # need to give username and password eventually
 
-  bucket_id = "my-crt-test-bucket-olive-chinos"
+  bucket_id = ComManager.S3name
+
   _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name), cm = cm)
 
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
@@ -315,7 +317,7 @@ def delete_capture(credentials, capture_name, cm):
   '''
 
   s3_resource = cm.get_boto('s3')
-  bucket_id = "my-crt-test-bucket-olive-chinos"
+  bucket_id = ComManager.S3name
   bucket = s3_resource.Bucket(bucket_id)  
 
   objects_to_delete = []

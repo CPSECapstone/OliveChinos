@@ -50,7 +50,7 @@ if config['DEFAULT']:
     region = config['DEFAULT']['region']
 
     credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
-else if config["REGION_ONLY"]:
+elif config["REGION_ONLY"]:
     region = config["REGION_ONLY"]['region']
     credentials = {'region_name' : region}
 
@@ -62,6 +62,7 @@ if utilitydb['DEFAULT']:
     util_username = utilitydb['DEFAULT']['username']
     util_password = utilitydb['DEFAULT']['password']
     util_database = utilitydb['DEFAULT']['database']
+    util_s3 = utilitydb['DEFAULT']['S3name']
 
 db_info = {"hostname" : util_hostname, "username" : util_username, "password" : util_password, "database" : util_database}
 
@@ -70,6 +71,7 @@ print(db_info)
 
 ComManager.util_db = db_info.copy()
 ComManager.credentials = credentials.copy()
+ComManager.S3name = util_s3
 cm = ComManager()
 
 def convertDatetimeToString(dTime):
