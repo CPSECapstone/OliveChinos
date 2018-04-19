@@ -80,13 +80,7 @@ export default class IssueModal extends Component {
                <FormGroup
                 controlId="formBasicText"
               >
-                <ControlLabel>Version Name</ControlLabel>
-                <FormControl
-                  type="text"
-                  value={this.state.version}
-                  placeholder="ex) 1.0.1"
-                  onChange={this.handleVersionChange}
-                />
+                <ControlLabel>Version 0.0.1</ControlLabel>
               </FormGroup>
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>Category</ControlLabel>
