@@ -355,8 +355,9 @@ class Replay extends React.Component {
       uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
         <h4>Oh snap! You got an error!</h4>
         <p>
-          Looks like the replay name you provided is not unique.
-          Please provide a unique replay name.
+          Looks like something went wrong.
+          Either the replay name you provided is not unique, or your database credentials are incorrect.
+          Please provide the correct information, and submit the replay form again.
         </p>
         <p>
           <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
