@@ -1,10 +1,10 @@
 # AlexsJawline
 [![Build Status](https://travis-ci.org/CPSECapstone/AlexsJawline.svg?branch=master)](https://travis-ci.org/CPSECapstone/AlexsJawline)
 
-##Download Instructions
+## Download Instructions
 https://olive-chinos.gitbook.io/olive-chinos/
 
-##Copyright
+## Copyright
 
 Copyright (C) 2017 Olive Chino's Inc. All Rights Reserved.
 
