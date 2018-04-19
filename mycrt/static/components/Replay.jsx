@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay, select } from '../actions'
 import Flatpickr from 'react-flatpickr'
+import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
 import '../styles/replaystyles.css'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
@@ -30,7 +31,8 @@ class Replay extends React.Component {
       replayDBPassword: '',
       databaseInstanceOptions: ["No instances available"],
       completedReplayList: null,
-      fastMode: true
+      fastMode: true,
+      replayInfoShow: false
     }
 
     this.handleShowAlert = this.handleShowAlert.bind(this);
@@ -351,6 +353,8 @@ class Replay extends React.Component {
 
   render() {
     let uniqueNameAlert = null;
+
+    let replayInfoClose = () => this.setState({ replayInfoShow: false })
     if (this.state.showAlert) {
       uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
         <h4>Oh snap! You got an error!</h4>
@@ -369,7 +373,9 @@ class Replay extends React.Component {
       <div>
         <div>
           <div id="replayTitle">
-            <h3 style={{ marginLeft: '20px' }}>Completed Replays</h3>
+            <h3 style={{ marginLeft: '20px' }}>Completed Replays
+            <Glyphicon style={{ paddingLeft: '20px', cursor: 'pointer' }} glyph="info-sign"
+                onClick={() => this.setState({ replayInfoShow: true })} /></h3>
           </div>
 
           <div id="newReplayBtnContainer">
@@ -451,6 +457,9 @@ class Replay extends React.Component {
             <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
           </Modal.Footer>
         </Modal>
+
+        <InfoReplay show={this.state.replayInfoShow} onHide={replayInfoClose} />
+
 
         <br />
 

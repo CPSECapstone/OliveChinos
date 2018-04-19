@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
+import InfoCapture from './InfoCapture'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
@@ -36,7 +37,8 @@ class Capture extends React.Component {
       scheduledCaptureList: [],
       captureStartTime: new Date(),
       captureEndTime: new Date(),
-      captureMode: 'interactive'
+      captureMode: 'interactive',
+      captureInfoShow: false
     }
 
     //binding required for callback
@@ -386,6 +388,7 @@ class Capture extends React.Component {
   render() {
     let captureScheduler = null;
     let that = this;
+    let captureInfoClose = () => this.setState({ captureInfoShow: false })
     if (this.state.captureMode == 'schedule') {
       captureScheduler = <FormGroup>
         <ControlLabel>Capture Schedule</ControlLabel>
@@ -426,7 +429,11 @@ class Capture extends React.Component {
       <div>
         <div>
           <div id="captureTitle">
-            <h3 style={{ marginLeft: '20px' }}>Captures</h3>
+            <h3 style={{ marginLeft: '20px' }}>Captures
+            <Glyphicon style={{ paddingLeft: '20px', cursor: 'pointer' }} glyph="info-sign"
+                onClick={() => this.setState({ captureInfoShow: true })} />
+            </h3>
+
           </div>
 
           <div className="row captureActionButtonsContainer">
@@ -507,6 +514,8 @@ class Capture extends React.Component {
             <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
+
+        <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
         <br />
 
