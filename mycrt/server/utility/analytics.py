@@ -1,17 +1,20 @@
 import boto3
 import pickle
 import sys
+from .communications import ComManager
 
 def get_capture_list(credentials, cm):
   s3_client = cm.get_boto('s3')
-  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents'] if "/" in key['Key']]
+  bucket_id = ComManager.S3name
+  key_list = [key['Key'] for key in s3_client.list_objects(Bucket=bucket_id)['Contents'] if "/" in key['Key']]
   key_list = list(set(key.split("/")[0] for key in key_list)) # Ensure unique keys, but return in list format
   return key_list
 
 def get_replays_for_capture(credentials, capture_folder, cm):
   s3_client = cm.get_boto('s3')
   key_len = len(capture_folder)
-  key_list = [key['Key'] for key in s3_client.list_objects(Bucket="my-crt-test-bucket-olive-chinos")['Contents']]
+  bucket_id = ComManager.S3name
+  key_list = [key['Key'] for key in s3_client.list_objects(Bucket=bucket_id)['Contents']]
   general_capture_list = [key for key in key_list if key != capture_folder and key[:key_len] == capture_folder]
   replay_list = [key for key in general_capture_list if ".replay" == key[-len(".replay"):]] 
   return replay_list
@@ -37,7 +40,10 @@ def get_analytics(credentials, cm):
   
   return metrics
 
-def retrieve_analytics(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-folder/test-metrics"):
+def retrieve_analytics(s3_client, bucket_id = None, log_key = "test-folder/test-metrics"):
+  if bucket_id is None:
+    bucket_id = ComManager.S3name
+    
   bucket_obj = s3_client.get_object(
     Bucket = bucket_id,
     Key = log_key
