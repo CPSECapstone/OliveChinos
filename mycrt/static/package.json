@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack -p --progress --config webpack.config.js",
     "dev-build": "webpack --progress -d --config webpack.config.js",
-    "test": "mocha-webpack --webpack-config webpack.config.test.js \"spec/**/*.spec.js\" || true",
+    "test": "mocha",
     "watch": "webpack --progress -d --config webpack.config.js --watch"
   },
   "author": "Olive Chinos",
