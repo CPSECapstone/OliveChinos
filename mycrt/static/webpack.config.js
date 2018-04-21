@@ -1,5 +1,6 @@
 const webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = {
     entry:  __dirname + '/index.jsx',
@@ -8,6 +9,15 @@ const config = {
         filename: 'bundle.js',
     },
     devtool: "#eval-source-map",
+    devServer: {
+      contentBase: 'dist',
+      //hot: true,
+      proxy: {
+        '/api/*': {
+          target: 'http://localhost:5000',
+        },
+      }
+    },
     resolve: {
         extensions: ['.js', '.jsx', '.css']
     },
@@ -20,10 +30,10 @@ const config = {
         },
         {
           test: /\.css$/,
-          use: ExtractTextPlugin.extract({
-              fallback: 'style-loader',
-              use: 'css-loader',
-          })
+          use: [
+            MiniCssExtractPlugin.loader,
+            "css-loader"
+          ]
       },
       ]
     },
@@ -31,7 +41,9 @@ const config = {
       new HtmlWebpackPlugin({
         title: 'Olive Chinos MyCRT'
       }),
-      new ExtractTextPlugin('styles.css'),
+      new MiniCssExtractPlugin({filename: 'styles.css'}),
+      new webpack.NamedModulesPlugin(),
+      new webpack.HotModuleReplacementPlugin(),
       new webpack.LoaderOptionsPlugin({
        debug: true
      })

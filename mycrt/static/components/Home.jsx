@@ -69,7 +69,7 @@ class Home extends Component {
     this.getNumberOfReplays();
     this.getNumberOfCaptures();
     var that = this;
-    setInterval(that.pollingFunction, 10000)
+    //setInterval(that.pollingFunction, 10000)
   }
 
    

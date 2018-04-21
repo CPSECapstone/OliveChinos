@@ -5,6 +5,7 @@ import Login from './login'
 import { connect } from 'react-redux'
 import { Router, Route } from 'react-router'
 import Home from './Home'
+import { hot } from 'react-hot-loader'
 
 class App extends React.Component {
 
@@ -40,4 +41,5 @@ class App extends React.Component {
 
 const mapStateToProps = state => ({ data: state })
 
-export default connect(mapStateToProps)(App)
+//export default connect(mapStateToProps)(App)
+export default hot(module)(App)   
