@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select } from '../actions'
 import Flatpickr from 'react-flatpickr'
+import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
 import '../styles/replaystyles.css'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
@@ -30,7 +31,8 @@ class Replay extends React.Component {
       replayDBPassword: '',
       databaseInstanceOptions: ["No instances available"],
       completedReplayList: null,
-      fastMode: true
+      fastMode: true,
+      replayInfoShow: false
     }
 
     this.handleShowAlert = this.handleShowAlert.bind(this);
@@ -177,7 +179,7 @@ class Replay extends React.Component {
   // Function to start a new replay
   addReplay(replayName, captureName, replayDB) {
     this.setState({ replay: 'Replay Active' })
-    this.props.dispatch(startNewReplay())
+    //this.props.dispatch(startNewReplay())
     let postData = {
       "db": this.state.replayDBName,
       "rds": this.state.replayRDSInstance,
@@ -232,6 +234,9 @@ class Replay extends React.Component {
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
+    console.log('DEBUGGING: capture name', captureName)
+    console.log('DEBUGGING: replay name', replayName)
+    console.log('analytics at ', this.props.analyticsForGraph)
     let bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
     for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
@@ -243,7 +248,8 @@ class Replay extends React.Component {
         bools[i] = false
       }
     }
-    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName])));
+    console.log('***** OKAY WAIT!!!! ***** ', replayName)
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]), new Array(replayName)));
   }
 
   deleteReplay(captureName, replayName) {
@@ -347,12 +353,15 @@ class Replay extends React.Component {
 
   render() {
     let uniqueNameAlert = null;
+
+    let replayInfoClose = () => this.setState({ replayInfoShow: false })
     if (this.state.showAlert) {
       uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
         <h4>Oh snap! You got an error!</h4>
         <p>
-          Looks like the replay name you provided is not unique.
-          Please provide a unique replay name.
+          Looks like something went wrong.
+          Either the replay name you provided is not unique, or your database credentials are incorrect.
+          Please provide the correct information, and submit the replay form again.
         </p>
         <p>
           <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
@@ -364,7 +373,9 @@ class Replay extends React.Component {
       <div>
         <div>
           <div id="replayTitle">
-            <h3 style={{ marginLeft: '20px' }}>Completed Replays</h3>
+            <h3 style={{ marginLeft: '20px' }}>Completed Replays
+            <Glyphicon style={{ paddingLeft: '20px', cursor: 'pointer' }} glyph="info-sign"
+                onClick={() => this.setState({ replayInfoShow: true })} /></h3>
           </div>
 
           <div id="newReplayBtnContainer">
@@ -446,6 +457,9 @@ class Replay extends React.Component {
             <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
           </Modal.Footer>
         </Modal>
+
+        <InfoReplay show={this.state.replayInfoShow} onHide={replayInfoClose} />
+
 
         <br />
 

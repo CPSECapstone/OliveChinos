@@ -1,10 +1,10 @@
-/*#headerLeft {
+#headerLeft {
     display: inline;
     float: left;
     width: 25%;
 }
 
-#headerRight {
+/*#headerRight {
     display: inline;
     float: right;
     width: 25%;
@@ -85,6 +85,20 @@ button:focus {outline:0;}
     float:right;
     padding: 15px;
     padding-top: 30px;
+}
+
+#issueContainer {
+    float: right;
+    padding: 15px;
+    padding-top: 30px;
+}
+
+.issueButton:hover {
+    background: darksalmon;
+}
+
+.issueButton:focus {
+    outline:0;
 }
 
 /*#userLogoContainer {

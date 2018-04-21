@@ -20,7 +20,8 @@ import {
   SET_CAPTURE_NAME_FOR_GRAPH,
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
-  SET_GRAPH_DATA_FROM_REPLAY
+  SET_GRAPH_DATA_FROM_REPLAY,
+  SET_SELECTED_REPLAY
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -98,6 +99,10 @@ export function setCaptureNameForGraph(key) {
   return {type: SET_CAPTURE_NAME_FOR_GRAPH, key}
 }
 
-export function setGraphDataFromReplay(bools, capture, metric, state, names) {
-  return {type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names}
+export function setGraphDataFromReplay(bools, capture, metric, state, names, selReplay) {
+  return {type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names, selectedReplay: selReplay}
+}
+
+export function setSelectedReplay(key) {
+  return {type: SET_SELECTED_REPLAY, key}
 }

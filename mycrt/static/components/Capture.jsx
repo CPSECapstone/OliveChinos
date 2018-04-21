@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
-import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
+import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
+import InfoCapture from './InfoCapture'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
@@ -36,7 +37,8 @@ class Capture extends React.Component {
       scheduledCaptureList: [],
       captureStartTime: new Date(),
       captureEndTime: new Date(),
-      captureMode: 'interactive'
+      captureMode: 'interactive',
+      captureInfoShow: false
     }
 
     //binding required for callback
@@ -96,8 +98,8 @@ class Capture extends React.Component {
 
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
-    this.setState({ capture: 'New Capture Started' })
-    
+    //this.setState({ capture: 'New Capture Started' })
+
     let postData;
     console.log(this.state.captureMode)
     if (this.state.captureMode === 'schedule') {
@@ -115,7 +117,7 @@ class Capture extends React.Component {
       }
     }
     else {
-      this.props.dispatch(startCapture());
+      //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.captureRDSInstance,
@@ -138,7 +140,6 @@ class Capture extends React.Component {
       .fail(function (data) {
         that.handleShowAlert()
       })
-
   }
 
   // Consumes a capture name, capture db, and action and calls that action on the specified capture
@@ -149,9 +150,9 @@ class Capture extends React.Component {
       "captureName": captureName
     }
     let that = this;
-    if (action === 'end') {
+    /*if (action === 'end') {
       this.props.dispatch(stopCapture())
-    }
+    }*/
     if (action === 'end' || action === 'cancel') {
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
@@ -387,6 +388,7 @@ class Capture extends React.Component {
   render() {
     let captureScheduler = null;
     let that = this;
+    let captureInfoClose = () => this.setState({ captureInfoShow: false })
     if (this.state.captureMode == 'schedule') {
       captureScheduler = <FormGroup>
         <ControlLabel>Capture Schedule</ControlLabel>
@@ -427,7 +429,11 @@ class Capture extends React.Component {
       <div>
         <div>
           <div id="captureTitle">
-            <h3 style={{ marginLeft: '20px' }}>Captures</h3>
+            <h3 style={{ marginLeft: '20px' }}>Captures
+            <Glyphicon style={{ paddingLeft: '20px', cursor: 'pointer' }} glyph="info-sign"
+                onClick={() => this.setState({ captureInfoShow: true })} />
+            </h3>
+
           </div>
 
           <div className="row captureActionButtonsContainer">
@@ -508,6 +514,8 @@ class Capture extends React.Component {
             <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
+
+        <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
         <br />
 

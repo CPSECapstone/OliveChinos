@@ -8,6 +8,7 @@ from multiprocessing import Manager, Process, Lock
 import os
 
 from .capture import *
+from .communications import ComManager
 from .analytics import get_capture_replay_list 
 
 #db_id = "pi"
@@ -56,7 +57,10 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
   connection.close()
   return start_time, end_time
 
-def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-log.txt"):
+def _get_transactions(s3_client, bucket_id = None, log_key = "test-log.txt"):
+  if bucket_id is None:
+    bucket_id = ComManager.S3name
+
   bucket_obj = s3_client.get_object(
     Bucket = bucket_id,
     Key = log_key
@@ -68,10 +72,10 @@ def _get_transactions(s3_client, bucket_id = "my-crt-test-bucket-olive-chinos", 
 
   return transactions
 
-def check_if_replay_name_is_unique(capture_name, replay_name):
-   query = '''SELECT * FROM Replays WHERE capture='{0}' and replay='{1}')'''.format(capture_name, replay_name)
-   
-   return len(execute_utility_query(query)) == 0
+def check_if_replay_name_is_unique(capture_name, replay_name, cm):
+   query = '''SELECT * FROM Replays WHERE capture='{0}' AND replay='{1}' '''.format(capture_name, replay_name)
+   print(query)
+   return len(cm.execute_query(query)) == 0
 
 def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
   return cloudwatch_client.get_metric_statistics(
@@ -90,7 +94,9 @@ def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
      ]
   )
 
-def _store_metrics(s3_client, metrics, bucket_id = "my-crt-test-bucket-olive-chinos", log_key = "test-folder/test-metrics"):
+def _store_metrics(s3_client, metrics, bucket_id = None, log_key = "test-folder/test-metrics"):
+  if bucket_id is None:
+    bucket_id = ComManager.S3name
 
   byte_log = pickle.dumps(metrics)
 
@@ -132,24 +138,24 @@ def get_active_replays():
 
   return { "replays" : rep_list }
 
-def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password):
+def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
   proc = Process(target = _manage_replay,
-                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock))
+                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, ComManager()))
   proc.start()
 
-def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock):
+def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
   pid = os.getpid()
   #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
   #  time.sleep(3) # sleep three seconds and try again later
   
-  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
+  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
 
-def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password):
-  rds_client = boto3.client('rds', **credentials)
-  s3_client = boto3.client('s3', **credentials)
-  cloudwatch_client = boto3.client('cloudwatch', **credentials)
+def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
+  rds_client = cm.get_boto('rds')
+  s3_client = cm.get_boto('s3')
+  cloudwatch_client = cm.get_boto('cloudwatch')
 
   hostname = _get_hostname(rds_client, rds_name)
   path_name = capture_name.replace(".cap", "")
@@ -177,9 +183,9 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
-  execute_utility_query(query)
+  cm.execute_query(query)
   
-def delete_replay(credentials, capture_name, replay_name):
+def delete_replay(credentials, capture_name, replay_name, cm):
   '''Remove all traces of a replay in S3.
 
   Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
@@ -191,24 +197,24 @@ def delete_replay(credentials, capture_name, replay_name):
   '''
 
   query = """delete from Replays where replay = '{0}' and capture = '{1}'""".format(replay_name, capture_name)
-  execute_utility_query(query)
+  cm.execute_query(query)
 
-  s3_resource = boto3.resource('s3', **credentials)
-  bucket_id = "my-crt-test-bucket-olive-chinos"
+  s3_resource = cm.get_boto('s3')
+  bucket_id = ComManager.S3name
 
   try:
     s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
   except Exception:
     print("Replay to delete does not exist.", file=sys.stderr)
 
-def get_replays_from_table():
+def get_replays_from_table(cm):
   query = "select replay, capture, db, mode, rds from Replays"
-  results = execute_utility_query(query)
+  results = cm.execute_query(query)
   replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds} for (replay, capture, db, mode, rds) in results]
   return {"replays" : replays}
 
-def _populate_replay_table():
-  table_replays = execute_utility_query("select replay, capture from Replays")
+def _populate_replay_table(cm):
+  table_replays = cm.execute_query("select replay, capture from Replays")
   table_replays = set((capture, replay) for (replay, capture) in table_replays)
   s3_replays = get_capture_replay_list({"region_name":"us-east-2"}) 
   replays_to_add = set()
@@ -218,5 +224,5 @@ def _populate_replay_table():
       if (capture, replay) not in table_replays:
         query = '''INSERT INTO Replays (replay, capture, db, mode, rds) 
                    VALUES ('{0}', '{1}', 'unknown', 'unknown', 'unknown')'''.format(replay, capture)
-        execute_utility_query(query)
+        cm.execute_query(query)
 
