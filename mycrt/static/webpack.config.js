@@ -4,14 +4,17 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = {
     entry:  __dirname + '/index.jsx',
+    //entry: __dirname + '/index.html',
     output: {
         path: __dirname + '/dist',
-        filename: 'bundle.js',
+        //publicPath: __dirname + '/dist',
+        //filename: 'dist/bundle.js',
+        filename: 'bundle.js'
     },
     devtool: "#eval-source-map",
     devServer: {
       contentBase: 'dist',
-      //hot: true,
+      hot: true,
       proxy: {
         '/api/*': {
           target: 'http://localhost:5000',

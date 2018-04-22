@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack -p --progress --config webpack.config.js",
     "dev-build": "webpack --progress -d --config webpack.config.js",
-    "jake": "webpack-dev-server -d --config webpack.config.js",
+    "jake": "webpack-dev-server --hot -d --config webpack.config.js",
     "test": "mocha",
     "watch": "webpack --progress -d --config webpack.config.js --watch"
   },
