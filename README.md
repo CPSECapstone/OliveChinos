@@ -1,6 +1,11 @@
 # AlexsJawline
 [![Build Status](https://travis-ci.org/CPSECapstone/AlexsJawline.svg?branch=master)](https://travis-ci.org/CPSECapstone/AlexsJawline)
 
+## Download Instructions
+https://olive-chinos.gitbook.io/olive-chinos/
+
+## Copyright
+
 Copyright (C) 2017 Olive Chino's Inc. All Rights Reserved.
 
 Yeng Tan, Alex Boyd, Courtney Brown, Jake Pickett, Costin Pirvu, Andrew Cofano and Jessie Smith.
@@ -32,20 +37,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-## License
-[MIT](LICENSE)
-
-[ci-image]: https://secure.travis-ci.org/jared-stilwell/escomplex.png?branch=master
-[ci-status]: http://travis-ci.org/#!/jared-stilwell/escomplex
-[mocha]:https://github.com/mochajs/mocha
-[complexity-report]: https://github.com/jared-stilwell/complexity-report
-[escomplex-ast-moz]: https://github.com/jared-stilwell/escomplex-ast-moz
-[api]: https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
-[esprima]: http://esprima.org/
-[acorn]: http://marijnhaverbeke.nl/acorn
-[mccabe]: http://www.literateprogramming.com/mccabe.pdf
-[jsc]: https://github.com/bahmutov/js-complexity-viz
-[bob]: https://github.com/cliffano/bob
-[jscomplexity]: https://github.com/slyg/jscomplexity
-[contributions]: https://github.com/jared-stilwell/escomplex/blob/master/CONTRIBUTING.md
-[license]: https://github.com/jared-stilwell/escomplex/blob/master/COPYING
+## MIT License
+[ci-image](https://secure.travis-ci.org/jared-stilwell/escomplex.png?branch=master)
+<br>
+[ci-status](http://travis-ci.org/#!/jared-stilwell/escomplex)
+<br>
+[mocha](https://github.com/mochajs/mocha)
+<br>
+[complexity-report](https://github.com/jared-stilwell/complexity-report)
+<br>
+[escomplex-ast-moz](https://github.com/jared-stilwell/escomplex-ast-moz)
+<br>
+[api](https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API)
+<br>
+[esprima](http://esprima.org/)
+<br>
+[acorn](http://marijnhaverbeke.nl/acorn)
+<br>
+[mccabe](http://www.literateprogramming.com/mccabe.pdf)
+<br>
+[jsc](https://github.com/bahmutov/js-complexity-viz)
+<br>
+[bob](https://github.com/cliffano/bob)
+<br>
+[jscomplexity](https://github.com/slyg/jscomplexity)
+<br>
+[contributions](https://github.com/jared-stilwell/escomplex/blob/master/CONTRIBUTING.md)
+<br>
+[license](https://github.com/jared-stilwell/escomplex/blob/master/COPYING)
+<br>

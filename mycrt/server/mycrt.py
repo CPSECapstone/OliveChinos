@@ -4,8 +4,7 @@ import configparser
 import json
 import pprint
 from flask import Flask, render_template, request, abort, jsonify
-from flask_mail import Mail
-from flask_mail import Message
+from flask_mail import Mail, Message
 
 application = Flask(__name__)
 
@@ -28,8 +27,9 @@ try:
     from .utility.replay import *
     from .utility.login import *
     from .utility.scheduler import *
+    from .utility.communications import *
 except:
-    
+    from utility.communications import *
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
@@ -49,8 +49,30 @@ if config['DEFAULT']:
     privateKey = config['DEFAULT']['privateKey']
     region = config['DEFAULT']['region']
 
-credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
-print (credentials, file=sys.stderr)
+    credentials = {'aws_access_key_id': pubKey, 'aws_secret_access_key': privateKey, 'region_name': region}
+elif config["REGION_ONLY"]:
+    region = config["REGION_ONLY"]['region']
+    credentials = {'region_name' : region}
+
+utilitydb = configparser.ConfigParser()
+utilitydb.read('utilitydb.ini')
+print(utilitydb)
+if utilitydb['DEFAULT']:
+    util_hostname = utilitydb['DEFAULT']['hostname']
+    util_username = utilitydb['DEFAULT']['username']
+    util_password = utilitydb['DEFAULT']['password']
+    util_database = utilitydb['DEFAULT']['database']
+    util_s3 = utilitydb['DEFAULT']['S3name']
+
+db_info = {"hostname" : util_hostname, "username" : util_username, "password" : util_password, "database" : util_database}
+
+print(credentials)
+print(db_info)
+
+ComManager.util_db = db_info.copy()
+ComManager.credentials = credentials.copy()
+ComManager.S3name = util_s3
+cm = ComManager()
 
 def convertDatetimeToString(dTime):
     return dTime.strftime('%Y-%m-%d_%H:%M:%S')
@@ -85,6 +107,8 @@ def rest_test():
 
 @application.route("/login", methods=["POST"])
 def login():
+    global global_username
+    global global_password
     data = request.get_json()
     given_username = data['username']
     given_password = data['password']
@@ -101,6 +125,7 @@ def login():
 
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
+    global cm
     headers = request.headers
     #TODO. Temporary: if public and private Key are not passed in headers, 
     # default to config.ini values
@@ -109,7 +134,7 @@ def databaseInstances():
     if pKey is None or priKey is None:
         abort(400)
     if verify_login(pKey, priKey):
-        db_instances = list_databases(credentials)
+        db_instances = list_databases(cm)
         db_instances = list(db_instances.keys())
         return jsonify({
             "databases" : db_instances
@@ -119,6 +144,7 @@ def databaseInstances():
 
 @application.route("/capture/list_ongoing", methods=["GET"])
 def captureListOngoing():
+    global cm
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
@@ -126,7 +152,7 @@ def captureListOngoing():
         abort(400)
     if verify_login(pubKey, privateKey):
         #capture_names_list = get_capture_list(credentials)
-        capture_list = get_all_ongoing_capture_details()
+        capture_list = get_all_ongoing_capture_details(cm)
         #capture_list = [get_capture_details(name) for name in capture_names_list]
 
         return jsonify({
@@ -137,14 +163,16 @@ def captureListOngoing():
 
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
+    global cm
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
     if pubKey is None or privateKey is None:
         abort(400)
     if verify_login(pubKey, privateKey):
-        capture_names = get_capture_list(credentials)
-        capture_list = [get_capture_details(name) for name in capture_names]
+#        capture_names = get_capture_list(credentials, cm)
+#        capture_list = [get_capture_details(name, cm) for name in capture_names]
+        capture_list = get_all_completed_capture_details(cm)
         return jsonify({
             "captures" : capture_list
         })
@@ -153,13 +181,14 @@ def captureListCompleted():
 
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():
+    global cm
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
     priKey = headers.get("privateKey", privateKey)
     if pubKey is None or privateKey is None:
         abort(400)
     if verify_login(pubKey, privateKey):
-        capture_list = get_all_scheduled_capture_details()
+        capture_list = get_all_scheduled_capture_details(cm)
 
         return jsonify({
             "captures" : capture_list
@@ -169,6 +198,7 @@ def captureListScheduled():
 
 @application.route("/capture/replayList", methods=["GET"])
 def replayListForSpecificCapture():
+    global cm
     headers = request.headers
     capture_name = request.args.get("captureName")
     #TODO. Temporary: if public and private Key are not passed in headers, 
@@ -178,7 +208,7 @@ def replayListForSpecificCapture():
     if pKey is None or priKey is None:
         abort(400)
     if verify_login(pKey, priKey):
-        replay_list = get_replays_for_capture(credentials, capture_name)
+        replay_list = get_replays_for_capture(credentials, capture_name, cm)
         return jsonify({
             "captureName": capture_name,
             "replays" : replay_list
@@ -188,6 +218,7 @@ def replayListForSpecificCapture():
 
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
+    global cm
     data = request.get_json()
     db_name = data['db']
     rds_name = data['rds']
@@ -198,12 +229,11 @@ def capture_start():
     start_time = data.get('startTime', now)
     start_time = start_time[0]
     
-    #TODO verify that capture name is unique. return 403? if not.
     capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
     if capture_name == "":
       capture_name = createCaptureName(rds_name + "_" + db_name, start_time)
 
-    if not check_if_capture_name_is_unique(capture_name):
+    if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
     
@@ -224,7 +254,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, rds_name, username, password)
+                            db_name, start_time, end_time, rds_name, username, password, cm)
    
     return jsonify({
         "status": "started",
@@ -236,6 +266,7 @@ def capture_start():
 
 @application.route("/capture/end", methods=["POST"])
 def capture_end():
+    global cm
     data = request.get_json()
     db_name = data['db'] 
     capture_name = data['captureName']
@@ -243,7 +274,7 @@ def capture_end():
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
-    start_time = end_capture(credentials, capture_name, db_name)
+    start_time = end_capture(credentials, capture_name, db_name, cm)
 
     return jsonify({
         "status": "ended",
@@ -256,18 +287,20 @@ def capture_end():
 
 @application.route("/capture/cancel", methods=["POST"])
 def cancel_capture_http():
+    global cm
     data = request.get_json()
     capture_name = data['captureName'] 
     
-    cancel_capture_process(capture_name)
+    cancel_capture_process(capture_name, cm)
     return jsonify({'status': 'complete'})
 
 @application.route("/capture/executeQuery", methods=["POST"])
 def query_execute():
+    global cm
     query = request.get_json()['query']
     print()
     try:
-        execute_query(query)
+        cm.execute_query(query)
         return jsonify({
                 "status": "success",
                 "query" : query
@@ -280,11 +313,13 @@ def query_execute():
 
 @application.route("/capture/completed_list", methods=["GET"])
 def get_all_captures():
-  captures = get_capture_list(credentials)    
-  return jsonify(captures)
+    global cm
+    captures = get_capture_list(credentials, cm)    
+    return jsonify(captures)
 
 @application.route("/replay", methods=["POST"])
 def replay():
+    global cm
     data = request.get_json()
     db_name = data['db'] 
     rds_name = data['rds']
@@ -297,15 +332,16 @@ def replay():
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
-    if check_replay_name_is_unique(capture_name, replay_name):
+    capture_name = data['captureName']
+
+    if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
 
 
-    capture_name = data['captureName']
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -317,8 +353,9 @@ def replay():
 
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
+    global cm
     #capture_replays = get_capture_replay_list(credentials)    
-    capture_replays = get_replays_from_table()
+    capture_replays = get_replays_from_table(cm)
     return jsonify(capture_replays)
 
 @application.route("/replay/active_list", methods=["GET"])
@@ -333,24 +370,27 @@ def get_replay_number_http():
 
 @application.route("/capture/number", methods=["GET"])
 def get_capture_number_http():
-    capture_number = get_capture_number()
+    global cm
+    capture_number = get_capture_number(cm)
     return jsonify({'numberOfCaptures': capture_number})
 
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
+    global cm
     #Need a capture name and replay name in order to delete replay
     data = request.get_json()
     capture_name = data['capture'] 
     replay_name = data['replay']
-    delete_replay(credentials, capture_name, replay_name)
+    delete_replay(credentials, capture_name, replay_name, cm)
     return jsonify({'status': 'complete'})
 
 @application.route("/capture/delete", methods=["DELETE"])
 def delete_capture_http():
+    global cm
     data = request.get_json()
     capture_name = data['capture'] 
     
-    delete_capture(credentials, capture_name)
+    delete_capture(credentials, capture_name, cm)
     return jsonify({'status': 'complete'})
 
 
@@ -359,10 +399,11 @@ def delete_capture_http():
 
 @application.route("/analytics", methods=["GET"])
 def analytics():
+    global cm
     #analyticsNumber = request.args.get('id')
     #print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
     #print(credentials, file=sys.stderr)
-    metrics = get_analytics(credentials)
+    metrics = get_analytics(credentials, cm)
     return jsonify(metrics)
 
 
@@ -370,6 +411,7 @@ def analytics():
 def _run_on_start():
     init_replay()
     init_scheduler()
+
 
 
 global_username = "abc"
