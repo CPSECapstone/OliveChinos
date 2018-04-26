@@ -18,6 +18,11 @@ export default class InfoCapture extends Component {
                     <Modal.Title id="contained-modal-title-lg">User Guide for the Capture Feature</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <h4>What Is A Capture?</h4>
+                    <p>
+                        A capture is a logging of transactions on a database during a certain time period.
+                        You can use captures to replay specific workloads on different database instances, and even view key insights on specific metrics of a workload.
+                    </p>
                     <h4>To Start A Capture</h4>
                     <p>
                         <p>Click the "New Capture" button. Input a name for the capture (optional).

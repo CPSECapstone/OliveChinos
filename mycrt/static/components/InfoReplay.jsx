@@ -18,6 +18,12 @@ export default class InfoReplay extends Component {
                     <Modal.Title id="contained-modal-title-lg">User Guide for the Analytics Feature</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <h4>What Is A Replay?</h4>
+                    <p>
+                        A replay is a previously captured workload of a specific database instance.
+                        You can use replays to run a workload on a different server with the exact same timing, concurrency, and transaction characteristics of the original workload.
+                        This enables you to test the affects of a system change without affecting the production system.
+                    </p>
                     <h4>To Start A Replay</h4>
                     <p>
                         <p>Click the "New Replay" button. Input a name for the replay (optional). Select the capture you would like to replay.
