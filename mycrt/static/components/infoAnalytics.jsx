@@ -18,35 +18,17 @@ export default class InfoAnalytics extends Component {
             <Modal.Title id="contained-modal-title-lg">User Guide for the Analytics Feature</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <h4>To Start</h4>
             <p>
-              Find the capture you would like to analyze in the list of your completed captures below the graph.<br/>
-              <i>Note: You may also search for a capture in the search bar.</i>
+             The analytics features allows users to visualize data surrounding completed captures and their respective metric.
+             Users will be prompt to select one or many metrics (e.g. CPU Utilization), which will then be graphed. <br/>
+             <br/>
+              <i>Note: Users may also search for a capture in the search bar. </i>
             </p>
+            <br/>
             <p>
-              You will be directed to all of the replays that have been recorded for that capture.
-              Click on any of them to be analyzed in the graph.
+              To zoom in on the graph, users may simply click and highlight the graph by dragging the cursor from right to left. Users may download an svg or JSON file of the data.
+              If the graph is zoomed, the svg will reflect the zoom.
             </p>
-            <p>
-              Select which metric you would like to analyze from the options below the graph.
-              ie) CPU Utilization
-            </p>
-            <h4>Zooming In And Out</h4>
-            <p>
-              To zoom in on a section of the graph, simply click and highlight by dragging your cursor to the right on the section
-               you would like to see closer and the graph will zoom in for you. To reset the graph back to it's original zoom, click the reset
-              button in the top right corner.
-            </p>
-            <h4>Downloading Your Graph</h4>
-            <p>To download the graph, click the download button in the top right corner.
-              <i><br/>Note: You must have something displayed on the graph for this button to be available.</i>
-            </p>
-            <p>
-              You may download an svg or a JSON of the data. If your graph is zoomed in, the svg will reflect
-              this zoom, but the JSON will include all data.
-            </p>
-
-            
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.props.onHide}>Close</Button>
@@ -55,4 +37,3 @@ export default class InfoAnalytics extends Component {
       );
     }
   }
-  
