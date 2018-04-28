@@ -78,28 +78,29 @@ class ComManager:
         return results
 
     def setup_utility_database(self):
-        capture_command = '''
-            CREATE TABLE Captures (
-            db text DEFAULT NULL,
-            name text NOT NULL DEFAULT '',
-            start_time text DEFAULT NULL,
-            end_time text DEFAULT NULL,
-            status text DEFAULT NULL,
-            rds text DEFAULT NULL,
-            username text DEFAULT NULL,
-            password text DEFAULT NULL,
-            PRIMARY KEY (name))
-        '''
-        replays_command = '''
-            CREATE TABLE Replays (
-            replay varchar(255) NOT NULL DEFAULT '',
-            capture varchar(255) NOT NULL DEFAULT '',
-            db varchar(255) DEFAULT NULL,
-            mode varchar(16) DEFAULT NULL,
-            rds varchar(255) DEFAULT NULL,
-            PRIMARY KEY (replay,capture))
-        '''
+        if not os.path.exists("util.db"):
+            capture_command = '''
+                CREATE TABLE Captures (
+                db text DEFAULT NULL,
+                name text NOT NULL DEFAULT '',
+                start_time text DEFAULT NULL,
+                end_time text DEFAULT NULL,
+                status text DEFAULT NULL,
+                rds text DEFAULT NULL,
+                username text DEFAULT NULL,
+                password text DEFAULT NULL,
+                PRIMARY KEY (name))
+            '''
+            replays_command = '''
+                CREATE TABLE Replays (
+                replay varchar(255) NOT NULL DEFAULT '',
+                capture varchar(255) NOT NULL DEFAULT '',
+                db varchar(255) DEFAULT NULL,
+                mode varchar(16) DEFAULT NULL,
+                rds varchar(255) DEFAULT NULL,
+                PRIMARY KEY (replay,capture))
+            '''
 
-        cursor = self.get_sql()
-        cursor.execute(capture_command)
-        cursor.execute(replays_command)
+            cursor = self.get_sql()
+            cursor.execute(capture_command)
+            cursor.execute(replays_command)
