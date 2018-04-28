@@ -32,11 +32,20 @@ def get_capture_replay_list(credentials, cm):
 
 def get_analytics(credentials, cm):
   s3_client = cm.get_boto('s3')
-  metrics = {}
-  capture_list = get_capture_list(credentials, cm)
-  for capture in capture_list:
-    replay_list = get_replays_for_capture(credentials, capture, cm)
-    metrics[capture] = {replay.replace(capture, "").replace("/", "").replace(".replay", ""): retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
+  cap_name_query = '''SELECT name FROM Captures'''
+  rep_cap_name_query = '''SELECT replay, capture FROM Replays'''
+  cap_names = cm.execute_query(cap_name_query)
+  rep_cap_names = cm.execute_query(rep_cap_name_query)
+  metrics = {capture_name : {} for (capture_name,) in cap_names}
+  #capture_list = get_capture_list(credentials, cm)
+  
+  top_folder = "" # "mycrt/"
+  for (replay_name, capture_name) in rep_cap_names:
+    key = top_folder + capture_name + "/" + replay_name + ".replay"
+    metrics[capture_name][replay_name] = retrieve_analytics(s3_client, log_key = key)
+  #for capture in capture_list:
+  #  replay_list = get_replays_for_capture(credentials, capture, cm)
+  #  metrics[capture] = {replay.replace(capture, "").replace("/", "").replace(".replay", ""): retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
   
   return metrics
 
