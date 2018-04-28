@@ -62,7 +62,6 @@ if utilitydb['DEFAULT']:
 
 
 print(credentials)
-print(db_info)
 
 ComManager.util_db = 'util.db'
 ComManager.credentials = credentials.copy()

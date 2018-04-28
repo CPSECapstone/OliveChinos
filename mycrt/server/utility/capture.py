@@ -147,8 +147,8 @@ def get_capture_details(capture_name, cm):
 
 def _process_capture_details(record):
   (name, db, start_time, end_time, status, rds) = record
-  start_time = start_time.strftime("%Y-%m-%d  %H:%M:%S")
-  end_time = "No end time." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
+  start_time = start_time.replace("/", "-")#start_time.strftime("%Y-%m-%d  %H:%M:%S")
+  end_time = "No end time." if end_time is None else end_time.replace("/", "-")#end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
   return {
     "captureName" : name,
@@ -262,8 +262,10 @@ def start_capture(capture_name, rds_name, db_name, start_time, username, passwor
 
   print('starting capture', file=sys.stderr)
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}') ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  query = '''UPDATE OR IGNORE Captures SET status="ongoing" WHERE name="{0}"'''.format(capture_name)
+  cm.execute_query(query)
+  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
   cm.execute_query(query)
 
 def end_capture(credentials, capture_name, db, cm):
@@ -293,7 +295,7 @@ def end_capture(credentials, capture_name, db, cm):
       WHERE user_host <> 'rdsadmin[rdsadmin] @ localhost [127.0.0.1]'
       AND event_time >= '{0}' AND event_time <= '{1}'
       AND command_type = 'Query'
-  '''.format(start_time.strftime("%Y/%m/%d %H:%M:%S"), end_time)
+  '''.format(start_time, end_time)
 
   transactions = cm.execute_query(query, hostname = address, username = username, password = password, database = db) # need to give username and password eventually
 
