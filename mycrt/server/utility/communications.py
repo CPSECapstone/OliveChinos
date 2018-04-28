@@ -1,5 +1,6 @@
 import boto3
 import pymysql as sql
+import sqlite3 as util_sql
 import os
 
 # One instance of a ComManager object will be used per process
@@ -7,7 +8,6 @@ class ComManager:
 
     # Class level values
     # Will be set in the main mycrt.py upon runtime
-    util_db = None
     S3name = None
     credentials = None 
 
@@ -31,8 +31,11 @@ class ComManager:
         '''
 
         if db_info is None:
-            db_info = ComManager.util_db
-        if db_info["database"] not in self.sql_conns:
+            connection = util_sql.connect('util.db', isolation_level = None) # autocommit on by default
+            cursor = connection.cursor()
+            self.sql_conns['util.db'] = {"conn" : connection, "cur" : cursor}
+            db_info = {"database" : 'util.db'}
+        elif db_info["database"] not in self.sql_conns:
             connection = sql.connect(host = db_info["hostname"], 
                                      user = db_info["username"], 
                                      passwd = db_info["password"], 
@@ -44,7 +47,7 @@ class ComManager:
 
     def close_sql(self, db_info = None):
         if db_info is None:
-            db_info = ComManager.util_db
+            db_info = 'util.db'
         if isinstance(db_info, dict):
             db_name = db_info["database"]
         else:
@@ -73,3 +76,30 @@ class ComManager:
         cursor.execute(query)
         results = cursor.fetchall()
         return results
+
+    def setup_utility_database(self):
+        capture_command = '''
+            CREATE TABLE Captures (
+            db text DEFAULT NULL,
+            name text NOT NULL DEFAULT '',
+            start_time text DEFAULT NULL,
+            end_time text DEFAULT NULL,
+            status text DEFAULT NULL,
+            rds text DEFAULT NULL,
+            username text DEFAULT NULL,
+            password text DEFAULT NULL,
+            PRIMARY KEY (name))
+        '''
+        replays_command = '''
+            CREATE TABLE Replays (
+            replay varchar(255) NOT NULL DEFAULT '',
+            capture varchar(255) NOT NULL DEFAULT '',
+            db varchar(255) DEFAULT NULL,
+            mode varchar(16) DEFAULT NULL,
+            rds varchar(255) DEFAULT NULL,
+            PRIMARY KEY (replay,capture))
+        '''
+
+        cursor = self.get_sql()
+        cursor.execute(capture_command)
+        cursor.execute(replays_command)

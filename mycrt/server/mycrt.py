@@ -58,18 +58,13 @@ utilitydb = configparser.ConfigParser()
 utilitydb.read('utilitydb.ini')
 print(utilitydb)
 if utilitydb['DEFAULT']:
-    util_hostname = utilitydb['DEFAULT']['hostname']
-    util_username = utilitydb['DEFAULT']['username']
-    util_password = utilitydb['DEFAULT']['password']
-    util_database = utilitydb['DEFAULT']['database']
     util_s3 = utilitydb['DEFAULT']['S3name']
 
-db_info = {"hostname" : util_hostname, "username" : util_username, "password" : util_password, "database" : util_database}
 
 print(credentials)
 print(db_info)
 
-ComManager.util_db = db_info.copy()
+ComManager.util_db = 'util.db'
 ComManager.credentials = credentials.copy()
 ComManager.S3name = util_s3
 cm = ComManager()
@@ -400,9 +395,6 @@ def delete_capture_http():
 @application.route("/analytics", methods=["GET"])
 def analytics():
     global cm
-    #analyticsNumber = request.args.get('id')
-    #print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
-    #print(credentials, file=sys.stderr)
     metrics = get_analytics(credentials, cm)
     return jsonify(metrics)
 
