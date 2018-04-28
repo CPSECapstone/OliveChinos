@@ -409,7 +409,7 @@ global_username = "abc"
 global_password = "123"
 
 if __name__ == "__main__":
-    cm.setup_utility_db()
+    cm.setup_utility_database()
     try:
         global_username, global_password = sys.argv[1:3]
     except Exception:
