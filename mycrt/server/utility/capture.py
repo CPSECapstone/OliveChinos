@@ -334,6 +334,8 @@ def delete_capture(credentials, capture_name, cm):
 
   query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
   cm.execute_query(query)
+  query = '''DELETE FROM Replays WHERE capture = '{0}' '''.format(capture_name)
+  cm.execute_query(query)
 
 def cancel_capture(capture_name, cm): 
     '''Remove scheduled or ongoing capture from database
