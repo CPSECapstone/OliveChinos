@@ -237,11 +237,22 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt", cm = None)
     Key = log_key
   )
 
+def _process_time(time_str):
+  if "T" in time_str:
+    '%Y-%m-%dT%H:%M:%S.%fZ'
+    macro, micro = time_str.split("T")
+    year, month, day = macro.split("-")
+    hms = micro.split(".")[0] #HH:MM:SS
+    return "{0}/{1}/{2} {3}".format(year, month, day, hms)
+  else:
+    return time_str
+
 def schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password, cm):
   """Schedules a capture to be logged into the database.
 
   """
-
+  start_time = _process_time(start_time)
+  end_time = _process_time(end_time)
   print('scheduling capture', file=sys.stderr)
   query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
                VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, rds_name, username, password)
