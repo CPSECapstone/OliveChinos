@@ -53,12 +53,16 @@ if config['DEFAULT']:
 elif config["REGION_ONLY"]:
     region = config["REGION_ONLY"]['region']
     credentials = {'region_name' : region}
+else:
+    raise Exception("config.ini File must be in either the DEFAULT or REGION_ONLY configuration.")
 
 utilitydb = configparser.ConfigParser()
 utilitydb.read('utilitydb.ini')
 print(utilitydb)
 if utilitydb['DEFAULT']:
     util_s3 = utilitydb['DEFAULT']['S3name']
+else:
+    raise Exception("utilitydb.ini File must be in the DEFAULT configuration.")
 
 
 print(credentials)
@@ -403,7 +407,9 @@ def analytics():
 @application.before_first_request
 def _run_on_start():
     init_replay()
-    init_scheduler()
+    init_scheduler()    
+    cm.setup_utility_database()
+    start_orphaned_captures(credentials, cm)
 
 
 
@@ -411,7 +417,6 @@ global_username = "abc"
 global_password = "123"
 
 if __name__ == "__main__":
-    cm.setup_utility_database()
     try:
         global_username, global_password = sys.argv[1:3]
     except Exception:
