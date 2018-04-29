@@ -159,7 +159,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
 
   hostname = _get_hostname(rds_client, rds_name)
   path_name = capture_name.replace(".cap", "")
-  capture_path = path_name + "/" + path_name + ".cap"
+  capture_path = "mycrt/" + path_name + "/" + path_name + ".cap"
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
@@ -180,7 +180,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "db_id": db_id
   }
 
-  _store_metrics(s3_client, metrics, log_key = path_name + "/" + replay_name + ".replay")
+  _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   cm.execute_query(query)
@@ -199,11 +199,11 @@ def delete_replay(credentials, capture_name, replay_name, cm):
   query = """delete from Replays where replay = '{0}' and capture = '{1}'""".format(replay_name, capture_name)
   cm.execute_query(query)
 
-  s3_resource = cm.get_boto('s3')
+  s3_client = cm.get_boto('s3')
   bucket_id = ComManager.S3name
 
   try:
-    s3_resource.Object(bucket_id, capture_name + "/" + replay_name + ".replay").delete()
+    s3_client.delete_object(Bucket = bucket_id, Key = "mycrt/" + capture_name + "/" + replay_name + ".replay")
   except Exception:
     print("Replay to delete does not exist.", file=sys.stderr)
 

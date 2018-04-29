@@ -312,7 +312,7 @@ def end_capture(credentials, capture_name, db, cm):
 
   bucket_id = ComManager.S3name
 
-  _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name), cm = cm)
+  _put_bucket(s3_client, transactions, bucket_id, log_key = "mycrt/{0}/{0}.cap".format(capture_name), cm = cm)
 
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
   cm.execute_query(query)
@@ -329,15 +329,18 @@ def delete_capture(credentials, capture_name, cm):
     capture_name: A preexisting capture name
   '''
 
-  s3_resource = cm.get_boto('s3')
-  bucket_id = ComManager.S3name
-  bucket = s3_resource.Bucket(bucket_id)  
+  s3_client = cm.get_boto('s3')
+  bucket_id = cm.S3name
 
-  objects_to_delete = []
-  for obj in bucket.objects.filter(Prefix = capture_name + '/'):
-    objects_to_delete.append({'Key': obj.key})
+  objects_to_delete = [{"Key" : "mycrt/" + capture_name + '/' + capture_name + ".cap"}]
+  query = '''SELECT replay FROM Replays WHERE capture = '{0}' '''.format(capture_name)
+  for (replay_name,) in cm.execute_query(query):
+    objects_to_delete.append({"Key" : "mycrt/" + capture_name + '/' + replay_name + ".replay"})
+  #for obj in bucket.objects.filter(Prefix = "mycrt/" + capture_name + '/'):
+  #  objects_to_delete.append({'Key': obj.key})
 
-  bucket.delete_objects(
+  s3_client.delete_objects(
+    Bucket = bucket_id, 
     Delete = {
         'Objects': objects_to_delete
     }
