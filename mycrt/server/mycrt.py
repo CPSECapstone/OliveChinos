@@ -326,7 +326,9 @@ def replay():
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
-    capture_name = data['captureName']
+    capture_name = data['captureName'] # odd bug where capture_name sometimes is a list of length 1
+    if isinstance(capture_name, list):
+        capture_name = capture_name[0]
 
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
