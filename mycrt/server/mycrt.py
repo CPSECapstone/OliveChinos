@@ -83,6 +83,49 @@ def createCaptureName(dbName, formattedTime):
 def createReplayName(dbName, formattedTime):
     return 'R_' + dbName + '_' + formattedTime
 
+
+'''
+TESTING OUT WEBSOCKETS
+'''
+
+from flask_socketio import SocketIO, send, emit
+
+socketio = SocketIO(application)
+
+@socketio.on('connect')
+def handle_client_connect_event():
+    print('----------CLIENT CONNECTED ---------', file=sys.stderr)
+
+    #print('received json: {0}'.format(str(json)), file=sys.stderr)
+
+@socketio.on('disconnect')
+def handle_client_disconnect_event():
+    print('----------CLIENT DISCONNECTED ---------', file=sys.stderr)
+
+
+@socketio.on('json_button')
+def handle_json_button(json):
+    # it will forward the json to all clients.
+    print("JSON BUTTON EVENT", file=sys.stderr)
+    send(json, json=True)
+
+
+@socketio.on('alert_button')
+def handle_alert_event(json):
+    # it will forward the json to all clients.
+    update_capture_number()
+    update_replay_number()
+    print('Message from client was {0}'.format(json), file=sys.stderr)
+    emit('alert', 'Message from backend')
+
+def update_replay_number():
+    emit('replayNumber', 2)
+
+def update_capture_number():
+    emit('captureNumber', 3)
+
+
+
 @application.route("/")
 def index():
     return render_template("index.html")
@@ -422,4 +465,5 @@ if __name__ == "__main__":
         global_username, global_password = sys.argv[1:3]
     except Exception:
         pass
-    application.run(debug=True, host='0.0.0.0')
+    #application.run(debug=True, host='0.0.0.0')
+    socketio.run(application, debug=True, host='0.0.0.0', log_output=True)

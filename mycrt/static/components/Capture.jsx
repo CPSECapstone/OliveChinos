@@ -7,7 +7,18 @@ import InfoCapture from './InfoCapture'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { setCaptureCount, startCapture, stopCapture, changeStateForComponents } from '../actions'
+import { 
+  setCaptureCount, 
+  startCapture, 
+  stopCapture, 
+  changeStateForComponents, 
+  setCaptureActiveList,
+  setCaptureCompletedList,
+  setCaptureScheduledList,
+  setDatabaseInstances,
+  setIsCapturesLoaded,
+  setIsReplaysLoaded
+} from '../actions'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
@@ -56,7 +67,6 @@ class Capture extends React.Component {
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
 
-    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
@@ -66,8 +76,13 @@ class Capture extends React.Component {
 
   // Refreshs database instances and capture lists when component fully renders
   componentDidMount() {
-    this.loadDatabaseInstances()
-    this.displayAllCaptures()
+    console.log("redux isCapturesLoaded: ", this.props.isCapturesLoaded);
+    if (!this.isCapturesLoaded) {
+      //this.loadDatabaseInstances();
+      this.displayAllCaptures();
+      this.props.dispatch(setIsCapturesLoaded(true));
+    }
+    //this.setState({ captureRDSInstance: this.props.databaseInstances[0].value })
   }
 
   // Sets state of error alert to close
@@ -232,7 +247,7 @@ class Capture extends React.Component {
 
   // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
-    let dbInstances = data["databases"];
+    let dbInstances = data["databases"] || [];
     let dbList = [];
     for (let i = 0; i < dbInstances.length; i++) {
       let instance = dbInstances[i];
@@ -242,24 +257,6 @@ class Capture extends React.Component {
       dbList.push(selectOption)
     }
     return dbList
-  }
-
-  // Retrieves a list of available rds instances and initializes the form to choose the instances
-  loadDatabaseInstances() {
-    let that = this;
-    let returnList = []
-    jquery.ajax({
-      url: window.location.href + 'databaseInstances',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      returnList = that.createDBInstancesSelect(data)
-      that.setState({
-        databaseInstanceOptions: returnList
-      })
-      that.setState({ captureRDSInstance: returnList[0].props.value })
-    })
   }
 
   // Changes the selected rds instance for capture
@@ -364,25 +361,28 @@ class Capture extends React.Component {
       let resultList = that.getCapturesTable(data, captureType)
       if (captureType === 'active') {
         that.props.dispatch(setCaptureCount(data.captures.length))
+        that.props.dispatch(setCaptureActiveList(data.captures));
         console.log('SETTING THE ACTIVES')
         that.setState({ activeCaptureList: resultList })
       }
       else if (captureType === 'scheduled') {
         console.log('SETTING THE SCHEDULED')
         that.setState({ scheduledCaptureList: resultList })
+        that.props.dispatch(setCaptureScheduledList(data.captures));
       }
       else {
         console.log('SETTING THE COMPLETED')
         that.setState({ completedCaptureList: resultList })
+        that.props.dispatch(setCaptureCompletedList(data.captures));
       }
     })
   }
 
   // Creates the tables for all capture types
   displayAllCaptures() {
-    this.displayCaptures('active')
-    this.displayCaptures('scheduled')
-    this.displayCaptures('past')
+    this.displayCaptures('active');
+    setTimeout(this.displayCaptures('scheduled'), 2000);
+    setTimeout(this.displayCaptures('past'), 4000);
   }
 
   render() {
@@ -479,7 +479,7 @@ class Capture extends React.Component {
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>RDS Instance</ControlLabel>
                 <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
-                  {this.state.databaseInstanceOptions}
+                  {this.createDBInstancesSelect(this.props.databaseInstances)}
                 </FormControl>
               </FormGroup>
               <FormGroup>
@@ -534,7 +534,10 @@ class Capture extends React.Component {
 
 const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
-  capture: state.capture
+  capture: state.capture,
+  isCapturesLoaded: state.isCapturesLoaded,
+  databaseInstances: state.databaseInstances
+  
 })
 
 export default connect(mapStateToProps)(Capture)

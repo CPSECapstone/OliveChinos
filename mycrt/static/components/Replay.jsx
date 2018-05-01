@@ -12,6 +12,8 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import '../styles/loader.css';
 
+let isReplayListLoaded = false;
+
 class Replay extends React.Component {
   constructor(props) {
     super(props)
@@ -44,7 +46,6 @@ class Replay extends React.Component {
     this.displayReplays = this.displayReplays.bind(this)
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
-    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
     this.updateReplayRDS = this.updateReplayRDS.bind(this)
@@ -82,9 +83,11 @@ class Replay extends React.Component {
 
   // Function to refresh the list of replays
   componentDidMount() {
-    this.loadDatabaseInstances()
-    this.loadCapturesToReplay()
-    this.displayReplays()
+    if (!isReplayListLoaded) {
+      this.loadCapturesToReplay();
+      this.displayReplays();
+      isReplayListLoaded = false;
+    }
   }
 
   // Function to change replay name
@@ -144,9 +147,9 @@ class Replay extends React.Component {
     })
   }
 
-  // Function to display the list of available DB instances
+  // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
-    let dbInstances = data["databases"];
+    let dbInstances = data["databases"] || [];
     let dbList = [];
     for (let i = 0; i < dbInstances.length; i++) {
       let instance = dbInstances[i];
@@ -158,23 +161,6 @@ class Replay extends React.Component {
     return dbList
   }
 
-  // Function to fetch the list of DB instances
-  loadDatabaseInstances() {
-    let that = this;
-    let returnList = []
-    jquery.ajax({
-      url: window.location.href + 'databaseInstances',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      returnList = that.createDBInstancesSelect(data)
-      that.setState({
-        databaseInstanceOptions: returnList
-      })
-      that.setState({ replayRDSInstance: returnList[0].props.value })
-    })
-  }
 
   // Function to start a new replay
   addReplay(replayName, captureName, replayDB) {
@@ -423,7 +409,7 @@ class Replay extends React.Component {
               <FormGroup controlId="formControlsSelectRDS">
                 <ControlLabel>RDS Instance</ControlLabel>
                 <FormControl componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
-                  {this.state.databaseInstanceOptions}
+                  {this.createDBInstancesSelect(this.props.databaseInstances)}
                 </FormControl>
               </FormGroup>
               <FormGroup>
@@ -475,7 +461,8 @@ class Replay extends React.Component {
 const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
   replay: state.replay,
-  analyticsForGraph: state.analyticsForGraph
+  analyticsForGraph: state.analyticsForGraph,
+  databaseInstances: state.databaseInstances
 })
 
 export default connect(mapStateToProps)(Replay)

@@ -21,7 +21,15 @@ import {
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
   SET_GRAPH_DATA_FROM_REPLAY,
-  SET_SELECTED_REPLAY
+  SET_SELECTED_REPLAY,
+  SET_CAPTURE_ACTIVE_LIST,
+  SET_CAPTURE_COMPLETED_LIST,
+  SET_CAPTURE_SCHEDULED_LIST,
+  SET_REPLAY_ACTIVE_LIST,
+  SET_REPLAY_COMPLETED_LIST,
+  SET_DATABASE_INSTANCES,
+  SET_IS_CAPTURES_LOADED,
+  SET_IS_REPLAYS_LOADED
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -105,4 +113,36 @@ export function setGraphDataFromReplay(bools, capture, metric, state, names, sel
 
 export function setSelectedReplay(key) {
   return {type: SET_SELECTED_REPLAY, key}
+}
+
+export function setCaptureActiveList(key) {
+  return {type: SET_CAPTURE_ACTIVE_LIST, key}
+}
+
+export function setCaptureScheduledList(key) {
+  return {type: SET_CAPTURE_SCHEDULED_LIST, key}
+}
+
+export function setCaptureCompletedList(key) {
+  return {type: SET_CAPTURE_COMPLETED_LIST, key}
+}
+
+export function setReplayActiveList(key) {
+  return {type: SET_REPLAY_ACTIVE_LIST, key}
+}
+
+export function setReplayCompletedList(key) {
+  return {type: SET_REPLAY_COMPLETED_LIST, key}
+}
+
+export function setDatabaseInstances(key) {
+  return {type: SET_DATABASE_INSTANCES, key}
+}
+
+export function setIsCapturesLoaded(key) {
+  return {type: SET_IS_CAPTURES_LOADED, key}
+}
+
+export function setIsReplaysLoaded(key) {
+  return {type: SET_IS_REPLAYS_LOADED, key}
 }

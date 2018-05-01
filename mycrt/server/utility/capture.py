@@ -147,8 +147,9 @@ def get_capture_details(capture_name, cm):
 
 def _process_capture_details(record):
   (name, db, start_time, end_time, status, rds) = record
-  start_time = start_time.strftime("%Y-%m-%d  %H:%M:%S")
-  end_time = "No end time." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
+  print("end_time", end_time, file=sys.stderr)
+  start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
+  end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
   return {
     "captureName" : name,
