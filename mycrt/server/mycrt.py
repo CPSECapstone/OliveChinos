@@ -25,6 +25,8 @@ except:
     from utility.login import * 
     from utility.scheduler import *
 
+application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+
 application.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=465,
@@ -36,8 +38,6 @@ application.config.update(
 
 mail = Mail(application)
 mail.init_app(application)
-
-application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
 application.config.update(
     MAIL_SERVER='smtp.gmail.com',

@@ -77,10 +77,9 @@ class Capture extends React.Component {
   // Refreshs database instances and capture lists when component fully renders
   componentDidMount() {
     console.log("redux isCapturesLoaded: ", this.props.isCapturesLoaded);
-    if (!this.isCapturesLoaded) {
-      //this.loadDatabaseInstances();
+    if (!this.props.isCapturesLoaded) {
       this.displayAllCaptures();
-      this.props.dispatch(setIsCapturesLoaded(true));
+      this.props.dispatch(setIsCapturesLoaded(false));
     }
     //this.setState({ captureRDSInstance: this.props.databaseInstances[0].value })
   }
@@ -380,6 +379,7 @@ class Capture extends React.Component {
 
   // Creates the tables for all capture types
   displayAllCaptures() {
+    console.log("DISPLAY ALL CAPTURES IS RUNNING");
     this.displayCaptures('active');
     setTimeout(this.displayCaptures('scheduled'), 2000);
     setTimeout(this.displayCaptures('past'), 4000);
@@ -536,7 +536,10 @@ const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
   capture: state.capture,
   isCapturesLoaded: state.isCapturesLoaded,
-  databaseInstances: state.databaseInstances
+  databaseInstances: state.databaseInstances,
+  capturesActive: state.capturesActive,
+  capturesCompleted: state.capturesCompleted,
+  capturesScheduled: state.capturesScheduled
   
 })
 
