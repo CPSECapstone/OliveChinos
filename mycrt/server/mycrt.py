@@ -22,7 +22,7 @@ except:
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
-    from utility.login import * 
+    from utility.login import *
     from utility.scheduler import *
 
 
@@ -41,8 +41,8 @@ mail = Mail(application)
 mail.init_app(application)
 
 '''
-Default authentication keys for testing until Instance Profiling 
-on AWS is complete 
+Default authentication keys for testing until Instance Profiling
+on AWS is complete
 '''
 pubKey = ""
 privateKey = ""
@@ -93,9 +93,9 @@ def createReplayName(dbName, formattedTime):
 
 '''
 Runs before each test and checks that the public and private keys
-were passed in and valid for the user. 
+were passed in and valid for the user.
 '''
-@application.before_request 
+@application.before_request
 def authenticate_each_request():
     headers = request.headers
     pKey = headers.get("publicKey", pubKey)
@@ -106,7 +106,7 @@ def authenticate_each_request():
         abort(401)
 
 '''
-Render the home page and React app 
+Render the home page and React app
 '''
 @application.route("/")
 def index():
@@ -121,7 +121,7 @@ def sendIssueReport():
 
     msg.recipients = ["smithygirl@gmail.com", "jakepickett67@gmail.com", "andrewcofano@gmail.com", "alex.jboyd@yahoo.com", "yengkerngtan@gmail.com", "costinpirvu64@gmail.com", "c.leigh.b@gmail.com"]
     print(pprint.pprint(data), file = sys.stderr)
-    msg.body = 'Version: %s\nType: %s\nPriority: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['description'])
+    msg.body = 'Version: %s\nType: %s\nPriority: %s\nBrowser: %s\nOS: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['description'], data['browser'], data['os'])
     mail.send(msg)
     return "Success"
 
@@ -139,16 +139,16 @@ def login():
     data = request.get_json()
     given_username = data['username']
     given_password = data['password']
-    
+
     if given_username is None or given_password is None:
         abort(400)
     if global_username == given_username and global_password == given_password:
         return ('', 204)
-    else: 
-        abort(401) 
+    else:
+        abort(401)
 
 '''
-Retrieves all database instances for a user 
+Retrieves all database instances for a user
 '''
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
@@ -158,12 +158,12 @@ def databaseInstances():
     return jsonify({
         "databases" : db_instances
     })
-    
+
 '''
 --------------CAPTURE ENDPOINTS--------------
 '''
 '''
-Returns list of ongoing captures for a user 
+Returns list of ongoing captures for a user
 '''
 @application.route("/capture/list_ongoing", methods=["GET"])
 def captureListOngoing():
@@ -172,9 +172,9 @@ def captureListOngoing():
     return jsonify({
         "captures" : capture_list
     })
-    
+
 '''
-Returns a list of all completed captures for a user 
+Returns a list of all completed captures for a user
 '''
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
@@ -183,10 +183,10 @@ def captureListCompleted():
     return jsonify({
         "captures" : capture_list
     })
-    
+
 '''
-Returns a list of all scheduled captures for a user that have 
-not run yet. 
+Returns a list of all scheduled captures for a user that have
+not run yet.
 '''
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():
@@ -195,9 +195,9 @@ def captureListScheduled():
     return jsonify({
         "captures" : capture_list
     })
-    
+
 '''
-Returns all replays associated with the specified capture 
+Returns all replays associated with the specified capture
 '''
 @application.route("/capture/replayList", methods=["GET"])
 def replayListForSpecificCapture():
@@ -208,10 +208,10 @@ def replayListForSpecificCapture():
         "captureName": capture_name,
         "replays" : replay_list
     })
-   
+
 '''
 Starts a capture.
-If a starttime and endtime are provided, then the capture will 
+If a starttime and endtime are provided, then the capture will
 be scheduled to run at a certain time.
 '''
 @application.route("/capture/start", methods=["POST"])
@@ -226,7 +226,7 @@ def capture_start():
     now = [convertDatetimeToString(datetime.utcnow())]
     start_time = data.get('startTime', now)
     start_time = start_time[0]
-    
+
     capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
     if capture_name == "":
       capture_name = createCaptureName(rds_name + "_" + db_name, start_time)
@@ -234,7 +234,7 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
-    
+
 
     end_time = data.get('endTime', [None])
     end_time = end_time[0]
@@ -251,9 +251,9 @@ def capture_start():
     print("--------------", file = sys.stderr)
 
 
-    new_capture_process(is_scheduled, credentials, capture_name, 
+    new_capture_process(is_scheduled, credentials, capture_name,
                             db_name, start_time, end_time, rds_name, username, password, cm)
-   
+
     return jsonify({
         "status": "started",
         "db": db_name,
@@ -269,10 +269,10 @@ Ends a specified capture.
 def capture_end():
     global cm
     data = request.get_json()
-    db_name = data['db'] 
+    db_name = data['db']
     capture_name = data['captureName']
     end_time = convertDatetimeToString(datetime.utcnow())
-    
+
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
     start_time = end_capture(credentials, capture_name, db_name, cm)
@@ -293,25 +293,25 @@ Cancels a scheduled capture from ever running
 def cancel_capture_http():
     global cm
     data = request.get_json()
-    capture_name = data['captureName'] 
-    
+    capture_name = data['captureName']
+
     cancel_capture_process(capture_name, cm)
     return jsonify({'status': 'complete'})
 
 '''
-Deletes a completed capture from the utility database 
+Deletes a completed capture from the utility database
 '''
 @application.route("/capture/delete", methods=["DELETE"])
 def delete_capture_http():
     global cm
     data = request.get_json()
-    capture_name = data['capture'] 
-    
+    capture_name = data['capture']
+
     delete_capture(credentials, capture_name, cm)
     return jsonify({'status': 'complete'})
 
 '''
-Returns the number of currently active captures 
+Returns the number of currently active captures
 '''
 @application.route("/capture/number", methods=["GET"])
 def get_capture_number_http():
@@ -322,7 +322,7 @@ def get_capture_number_http():
 @application.route("/capture/completed_list", methods=["GET"])
 def get_all_captures():
     global cm
-    captures = get_capture_list(credentials, cm)    
+    captures = get_capture_list(credentials, cm)
     return jsonify(captures)
 
 '''
@@ -336,7 +336,7 @@ Must specify the db, rds, username, and password to connect to the database
 def replay():
     global cm
     data = request.get_json()
-    db_name = data['db'] 
+    db_name = data['db']
     rds_name = data['rds']
     username = data['username']
     password = data['password']
@@ -355,7 +355,7 @@ def replay():
 
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
-    
+
     execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
     return jsonify({
         "status": "started",
@@ -372,12 +372,12 @@ Returns a list of all replays
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
     global cm
-    #capture_replays = get_capture_replay_list(credentials)    
+    #capture_replays = get_capture_replay_list(credentials)
     capture_replays = get_replays_from_table(cm)
     return jsonify(capture_replays)
 
 '''
-Returns a list of all currently active replays 
+Returns a list of all currently active replays
 '''
 @application.route("/replay/active_list", methods=["GET"])
 def get_active_replays_http():
@@ -385,7 +385,7 @@ def get_active_replays_http():
     return jsonify(replays)
 
 '''
-Returns the number of currently active replays 
+Returns the number of currently active replays
 '''
 @application.route("/replay/number", methods=["GET"])
 def get_replay_number_http():
@@ -393,14 +393,14 @@ def get_replay_number_http():
     return jsonify(replays)
 
 '''
-Deletes a completed replay from the utility database 
+Deletes a completed replay from the utility database
 '''
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
     global cm
     #Need a capture name and replay name in order to delete replay
     data = request.get_json()
-    capture_name = data['capture'] 
+    capture_name = data['capture']
     replay_name = data['replay']
     delete_replay(credentials, capture_name, replay_name, cm)
     return jsonify({'status': 'complete'})
@@ -409,7 +409,7 @@ def delete_replay_http():
 ---------------ANALYTICS ENDPOINT--------------
 '''
 '''
-Returns all analytics for a user 
+Returns all analytics for a user
 '''
 @application.route("/analytics", methods=["GET"])
 def analytics():
@@ -421,7 +421,7 @@ def analytics():
     return jsonify(metrics)
 
 '''
-Function needed to start Multiprocessing code after application 
+Function needed to start Multiprocessing code after application
 bootstraps but before any requests to the API have been made
 '''
 @application.before_first_request
@@ -431,7 +431,7 @@ def _run_on_start():
 
 
 '''
-Default username and password for testing if none are given 
+Default username and password for testing if none are given
 '''
 global_username = "abc"
 global_password = "123"
