@@ -320,12 +320,12 @@ def list_metrics():
 
 @analyze.command()
 @click.argument('capture-name', nargs=1)
-@click.argument('replay-names', nargs=-1)
+@click.argument('replay-names', nargs=-1, required=True)
 @click.option('-m', '--metric-name', multiple=True, 
-        help='-the name of the metric; use command "list-metrics to see supported options"')
+        help='-the name of the metric; use command "list-metrics" to see supported options')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(capture_name, replay_names, metric_names, raw):
+def view(capture_name, replay_names, metric_name, raw):
     '''-view metrics for any number of replays'''
 
     analytics = requests.get('http://localhost:5000/analytics')
@@ -335,16 +335,7 @@ def view(capture_name, replay_names, metric_names, raw):
 
     json_input = analytics.json()
     if raw: #print metrics in json format
-        for replay in replay_names: 
-            click.echo('\nMetric data for \'' + str(replay) + '\'')
-            if len(metric_names)==0: #no metric specified - display all
-                click.echo(format_json(json_input[capture_name][replay]))
-            else: #print only specified metrics
-                for metric in metric_names: 
-                    output = '\"'+ metric + '\": '
-                    click.echo(output + 
-                            format_json(json_input[capture_name][replay][metric]))
-        click.echo()
+        _print_json_metrics(json_input, capture_name, replay_names, metric_name)
 
     else : #compute metric averages for each replay
         try:
@@ -356,29 +347,54 @@ def view(capture_name, replay_names, metric_names, raw):
             '''
             #Average of data points
             capture_folder = json_input[capture_name]
+            metric_names = metric_name if metric_name else ['CPUUtilization', 
+                    'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
             for replay in replay_names: 
                 click.echo('\nMetric Data for \'' + str(replay) + '\'') 
                 replay_data_points = capture_folder[replay]
-                _print_metric_averages(replay_data_points)
+                _print_metric_averages(replay_data_points, metric_names)
 
         except (ValueError, KeyError, TypeError): 
             click.echo('''One or more of the specified replay names do not exist. Please try again.''')
             return
 
-def _print_metric_averages(metric_data_points): 
-    cpu_util = get_average(metric_data_points['CPUUtilization'])
-    freeable_mem = get_average(metric_data_points['FreeableMemory'])
-    read_iops = get_average(metric_data_points['ReadIOPS'])
-    write_iops = get_average(metric_data_points['WriteIOPS'])
+def _print_metric_averages(metric_data_points, metric_names): 
+    '''Dict containing tuple with string for printing and aggregate average of 
+    the metric'''
+    metric_string = {
+            'CPUUtilization': 'CPU Utilization (%): ', 
+            'FreeableMemory': 'Freeable Memory (bytes): ', 
+            'ReadIOPS': 'Read IOPS (count/sec): ', 
+            'WriteIOPS': 'Write IOPS (count/sec): '
+    }
 
     click.echo('Start Time: ' + str(metric_data_points['start_time']))
     click.echo('End Time: ' + str(metric_data_points['end_time']))
     click.echo('---METRIC AVERAGES---')
-    click.echo('CPU Utilization (%): ' + str(cpu_util))
-    click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-    click.echo('Read IOPS (count/sec): ' + str(read_iops))
-    click.echo('Write IOPS (count/sec): ' + str(write_iops))
+
+    for metric in metric_names: 
+        data_points = metric_data_points[metric]
+        average = get_average(data_points)
+        click.echo(metric_string[metric] + str(average))
+
     click.echo()
+
+def _print_json_metrics(raw_json, capture_name, replay_names, metric_names):     
+    '''Get the specified metrics for the specified replay under the given capture 
+    name. If no metric_names are specified, get all the metrics.
+    '''
+    replay_metrics = {}
+
+    for replay in replay_names: 
+        if len(metric_names)==0: #no metric specified - display all
+            replay_metrics[replay] = raw_json[capture_name][replay]
+        else: #print only specified metrics
+            metrics = {}
+            for metric in metric_names: 
+                metrics[metric] = raw_json[capture_name][replay][metric]
+            replay_metrics[replay] = metrics
+    click.echo(format_json(replay_metrics))
+
 
 # Compute the average of all the average metric data points 
 def get_average(metric_list): 
