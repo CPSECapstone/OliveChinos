@@ -7,14 +7,23 @@ import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
-import { changeStateForComponents, setAnalyticsForGraph, setReplayCount, setCaptureCount, setDatabaseInstances } from '../actions/index';
+import { 
+  changeStateForComponents, 
+  setAnalyticsForGraph, 
+  setReplayCount, 
+  setCaptureCount, 
+  setDatabaseInstances,
+  fetchCaptures,
+  fetchReplays,
+  fetchCapturesToReplay
+} from '../actions/index';
 import { connect } from 'react-redux'
 import  IssueModal  from  './issueModal'
 import InfoAnalytics from './infoAnalytics'
 import io from 'socket.io-client';
 
 
-const uri = 'http://localhost:5000';
+const uri = window.location.href;
 const options = {};
 const socket = io(uri, options);
 
@@ -36,7 +45,6 @@ class Home extends Component {
     }
 
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
-    this.pollingFunction = this.pollingFunction.bind(this);
     this.getNumberOfCaptures = this.getNumberOfCaptures.bind(this);
     this.getNumberOfReplays = this.getNumberOfReplays.bind(this);
     this.setUpWebSocketReplayNumber = this.setUpWebSocketReplayNumber.bind(this);
@@ -49,16 +57,16 @@ class Home extends Component {
     var that = this;
     socket.on('replayNumber', function (numReplays) {
       console.log('Replay Number update from backend: ', numReplays);
-      that.setState({ activeReplays: numReplays }, that.render);
       that.props.dispatch(setReplayCount(numReplays))
+      that.props.dispatch(fetchReplays());
     });
   }
   setUpWebSocketCaptureNumber() {
     var that = this;
     socket.on('captureNumber', function (numCaptures) {
       console.log('Capture Number update from backend: ', numCaptures);
-      that.setState({ activeCaptures: numCaptures }, that.render);
       that.props.dispatch(setCaptureCount(numCaptures))
+      that.props.dispatch(fetchCaptures());
     });
   }
 
@@ -86,11 +94,6 @@ class Home extends Component {
     });
   }
 
-  pollingFunction() {
-    this.getPythonAnalytics();
-    this.getNumberOfReplays();
-    this.getNumberOfCaptures();
-  }
 
   loadDatabaseInstances() {
     let that = this;
@@ -106,10 +109,12 @@ class Home extends Component {
   }
 
   componentWillMount() {
-    var that = this;
     this.setUpWebSocketCaptureNumber();
     this.setUpWebSocketReplayNumber();
     this.loadDatabaseInstances();
+    this.props.dispatch(fetchCaptures());
+    this.props.dispatch(fetchReplays());
+    this.props.dispatch(fetchCapturesToReplay());
     socket.emit('get_capture_replay_number', 'Message from Home.jsx');
     setTimeout(this.getPythonAnalytics, 5000);
   }

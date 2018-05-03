@@ -138,7 +138,7 @@ def update_capture_count_http():
 
 @application.route('/update_replay_count', methods=["GET"])
 def update_replay_count_http():
-    replay_count = get_replay_number()
+    replay_count = get_replay_number() 
     print("REPLAY COUNT: ", replay_count, file=sys.stderr)
     socketio.emit('replayNumber', replay_count)
     return ('', 200) 

@@ -145,10 +145,18 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   proc = Process(target = _manage_replay,
                  args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, ComManager()))
   proc.start()
+  _update_replay_count()
+
+
+def func_to_call(x): 
+      requests.get(x)
 
 def _update_replay_count():
-  print("In _update_replay_count", file=sys.stderr)
-  requests.get("http://localhost:5000/update_replay_count")
+  address = "http://localhost:5000/update_replay_count"
+  
+  proc = Process(target = func_to_call,
+                 args = (address,))
+  proc.start()
 
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)

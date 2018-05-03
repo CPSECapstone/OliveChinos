@@ -29,7 +29,8 @@ import {
   SET_REPLAY_COMPLETED_LIST,
   SET_DATABASE_INSTANCES,
   SET_IS_CAPTURES_LOADED,
-  SET_IS_REPLAYS_LOADED
+  SET_IS_REPLAYS_LOADED,
+  SET_CAPTURES_TO_REPLAY
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -147,7 +148,12 @@ export function setIsReplaysLoaded(key) {
   return {type: SET_IS_REPLAYS_LOADED, key}
 }
 
+export function setCapturesToReplayList(key) {
+  return {type: SET_CAPTURES_TO_REPLAY, key}
+}
+
 export function fetchCaptures() {
+  console.log("fetching all captures");
   return function(dispatch) {
     jquery.ajax({
       url: window.location.href + 'capture/list_ongoing',
@@ -186,6 +192,7 @@ export function fetchCaptures() {
 
 
 export function fetchReplays() {
+  console.log("Fetching all replays");
   return function(dispatch) {
     jquery.ajax({
       url: window.location.href + 'replay/list',
@@ -198,5 +205,63 @@ export function fetchReplays() {
     })
 
     return null
+  }
+}
+
+export function fetchCapturesToReplay() {
+  return function(dispatch) {
+    let that = this;
+    jquery.ajax({
+      url: window.location.href + 'capture/completed_list',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      dispatch(setCapturesToReplayList(data));
+    })
+  }
+}
+
+
+  // Consumes a capture name, capture db, and action and calls that action on the specified capture
+export function editCapture(captureName, captureDB, action) {
+  return function(dispatch) {
+
+
+    let postData = {
+      "db": captureDB,
+      "captureName": captureName
+    }
+    let that = this;
+    
+    if (action === 'end' || action === 'cancel') {
+      jquery.ajax({
+        url: window.location.href + 'capture/' + action,
+        type: 'POST',
+        data: JSON.stringify(postData),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        fetchCaptures();
+      })
+    }
+    else if (action == 'REPLAY') {
+      dispatch(changeStateForComponents("onReplay"))
+    }
+    else {
+      let deleteData = {
+        "capture": captureName
+      }
+      jquery.ajax({
+        url: window.location.href + 'capture/delete',
+        type: 'DELETE',
+        data: JSON.stringify(deleteData),
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        fetchCaptures();
+      })
+
+    }
   }
 }

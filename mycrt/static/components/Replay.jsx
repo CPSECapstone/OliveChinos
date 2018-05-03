@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select, fetchReplays } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, fetchReplays, fetchCapturesToReplay } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -11,8 +11,6 @@ import '../styles/replaystyles.css'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import '../styles/loader.css';
-
-let isReplayListLoaded = false;
 
 class Replay extends React.Component {
   constructor(props) {
@@ -44,7 +42,6 @@ class Replay extends React.Component {
     this.addReplay = this.addReplay.bind(this)
     this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
     this.displayReplays = this.displayReplays.bind(this)
-    this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
     this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
@@ -79,16 +76,6 @@ class Replay extends React.Component {
   // Function to show "New Replay" popup-form
   handleShow() {
     this.setState({ show: true });
-  }
-
-  // Function to refresh the list of replays
-  componentDidMount() {
-    if (!isReplayListLoaded) {
-      this.loadCapturesToReplay();
-      //this.displayReplays();
-      this.props.dispatch(fetchReplays());
-      isReplayListLoaded = false;
-    }
   }
 
   // Function to change replay name
@@ -132,21 +119,6 @@ class Replay extends React.Component {
     return captureList
   }
 
-  // Function to fetch the list of captures available to replay on
-  loadCapturesToReplay() {
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/completed_list',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      let resultList = that.createCapturesSelect(data)
-      that.setState({ captureOptions: resultList })
-      that.setState({ captureToReplay: resultList[0].props.value })
-
-    })
-  }
 
   // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
@@ -188,6 +160,7 @@ class Replay extends React.Component {
     })
       .done(function (data) {
         that.displayReplays()
+        that.props.dispatch(fetchReplays());
       })
       .fail(function (data) {
         that.handleShowAlert()
@@ -254,6 +227,7 @@ class Replay extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       that.displayReplays()
+      that.props.dispatch(fetchReplays());
     })
 
   }
@@ -327,7 +301,7 @@ class Replay extends React.Component {
 
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
-    if (this.props.replaysCompleted == null) {
+    if (this.props.replaysCompleted === false) {
       return <div id="loader"></div>
     } else {
       return (
@@ -404,7 +378,8 @@ class Replay extends React.Component {
               <FormGroup controlId="formControlsSelectCapture">
                 <ControlLabel>Capture To Replay</ControlLabel>
                 <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
-                  {this.state.captureOptions}
+                  //{this.state.captureOptions}
+                  {this.createCapturesSelect(this.props.capturesToReplay)}
                 </FormControl>
               </FormGroup>
               <FormGroup controlId="formControlsSelectRDS">
@@ -464,7 +439,8 @@ const mapStateToProps = state => ({
   replay: state.replay,
   analyticsForGraph: state.analyticsForGraph,
   databaseInstances: state.databaseInstances,
-  replaysCompleted: state.replaysCompleted
+  replaysCompleted: state.replaysCompleted,
+  capturesToReplay: state.capturesToReplay
 })
 
 export default connect(mapStateToProps)(Replay)

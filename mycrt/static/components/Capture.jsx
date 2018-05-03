@@ -18,7 +18,8 @@ import {
   setDatabaseInstances,
   setIsCapturesLoaded,
   setIsReplaysLoaded,
-  fetchCaptures
+  fetchCaptures,
+  fetchReplays
 } from '../actions'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
@@ -59,8 +60,6 @@ class Capture extends React.Component {
     this.handleShow = this.handleShow.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.startNewCapture = this.startNewCapture.bind(this)
-    this.editCapture = this.editCapture.bind(this)
-    // this.getCaptures = this.getCaptures.bind(this)
 
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
     this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
@@ -72,17 +71,6 @@ class Capture extends React.Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
     this.displayAllCaptures = this.displayAllCaptures.bind(this)
-  }
-
-  // Refreshs database instances and capture lists when component fully renders
-  componentDidMount() {
-    console.log("redux isCapturesLoaded: ", this.props.isCapturesLoaded);
-    if (!this.props.isCapturesLoaded) {
-      this.props.dispatch(fetchCaptures());
-      //this.displayAllCaptures();
-      this.props.dispatch(setIsCapturesLoaded(false));
-    }
-    //this.setState({ captureRDSInstance: this.props.databaseInstances[0].value })
   }
 
   // Sets state of error alert to close
@@ -150,56 +138,15 @@ class Capture extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        that.displayAllCaptures()
+        //that.displayAllCaptures()
+        that.props.dispatch(fetchCaptures());
       })
       .fail(function (data) {
         that.handleShowAlert()
       })
   }
 
-  // Consumes a capture name, capture db, and action and calls that action on the specified capture
-  editCapture(captureName, captureDB, action) {
 
-    let postData = {
-      "db": captureDB,
-      "captureName": captureName
-    }
-    let that = this;
-    /*if (action === 'end') {
-      this.props.dispatch(stopCapture())
-    }*/
-    if (action === 'end' || action === 'cancel') {
-      jquery.ajax({
-        url: window.location.href + 'capture/' + action,
-        type: 'POST',
-        data: JSON.stringify(postData),
-        contentType: 'application/json',
-        dataType: 'json'
-      }).done(function (data) {
-        //console.log(data)
-        that.displayAllCaptures()
-      })
-    }
-    else if (action == 'REPLAY') {
-      this.props.dispatch(changeStateForComponents("onReplay"))
-    }
-    else {
-      let deleteData = {
-        "capture": captureName
-      }
-      jquery.ajax({
-        url: window.location.href + 'capture/delete',
-        type: 'DELETE',
-        data: JSON.stringify(deleteData),
-        contentType: 'application/json',
-        dataType: 'json'
-      }).done(function (data) {
-        that.displayAllCaptures()
-      })
-
-    }
-
-  }
 
   // Changes the help text for the capture name form
   getValidationState() {

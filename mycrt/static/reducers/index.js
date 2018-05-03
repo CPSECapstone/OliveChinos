@@ -29,7 +29,8 @@ import {
   SET_REPLAY_COMPLETED_LIST,
   SET_DATABASE_INSTANCES,
   SET_IS_CAPTURES_LOADED,
-  SET_IS_REPLAYS_LOADED
+  SET_IS_REPLAYS_LOADED,
+  SET_CAPTURES_TO_REPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -57,11 +58,12 @@ let initialState = {
   currentCaptureForGraph: 'Capture Options',
   stateType: 'onCapture',
   selectedReplay: false,
-  capturesActive: [],
-  capturesScheduled: [],
-  capturesCompleted: [],
-  replaysActive: [],
-  replaysCompleted: [],
+  capturesActive: false,
+  capturesScheduled: false,
+  capturesCompleted: false,
+  replaysActive: false,
+  replaysCompleted: false,
+  capturesToReplay: false,
   databaseInstances: [],
   isCapturesLoaded: false,
   isReplaysLoaded : false
@@ -241,6 +243,11 @@ function reducer(state = initialState, action) {
     case SET_IS_REPLAYS_LOADED:
       return Object.assign({}, state, {
         isReplaysLoaded: action.key
+      })
+
+    case SET_CAPTURES_TO_REPLAY:
+      return Object.assign({}, state, {
+        capturesToReplay: action.key
       })
 
     // case FETCH_CAPTURES_ACTIVE:

@@ -384,6 +384,7 @@ def cancel_capture(capture_name, cm):
 
     query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
     cm.execute_query(query)
+    _update_capture_count()
     
 
 
