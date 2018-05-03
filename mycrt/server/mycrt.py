@@ -39,18 +39,6 @@ application.config.update(
 mail = Mail(application)
 mail.init_app(application)
 
-application.config.update(
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=465,
-    MAIL_USE_SSL=True,
-    MAIL_USERNAME = 'olivechinosmycrt@gmail.com',
-    MAIL_PASSWORD = 'alexsjawline',
-    MAIL_DEFAULT_SENDER = 'olivechinosmycrt@gmail.com'
-)
-
-mail = Mail(application)
-mail.init_app(application)
-
 '''
 Default authentication keys for testing until Instance Profiling 
 on AWS is complete 
@@ -147,6 +135,7 @@ def update_replay_count_http():
 Runs before each test and checks that the public and private keys
 were passed in and valid for the user. 
 '''
+'''
 @application.before_request 
 def authenticate_each_request():
     headers = request.headers
@@ -156,6 +145,7 @@ def authenticate_each_request():
         abort(400)
     if not verify_login(pKey, priKey):
         abort(401)
+'''
 
 '''
 Render the home page and React app 
