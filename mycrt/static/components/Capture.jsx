@@ -70,7 +70,6 @@ class Capture extends React.Component {
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
-    this.displayAllCaptures = this.displayAllCaptures.bind(this)
   }
 
   // Sets state of error alert to close
@@ -138,7 +137,6 @@ class Capture extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        //that.displayAllCaptures()
         that.props.dispatch(fetchCaptures());
       })
       .fail(function (data) {
@@ -245,13 +243,6 @@ class Capture extends React.Component {
     })
   }
 
-  // Creates the tables for all capture types
-  displayAllCaptures() {
-    this.displayCaptures('active');
-    setTimeout(this.displayCaptures('scheduled'), 2000);
-    setTimeout(this.displayCaptures('past'), 4000);
-  }
-
   render() {
     let captureScheduler = null;
     let that = this;
@@ -305,7 +296,7 @@ class Capture extends React.Component {
 
           <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button id="refreshCapturesButton" onClick={this.displayAllCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.props.fetchCaptures}>
                 Refresh Capture
               </Button>
               <Button

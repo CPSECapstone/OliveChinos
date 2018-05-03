@@ -35,8 +35,6 @@ class Home extends Component {
       onCapture: true,
       onReplay: false,
       onAnalyze: false,
-      activeCaptures: this.props.activeCaptures,
-      activeReplays: this.props.activeReplays,
       captureTab: 'blue',
       replayTab: 'red',
       analyticsTab: 'orange',
@@ -81,7 +79,6 @@ class Home extends Component {
   getNumberOfReplays() {
     var that = this;
     jquery.get(window.location.href + 'replay/number', (data) => {
-      that.setState({ activeReplays: data.replays.length }, that.render);
       that.props.dispatch(setReplayCount(data.replays.length))
     });
   }
@@ -89,7 +86,6 @@ class Home extends Component {
   getNumberOfCaptures() {
     var that = this;
     jquery.get(window.location.href + 'capture/number', (data) => {
-      that.setState({ activeCaptures: data.numberOfCaptures }, that.render);
       that.props.dispatch(setCaptureCount(data.numberOfCaptures))
     });
   }
