@@ -7,18 +7,21 @@ export default class IssueModal extends Component {
         super(props)
 
         this.state = {
-          version: '',
+          version: '0.0.1',
           issueType: '',
           issuePriority: '',
           issueTitle: '',
+          OSType: '',
+          browser: '',
           description: '',
           email: ''
-
         }
 
         this.handleVersionChange = this.handleVersionChange.bind(this)
         this.updateIssueType = this.updateIssueType.bind(this)
         this.updateIssuePriority = this.updateIssuePriority.bind(this)
+        this.updateOSType = this.updateOSType.bind(this)
+        this.updateBrowser = this.updateBrowser.bind(this)
         this.updateIssueTitle = this.updateIssueTitle.bind(this)
         this.updateDescription = this.updateDescription.bind(this)
         this.submit = this.submit.bind(this)
@@ -31,6 +34,14 @@ export default class IssueModal extends Component {
 
   updateIssueType(event) {
     this.setState({ issueType: event.target.value });
+  }
+
+  updateBrowser(event) {
+     this.setState({ browser: event.target.value });
+ }
+
+  updateOSType(event) {
+    this.setState({ OSType: event.target.value });
   }
 
   updateIssuePriority(event) {
@@ -51,10 +62,12 @@ export default class IssueModal extends Component {
       "version": this.state.version,
       "type": this.state.issueType,
       "priority": this.state.issuePriority,
+      "os": this.state.OSType,
+      "browser": this.state.browser,
       "title": this.state.issueTitle,
       "description": this.state.description,
     }
-    console.log("BLAHHHH", issueJSON);
+
     jquery.ajax({
       url: window.location.href + 'issueReport',
       type: 'POST',
@@ -84,13 +97,13 @@ export default class IssueModal extends Component {
               </FormGroup>
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>Category</ControlLabel>
-                <FormControl componentClass="select" placeholder="bug" onChange={this.updateIssueType}>
+                <FormControl componentClass="select" placeholder="bug" value={this.state.issueType} onChange={this.updateIssueType}>
                   <option value="bug">Bug Report</option>
                   <option value="feature">Feature Request</option>
                   <option value="support">Support/Help Request</option>
                 </FormControl>
               </FormGroup>
-              
+
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>Priority</ControlLabel>
                 <FormControl componentClass="select" placeholder="critical" value={this.state.issuePriority} onChange={this.updateIssuePriority}>
@@ -99,20 +112,41 @@ export default class IssueModal extends Component {
                   <option value="minor">Minor</option>
                 </FormControl>
               </FormGroup>
-              
+
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Operating System</ControlLabel>
+                <FormControl componentClass="select" placeholder="Microsoft" value={this.state.OSType} onChange={this.updateOSType}>
+                  <option value="microsoft">Microsoft</option>
+                  <option value="macintosh">Mac OS</option>
+                  <option value="linux">Linux</option>
+                </FormControl>
+              </FormGroup>
+
+              <FormGroup controlId="formControlsSelect">
+                <ControlLabel>Browser</ControlLabel>
+                <FormControl componentClass="select" placeholder="Google Chrome" value={this.state.browser} onChange={this.updateBrowser}>
+                  <option value="chrome">Google Chrome</option>
+                  <option value="firefox">Firefox</option>
+                  <option value="ie">Internet Explorer</option>
+                  <option value="safari">Safari</option>
+                  <option value="opera">Opera</option>
+                </FormControl>
+              </FormGroup>
+
               <FormGroup
                 controlId="formBasicText"
               >
                 <ControlLabel>Issue Title</ControlLabel>
                 <FormControl
                   type="text"
+                  componentClass="textarea"
                   value={this.state.issueTitle}
                   placeholder="A descriptive heading for the issue"
                   onChange={this.updateIssueTitle}
                 />
               </FormGroup>
-              
-              <FormGroup controlId="formControlsTextarea" 
+
+              <FormGroup controlId="formControlsTextarea"
                 onChange={this.updateDescription}>
                 <ControlLabel>Description</ControlLabel>
                 <FormControl componentClass="textarea" placeholder="Describe the issue with as much detail as you can provide." />
@@ -127,4 +161,3 @@ export default class IssueModal extends Component {
       );
     }
   }
-  

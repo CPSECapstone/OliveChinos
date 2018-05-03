@@ -25,7 +25,6 @@ except:
     from utility.login import * 
     from utility.scheduler import *
 
-
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
 application.config.update(
@@ -58,23 +57,21 @@ if config['DEFAULT']:
 elif config["REGION_ONLY"]:
     region = config["REGION_ONLY"]['region']
     credentials = {'region_name' : region}
+else:
+    raise Exception("config.ini File must be in either the DEFAULT or REGION_ONLY configuration.")
 
 utilitydb = configparser.ConfigParser()
 utilitydb.read('utilitydb.ini')
 print(utilitydb)
 if utilitydb['DEFAULT']:
-    util_hostname = utilitydb['DEFAULT']['hostname']
-    util_username = utilitydb['DEFAULT']['username']
-    util_password = utilitydb['DEFAULT']['password']
-    util_database = utilitydb['DEFAULT']['database']
     util_s3 = utilitydb['DEFAULT']['S3name']
+else:
+    raise Exception("utilitydb.ini File must be in the DEFAULT configuration.")
 
-db_info = {"hostname" : util_hostname, "username" : util_username, "password" : util_password, "database" : util_database}
 
 print(credentials)
-print(db_info)
 
-ComManager.util_db = db_info.copy()
+ComManager.util_db = 'util.db'
 ComManager.credentials = credentials.copy()
 ComManager.S3name = util_s3
 cm = ComManager()
@@ -92,8 +89,52 @@ def createReplayName(dbName, formattedTime):
     return 'R_' + dbName + '_' + formattedTime
 
 '''
+TESTING OUT WEBSOCKETS
+'''
+
+from flask_socketio import SocketIO, send, emit
+
+socketio = SocketIO(application)
+
+@socketio.on('connect')
+def handle_client_connect_event():
+    print('----------CLIENT CONNECTED ---------', file=sys.stderr)
+
+    #print('received json: {0}'.format(str(json)), file=sys.stderr)
+
+@socketio.on('disconnect')
+def handle_client_disconnect_event():
+    print('----------CLIENT DISCONNECTED ---------', file=sys.stderr)
+
+
+
+@socketio.on('get_capture_replay_number')
+def handle_alert_event(json):
+    global cm
+    capture_count = get_capture_number(cm)
+    replay_count = get_replay_number()
+    emit('replayNumber', replay_count)
+    emit('captureNumber', capture_count)
+
+@application.route('/update_capture_count', methods=["GET"])
+def update_capture_count_http():
+    global cm
+    capture_count = get_capture_number(cm)
+    print("CAPTURE COUNT: ", capture_count, file=sys.stderr)
+    socketio.emit('captureNumber', capture_count)
+    return ('', 200) 
+
+@application.route('/update_replay_count', methods=["GET"])
+def update_replay_count_http():
+    replay_count = get_replay_number() 
+    print("REPLAY COUNT: ", replay_count, file=sys.stderr)
+    socketio.emit('replayNumber', replay_count)
+    return ('', 200) 
+
+'''
 Runs before each test and checks that the public and private keys
 were passed in and valid for the user. 
+'''
 '''
 @application.before_request 
 def authenticate_each_request():
@@ -104,6 +145,7 @@ def authenticate_each_request():
         abort(400)
     if not verify_login(pKey, priKey):
         abort(401)
+'''
 
 '''
 Render the home page and React app 
@@ -347,7 +389,9 @@ def replay():
     if replay_name == "":
         replay_name = createReplayName(db_name, start_time)
 
-    capture_name = data['captureName']
+    capture_name = data['captureName'] # odd bug where capture_name sometimes is a list of length 1
+    if isinstance(capture_name, list):
+        capture_name = capture_name[0]
 
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
@@ -389,8 +433,7 @@ Returns the number of currently active replays
 '''
 @application.route("/replay/number", methods=["GET"])
 def get_replay_number_http():
-    replays = get_active_replays()
-    return jsonify(replays)
+    return get_replay_number()
 
 '''
 Deletes a completed replay from the utility database 
@@ -414,9 +457,6 @@ Returns all analytics for a user
 @application.route("/analytics", methods=["GET"])
 def analytics():
     global cm
-    #analyticsNumber = request.args.get('id')
-    #print('THIS IS THE CREDENTIALS FROM THE FILLEEEE', file=sys.stderr)
-    #print(credentials, file=sys.stderr)
     metrics = get_analytics(credentials, cm)
     return jsonify(metrics)
 
@@ -427,7 +467,9 @@ bootstraps but before any requests to the API have been made
 @application.before_first_request
 def _run_on_start():
     init_replay()
-    init_scheduler()
+    init_scheduler()    
+    cm.setup_utility_database()
+    start_orphaned_captures(credentials, cm)
 
 
 '''
@@ -441,4 +483,5 @@ if __name__ == "__main__":
         global_username, global_password = sys.argv[1:3]
     except Exception:
         pass
-    application.run(debug=True, host='0.0.0.0')
+    #application.run(debug=True, host='0.0.0.0')
+    socketio.run(application, debug=True, host='0.0.0.0', log_output=True)

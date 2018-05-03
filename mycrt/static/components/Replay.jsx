@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select, startReplayFromCapture } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, startReplayFromCapture, fetchReplays, fetchCapturesToReplay } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -32,9 +32,9 @@ class Replay extends React.Component {
     this.handleShowAlert = this.handleShowAlert.bind(this)
     this.handleCloseAlert = this.handleCloseAlert.bind(this)
     this.displayReplays = this.displayReplays.bind(this)
-    this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
-    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
+    this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
   }
+
 
   // Function to show "New Replay" popup-form
   handleShow() {
@@ -52,11 +52,21 @@ class Replay extends React.Component {
     this.setState({ showAlert: true });
   }
 
-  // Function to refresh the list of replays
-  componentDidMount() {
-    this.loadDatabaseInstances()
-    this.loadCapturesToReplay()
-    this.displayReplays()
+
+  // Function to close "New Replay" popup-form
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  // Function to close "New Replay" popup-form and start a new replay
+  handleCloseAndAddReplay() {
+    this.setState({ show: false });
+    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
+  }
+
+  // Function to show "New Replay" popup-form
+  handleShow() {
+    this.setState({ show: true });
   }
 
   // Function to change replay name
@@ -78,25 +88,10 @@ class Replay extends React.Component {
     return captureList
   }
 
-  // Function to fetch the list of captures available to replay on
-  loadCapturesToReplay() {
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/completed_list',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      let resultList = that.createCapturesSelect(data)
-      that.setState({ captureOptions: resultList })
-      that.setState({ captureToReplay: resultList[0].props.value })
 
-    })
-  }
-
-  // Function to display the list of available DB instances
+  // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
-    let dbInstances = data["databases"];
+    let dbInstances = data["databases"] || [];
     let dbList = [];
     for (let i = 0; i < dbInstances.length; i++) {
       let instance = dbInstances[i];
@@ -108,23 +103,6 @@ class Replay extends React.Component {
     return dbList
   }
 
-  // Function to fetch the list of DB instances
-  loadDatabaseInstances() {
-    let that = this;
-    let returnList = []
-    jquery.ajax({
-      url: window.location.href + 'databaseInstances',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      returnList = that.createDBInstancesSelect(data)
-      that.setState({
-        databaseInstanceOptions: returnList
-      })
-      that.setState({ replayRDSInstance: returnList[0].props.value })
-    })
-  }
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
@@ -161,6 +139,7 @@ class Replay extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       that.displayReplays()
+      that.props.dispatch(fetchReplays());
     })
 
   }
@@ -195,8 +174,8 @@ class Replay extends React.Component {
       );
     }
 
-    if (data["replays"].length > 0) {
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
+    if (data.length > 0) {
+      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data} options={options}>
         <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
@@ -234,12 +213,12 @@ class Replay extends React.Component {
 
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
-    if (this.state.completedReplayList == null) {
+    if (this.props.replaysCompleted === false) {
       return <div id="loader"></div>
     } else {
       return (
         <div>
-          {this.state.completedReplayList}
+          {this.getReplayTable(this.props.replaysCompleted)}
         </div>
       );
     }
@@ -308,7 +287,10 @@ const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
   replay: state.replay,
   analyticsForGraph: state.analyticsForGraph,
-  showReplayModal: state.showReplayModal
+  showReplayModal: state.showReplayModal,
+  databaseInstances: state.databaseInstances,
+  replaysCompleted: state.replaysCompleted,
+  capturesToReplay: state.capturesToReplay
 })
 
 export default connect(mapStateToProps)(Replay)

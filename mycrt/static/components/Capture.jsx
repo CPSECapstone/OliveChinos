@@ -8,7 +8,21 @@ import ReplayForm from './ReplayForm'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { setCaptureCount, startCapture, stopCapture, changeStateForComponents, startReplayFromCapture } from '../actions'
+import {
+  setCaptureCount,
+  startCapture,
+  stopCapture,
+  changeStateForComponents,
+  startReplayFromCapture,
+  setCaptureActiveList,
+  setCaptureCompletedList,
+  setCaptureScheduledList,
+  setDatabaseInstances,
+  setIsCapturesLoaded,
+  setIsReplaysLoaded,
+  fetchCaptures,
+  fetchReplays
+} from '../actions'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
@@ -39,8 +53,7 @@ class Capture extends React.Component {
       captureStartTime: new Date(),
       captureEndTime: new Date(),
       captureMode: 'interactive',
-      captureInfoShow: false,
-      captureToReplay: ''
+      captureInfoShow: false
     }
 
     //binding required for callback
@@ -49,8 +62,6 @@ class Capture extends React.Component {
     this.handleShow = this.handleShow.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.startNewCapture = this.startNewCapture.bind(this)
-    this.editCapture = this.editCapture.bind(this)
-    // this.getCaptures = this.getCaptures.bind(this)
 
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
     this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
@@ -58,18 +69,9 @@ class Capture extends React.Component {
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
 
-    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
-    this.getCapturesTable = this.getCapturesTable.bind(this)
-    this.displayAllCaptures = this.displayAllCaptures.bind(this)
-  }
-
-  // Refreshs database instances and capture lists when component fully renders
-  componentDidMount() {
-    this.loadDatabaseInstances()
-    this.displayAllCaptures()
   }
 
   // Sets state of error alert to close
@@ -137,58 +139,14 @@ class Capture extends React.Component {
       dataType: 'json'
     })
       .done(function (data) {
-        that.displayAllCaptures()
+        that.props.dispatch(fetchCaptures());
       })
       .fail(function (data) {
         that.handleShowAlert()
       })
   }
 
-  // Consumes a capture name, capture db, and action and calls that action on the specified capture
-  editCapture(captureName, captureDB, action) {
 
-    let postData = {
-      "db": captureDB,
-      "captureName": captureName
-    }
-    let that = this;
-    /*if (action === 'end') {
-      this.props.dispatch(stopCapture())
-    }*/
-    if (action === 'end' || action === 'cancel') {
-      jquery.ajax({
-        url: window.location.href + 'capture/' + action,
-        type: 'POST',
-        data: JSON.stringify(postData),
-        contentType: 'application/json',
-        dataType: 'json'
-      }).done(function (data) {
-        //console.log(data)
-        that.displayAllCaptures()
-      })
-    }
-    else if (action == 'REPLAY') {
-      this.setState({ captureToReplay: captureName })
-      this.props.dispatch(startReplayFromCapture())
-      console.log("CHANGING showReplayModal state to ", this.props.showReplayModal)
-    }
-    else {
-      let deleteData = {
-        "capture": captureName
-      }
-      jquery.ajax({
-        url: window.location.href + 'capture/delete',
-        type: 'DELETE',
-        data: JSON.stringify(deleteData),
-        contentType: 'application/json',
-        dataType: 'json'
-      }).done(function (data) {
-        that.displayAllCaptures()
-      })
-
-    }
-
-  }
 
   // Changes the help text for the capture name form
   getValidationState() {
@@ -236,7 +194,7 @@ class Capture extends React.Component {
 
   // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
-    let dbInstances = data["databases"];
+    let dbInstances = data["databases"] || [];
     let dbList = [];
     for (let i = 0; i < dbInstances.length; i++) {
       let instance = dbInstances[i];
@@ -248,102 +206,11 @@ class Capture extends React.Component {
     return dbList
   }
 
-  // Retrieves a list of available rds instances and initializes the form to choose the instances
-  loadDatabaseInstances() {
-    let that = this;
-    let returnList = []
-    jquery.ajax({
-      url: window.location.href + 'databaseInstances',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      returnList = that.createDBInstancesSelect(data)
-      that.setState({
-        databaseInstanceOptions: returnList
-      })
-      that.setState({ captureRDSInstance: returnList[0].props.value })
-    })
-  }
-
   // Changes the selected rds instance for capture
   updateCaptureRDS(e) {
     this.setState({ captureRDSInstance: e.target.value });
   }
 
-  // Consumes a list of capture details and a capture state and produces a button of action 
-  getCapturesTable(data, captureState) {
-    let currentCaptures = [];
-    let current;
-    let captureEditAction;
-    let that = this;
-    function buttonFormatter(cell, row) {
-      if (captureState === 'past') {
-        return (
-          <div className='row'>
-            <Button className='btn-warning'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'REPLAY')}
-            >
-              REPLAY
-          </Button>
-            <Button className='btn-danger' style={{ marginLeft: '10px' }}
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'delete')}
-            >
-              DELETE
-          </Button>
-          </div>
-        );
-      }
-      else if (captureState === 'active') {
-        return (
-          <div className='row'>
-            <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'end')}
-            >
-              STOP
-          </Button>
-          </div>
-        );
-      }
-      else if (captureState === 'scheduled') {
-        return (
-          <div className='row'>
-            <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'cancel')}
-            >
-              CANCEL
-          </Button>
-          </div>
-        );
-      }
-    }
-
-    console.log("DATA!!!\n", data["captures"])
-    if (data["captures"].length > 0) {
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["captures"]}>
-        <TableHeaderColumn dataField='captureName' isKey dataSort>Capture Name</TableHeaderColumn>
-        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn dataField='startTime' dataSort>Start Time</TableHeaderColumn>
-        <TableHeaderColumn dataField='endTime' dataSort>End Time</TableHeaderColumn>
-        <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
-      </BootstrapTable>
-    }
-    else {
-      let tester = [{
-        something: 1,
-      }]
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
-        <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
-        <TableHeaderColumn >Database</TableHeaderColumn>
-        <TableHeaderColumn >RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn >Start Time</TableHeaderColumn>
-        <TableHeaderColumn >End Time</TableHeaderColumn>
-        <TableHeaderColumn >Action</TableHeaderColumn>
-
-      </BootstrapTable>
-    }
-  }
 
   // Consumes a capture type and produces a table of captures retrieved from the server
   displayCaptures(captureType) {
@@ -365,28 +232,17 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      let resultList = that.getCapturesTable(data, captureType)
       if (captureType === 'active') {
         that.props.dispatch(setCaptureCount(data.captures.length))
-        console.log('SETTING THE ACTIVES')
-        that.setState({ activeCaptureList: resultList })
+        that.props.dispatch(setCaptureActiveList(data.captures));
       }
       else if (captureType === 'scheduled') {
-        console.log('SETTING THE SCHEDULED')
-        that.setState({ scheduledCaptureList: resultList })
+        that.props.dispatch(setCaptureScheduledList(data.captures));
       }
       else {
-        console.log('SETTING THE COMPLETED')
-        that.setState({ completedCaptureList: resultList })
+        that.props.dispatch(setCaptureCompletedList(data.captures));
       }
     })
-  }
-
-  // Creates the tables for all capture types
-  displayAllCaptures() {
-    this.displayCaptures('active')
-    this.displayCaptures('scheduled')
-    this.displayCaptures('past')
   }
 
   render() {
@@ -442,7 +298,7 @@ class Capture extends React.Component {
 
           <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button id="refreshCapturesButton" onClick={this.displayAllCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.props.fetchCaptures}>
                 Refresh Capture
               </Button>
               <Button
@@ -483,7 +339,7 @@ class Capture extends React.Component {
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>RDS Instance</ControlLabel>
                 <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
-                  {this.state.databaseInstanceOptions}
+                  {this.createDBInstancesSelect(this.props.databaseInstances)}
                 </FormControl>
               </FormGroup>
               <FormGroup>
@@ -519,7 +375,7 @@ class Capture extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <ReplayForm onReplayPage={false} captureToReplay={this.state.captureToReplay} store={this.props} show={this.props.showReplayModal} />
+        <ReplayForm onReplayPage={false} captureToReplay={this.props.captureToReplay} store={this.props} show={this.props.showReplayModal} />
 
         <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
@@ -528,10 +384,8 @@ class Capture extends React.Component {
         <div id="captureBody">
           {uniqueNameAlert}
 
-          <CaptureList
-            activeCaptures={this.state.activeCaptureList}
-            completedCaptures={this.state.completedCaptureList}
-            scheduledCaptures={this.state.scheduledCaptureList} />
+          <CaptureList />
+
         </div>
       </div >
     )
@@ -541,7 +395,14 @@ class Capture extends React.Component {
 const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
   capture: state.capture,
-  showReplayModal: state.showReplayModal
+  showReplayModal: state.showReplayModal,
+  isCapturesLoaded: state.isCapturesLoaded,
+  databaseInstances: state.databaseInstances,
+  capturesActive: state.capturesActive,
+  capturesCompleted: state.capturesCompleted,
+  capturesScheduled: state.capturesScheduled,
+  captureToReplay: state.captureToReplay
+
 })
 
 export default connect(mapStateToProps)(Capture)

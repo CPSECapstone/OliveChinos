@@ -5,7 +5,10 @@ from datetime import datetime
 import time
 import re
 import sys
+import requests
 from .communications import ComManager
+from multiprocessing import Process
+
 
 
 # Example of credentials dictionary
@@ -145,10 +148,26 @@ def get_capture_details(capture_name, cm):
       "rds": rds
     }  
 
+def func_to_call(x): 
+      requests.get(x)
+
+def _update_capture_count():
+  print("In _update_capture_count", file=sys.stderr)
+  address = "http://localhost:5000/update_capture_count"
+  
+  proc = Process(target = func_to_call,
+                 args = (address,))
+  proc.start()
+  print("Finished get request in _update_capture_count", file=sys.stderr)
+
+
 def _process_capture_details(record):
   (name, db, start_time, end_time, status, rds) = record
-  start_time = start_time.strftime("%Y-%m-%d  %H:%M:%S")
-  end_time = "No end time." if end_time is None else end_time.strftime("%Y-%m-%d  %H:%M:%S")
+
+  #start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
+  #end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
+  start_time = start_time.replace("/", "-")#start_time.strftime("%Y-%m-%d  %H:%M:%S")
+  end_time = "No end time." if end_time is None else end_time.replace("/", "-")#end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
   return {
     "captureName" : name,
@@ -237,11 +256,22 @@ def _put_bucket(s3_client, data, bucket_id, log_key = "test-log.txt", cm = None)
     Key = log_key
   )
 
+def _process_time(time_str):
+  if "T" in time_str:
+    '%Y-%m-%dT%H:%M:%S.%fZ'
+    macro, micro = time_str.split("T")
+    year, month, day = macro.split("-")
+    hms = micro.split(".")[0] #HH:MM:SS
+    return "{0}/{1}/{2} {3}".format(year, month, day, hms)
+  else:
+    return time_str
+
 def schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password, cm):
   """Schedules a capture to be logged into the database.
 
   """
-
+  start_time = _process_time(start_time)
+  end_time = _process_time(end_time)
   print('scheduling capture', file=sys.stderr)
   query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
                VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, rds_name, username, password)
@@ -262,9 +292,12 @@ def start_capture(capture_name, rds_name, db_name, start_time, username, passwor
 
   print('starting capture', file=sys.stderr)
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}') ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  query = '''UPDATE OR IGNORE Captures SET status="ongoing" WHERE name="{0}"'''.format(capture_name)
   cm.execute_query(query)
+  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  cm.execute_query(query)
+  _update_capture_count()
 
 def end_capture(credentials, capture_name, db, cm):
   """Ends a specified capture.
@@ -293,17 +326,18 @@ def end_capture(credentials, capture_name, db, cm):
       WHERE user_host <> 'rdsadmin[rdsadmin] @ localhost [127.0.0.1]'
       AND event_time >= '{0}' AND event_time <= '{1}'
       AND command_type = 'Query'
-  '''.format(start_time.strftime("%Y/%m/%d %H:%M:%S"), end_time)
+  '''.format(start_time, end_time)
 
   transactions = cm.execute_query(query, hostname = address, username = username, password = password, database = db) # need to give username and password eventually
 
   bucket_id = ComManager.S3name
 
-  _put_bucket(s3_client, transactions, bucket_id, log_key = "{0}/{0}.cap".format(capture_name), cm = cm)
+  _put_bucket(s3_client, transactions, bucket_id, log_key = "mycrt/{0}/{0}.cap".format(capture_name), cm = cm)
 
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
   cm.execute_query(query)
 
+  _update_capture_count()
   return start_time
 
 def delete_capture(credentials, capture_name, cm):
@@ -316,21 +350,26 @@ def delete_capture(credentials, capture_name, cm):
     capture_name: A preexisting capture name
   '''
 
-  s3_resource = cm.get_boto('s3')
-  bucket_id = ComManager.S3name
-  bucket = s3_resource.Bucket(bucket_id)  
+  s3_client = cm.get_boto('s3')
+  bucket_id = cm.S3name
 
-  objects_to_delete = []
-  for obj in bucket.objects.filter(Prefix = capture_name + '/'):
-    objects_to_delete.append({'Key': obj.key})
+  objects_to_delete = [{"Key" : "mycrt/" + capture_name + '/' + capture_name + ".cap"}]
+  query = '''SELECT replay FROM Replays WHERE capture = '{0}' '''.format(capture_name)
+  for (replay_name,) in cm.execute_query(query):
+    objects_to_delete.append({"Key" : "mycrt/" + capture_name + '/' + replay_name + ".replay"})
+  #for obj in bucket.objects.filter(Prefix = "mycrt/" + capture_name + '/'):
+  #  objects_to_delete.append({'Key': obj.key})
 
-  bucket.delete_objects(
+  s3_client.delete_objects(
+    Bucket = bucket_id, 
     Delete = {
         'Objects': objects_to_delete
     }
   )
 
   query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  cm.execute_query(query)
+  query = '''DELETE FROM Replays WHERE capture = '{0}' '''.format(capture_name)
   cm.execute_query(query)
 
 def cancel_capture(capture_name, cm): 
@@ -345,6 +384,7 @@ def cancel_capture(capture_name, cm):
 
     query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
     cm.execute_query(query)
+    _update_capture_count()
     
 
 
