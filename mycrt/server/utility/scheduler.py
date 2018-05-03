@@ -142,9 +142,26 @@ def _get_epoch_time(raw_time):
         Returns: 
             seconds since epoch
     """
-    dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+    if "T" in raw_time:
+        dt_obj = datetime.strptime(raw_time, '%Y-%m-%dT%H:%M:%S.%fZ')
+    else:
+        dt_obj = datetime.strptime(raw_time, '%Y/%m/%d %H:%M:%S')
     #NOTE epoch time does not take into account daylight savings time
     #TODO in the future, update per time zone 
     eight_hours = timedelta(hours=7).total_seconds()
     return time.mktime(dt_obj.timetuple()) 
 
+def start_orphaned_captures(credentials, cm):
+    """ Ran at start of program to start previously scheduled captures from last runtime.
+
+    Args:
+        credentials: A credentials dictionary #not used anymore, kept around until we refactor
+        cm: A ComManager object
+    """
+
+    captures_to_start = cm.execute_query("SELECT * FROM Captures WHERE status = 'scheduled'")
+    cm.execute_query("DELETE FROM Captures WHERE status = 'scheduled'")
+    for (db_name, capture_name, start_time, end_time, status, rds_name, username, password) in captures_to_start:
+        print(capture_name, file=sys.stderr)
+        new_capture_process(True, credentials, capture_name, 
+                            db_name, start_time, end_time, rds_name, username, password, cm)

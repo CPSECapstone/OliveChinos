@@ -21,10 +21,21 @@ import {
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
   SET_GRAPH_DATA_FROM_REPLAY,
-  SET_SELECTED_REPLAY
+  SET_SELECTED_REPLAY,
+  SET_CAPTURE_ACTIVE_LIST,
+  SET_CAPTURE_COMPLETED_LIST,
+  SET_CAPTURE_SCHEDULED_LIST,
+  SET_REPLAY_ACTIVE_LIST,
+  SET_REPLAY_COMPLETED_LIST,
+  SET_DATABASE_INSTANCES,
+  SET_IS_CAPTURES_LOADED,
+  SET_IS_REPLAYS_LOADED,
+  SET_CAPTURES_TO_REPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
+import jquery from 'jquery'
+
 
 let initialState = {
   name: '',
@@ -32,8 +43,8 @@ let initialState = {
   publicKey: '',
   error: '',
   loggedIn: false,
-  activeCaptures: 0,
-  activeReplays: 0,
+  activeCapturesNum: 0,
+  activeReplaysNum: 0,
   capture: 'Capture Inactive',
   replay: 'Replay Inactive',
   dataPointsForGraph: false,
@@ -46,7 +57,27 @@ let initialState = {
   totalNames: false,
   currentCaptureForGraph: 'Capture Options',
   stateType: 'onCapture',
-  selectedReplay: false
+  selectedReplay: false,
+  capturesActive: false,
+  capturesScheduled: false,
+  capturesCompleted: false,
+  replaysActive: false,
+  replaysCompleted: false,
+  capturesToReplay: false,
+  databaseInstances: [],
+  isCapturesLoaded: false,
+  isReplaysLoaded : false
+}
+
+function apiRequest(url, action = "list_scheduled") {
+  return jquery.ajax({
+        url: window.location.href + 'capture/' + action,
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        console.log("REDUCER API REQUEST: ", data)
+      })
 }
 
 function reducer(state = initialState, action) {
@@ -91,23 +122,23 @@ function reducer(state = initialState, action) {
 
     case START_CAPTURE:
       return Object.assign({}, state, {
-        activeCaptures: state.activeCaptures + 1,
+        activeCapturesNum: state.activeCapturesNum + 1,
         capture: 'Capture Active'
       })
 
     case SET_CAPTURE_COUNT:
       return Object.assign({}, state, {
-        activeCaptures: action.count
+        activeCapturesNum: action.count
       })
 
     case SET_REPLAY_COUNT:
       return Object.assign({}, state, {
-        activeReplays: action.count
+        activeReplaysNum: action.count
       })
 
     case STOP_CAPTURE:
       return Object.assign({}, state, {
-        activeCaptures: state.activeCaptures - 1,
+        activeCapturesNum: state.activeCapturesNum - 1,
         capture: 'Capture Inactive'
       })
 
@@ -119,13 +150,13 @@ function reducer(state = initialState, action) {
 
     case START_NEW_REPLAY:
       return Object.assign({}, state, {
-        activeReplays: state.activeReplays + 1,
+        activeReplaysNum: state.activeReplaysNum + 1,
         replay: 'New Replay Started'
       })
 
     case STOP_REPLAY:
       return Object.assign({}, state, {
-        activeReplays: state.activeReplays - 1,
+        activeReplaysNum: state.activeReplaysNum - 1,
         replay: 'Replay stopped'
       })
 
@@ -171,6 +202,60 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         selectedReplay: action.key
       })
+
+    case SET_CAPTURE_ACTIVE_LIST:
+      console.log("SET_CAPTURE_ACTIVE_LIST", action.key);
+      return Object.assign({}, state, {
+        capturesActive: action.key
+      })
+
+    case SET_CAPTURE_SCHEDULED_LIST:
+      return Object.assign({}, state, {
+        capturesScheduled: action.key
+      })
+
+    case SET_CAPTURE_COMPLETED_LIST:
+      return Object.assign({}, state, {
+        capturesCompleted: action.key
+      })
+
+    case SET_REPLAY_ACTIVE_LIST:
+      return Object.assign({}, state, {
+        replaysActive: action.key
+      })
+
+    case SET_REPLAY_COMPLETED_LIST:
+      return Object.assign({}, state, {
+        replaysCompleted: action.key
+      })
+
+    case SET_DATABASE_INSTANCES:
+      console.log("DB INSTANCES REDUCERS:", action.key);
+      return Object.assign({}, state, {
+        databaseInstances: action.key
+      })
+
+    case SET_IS_CAPTURES_LOADED:
+      return Object.assign({}, state, {
+        isCapturesLoaded: action.key
+      })
+
+    case SET_IS_REPLAYS_LOADED:
+      return Object.assign({}, state, {
+        isReplaysLoaded: action.key
+      })
+
+    case SET_CAPTURES_TO_REPLAY:
+      return Object.assign({}, state, {
+        capturesToReplay: action.key
+      })
+
+    // case FETCH_CAPTURES_ACTIVE:
+    //   obj = makeCall()
+    //   //TODO Use a promise
+    //   //TODO Use a callback?
+
+    //   return obj.capturesActive
 
     default:
       return state
