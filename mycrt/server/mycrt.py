@@ -121,27 +121,29 @@ def handle_client_disconnect_event():
     print('----------CLIENT DISCONNECTED ---------', file=sys.stderr)
 
 
-@socketio.on('json_button')
-def handle_json_button(json):
-    # it will forward the json to all clients.
-    print("JSON BUTTON EVENT", file=sys.stderr)
-    send(json, json=True)
 
-
-@socketio.on('alert_button')
+@socketio.on('get_capture_replay_number')
 def handle_alert_event(json):
-    # it will forward the json to all clients.
-    update_capture_number()
-    update_replay_number()
-    print('Message from client was {0}'.format(json), file=sys.stderr)
-    emit('alert', 'Message from backend')
+    global cm
+    capture_count = get_capture_number(cm)
+    replay_count = get_replay_number()
+    emit('replayNumber', replay_count)
+    emit('captureNumber', capture_count)
 
-def update_replay_number():
-    emit('replayNumber', 2)
+@application.route('/update_capture_count', methods=["GET"])
+def update_capture_count_http():
+    global cm
+    capture_count = get_capture_number(cm)
+    print("CAPTURE COUNT: ", capture_count, file=sys.stderr)
+    socketio.emit('captureNumber', capture_count)
+    return ('', 200) 
 
-def update_capture_number():
-    emit('captureNumber', 3)
-
+@application.route('/update_replay_count', methods=["GET"])
+def update_replay_count_http():
+    replay_count = get_replay_number()
+    print("REPLAY COUNT: ", replay_count, file=sys.stderr)
+    socketio.emit('replayNumber', replay_count)
+    return ('', 200) 
 
 '''
 Runs before each test and checks that the public and private keys
@@ -441,8 +443,7 @@ Returns the number of currently active replays
 '''
 @application.route("/replay/number", methods=["GET"])
 def get_replay_number_http():
-    replays = get_active_replays()
-    return jsonify(replays)
+    return get_replay_number()
 
 '''
 Deletes a completed replay from the utility database 

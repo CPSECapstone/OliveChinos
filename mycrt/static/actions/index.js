@@ -1,6 +1,6 @@
 //Redux stuff
 //Ask Yeng if you have questions!
-
+import jquery from 'jquery';
 import {
   SET_PUBLIC_KEY,
   SET_PRIVATE_KEY,
@@ -145,4 +145,58 @@ export function setIsCapturesLoaded(key) {
 
 export function setIsReplaysLoaded(key) {
   return {type: SET_IS_REPLAYS_LOADED, key}
+}
+
+export function fetchCaptures() {
+  return function(dispatch) {
+    jquery.ajax({
+      url: window.location.href + 'capture/list_ongoing',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log("RESPONSE DATA jquery active ", data);
+      dispatch(setCaptureActiveList(data.captures));
+    })
+
+    jquery.ajax({
+      url: window.location.href + 'capture/list_scheduled',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log("RESPONSE DATA jquery scheduled ", data);
+      dispatch(setCaptureScheduledList(data.captures));
+    })
+
+    jquery.ajax({
+      url: window.location.href + 'capture/list_completed',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log("RESPONSE DATA jquery completed ", data);
+      dispatch(setCaptureCompletedList(data.captures));
+    })
+
+    
+    return null
+  }
+}
+
+
+export function fetchReplays() {
+  return function(dispatch) {
+    jquery.ajax({
+      url: window.location.href + 'replay/list',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log("REPLAYS ACTION", data)
+      dispatch(setReplayCompletedList(data.replays));
+    })
+
+    return null
+  }
 }

@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, fetchReplays } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -85,7 +85,8 @@ class Replay extends React.Component {
   componentDidMount() {
     if (!isReplayListLoaded) {
       this.loadCapturesToReplay();
-      this.displayReplays();
+      //this.displayReplays();
+      this.props.dispatch(fetchReplays());
       isReplayListLoaded = false;
     }
   }
@@ -287,8 +288,8 @@ class Replay extends React.Component {
       );
     }
 
-    if (data["replays"].length > 0) {
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["replays"]} options={options}>
+    if (data.length > 0) {
+      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data} options={options}>
         <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
         <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
@@ -326,12 +327,12 @@ class Replay extends React.Component {
 
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
-    if (this.state.completedReplayList == null) {
+    if (this.props.replaysCompleted == null) {
       return <div id="loader"></div>
     } else {
       return (
         <div>
-          {this.state.completedReplayList}
+          {this.getReplayTable(this.props.replaysCompleted)}
         </div>
       );
     }
@@ -462,7 +463,8 @@ const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
   replay: state.replay,
   analyticsForGraph: state.analyticsForGraph,
-  databaseInstances: state.databaseInstances
+  databaseInstances: state.databaseInstances,
+  replaysCompleted: state.replaysCompleted
 })
 
 export default connect(mapStateToProps)(Replay)

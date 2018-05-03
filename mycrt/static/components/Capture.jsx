@@ -17,7 +17,8 @@ import {
   setCaptureScheduledList,
   setDatabaseInstances,
   setIsCapturesLoaded,
-  setIsReplaysLoaded
+  setIsReplaysLoaded,
+  fetchCaptures
 } from '../actions'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
@@ -70,7 +71,6 @@ class Capture extends React.Component {
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
-    this.getCapturesTable = this.getCapturesTable.bind(this)
     this.displayAllCaptures = this.displayAllCaptures.bind(this)
   }
 
@@ -78,7 +78,8 @@ class Capture extends React.Component {
   componentDidMount() {
     console.log("redux isCapturesLoaded: ", this.props.isCapturesLoaded);
     if (!this.props.isCapturesLoaded) {
-      this.displayAllCaptures();
+      this.props.dispatch(fetchCaptures());
+      //this.displayAllCaptures();
       this.props.dispatch(setIsCapturesLoaded(false));
     }
     //this.setState({ captureRDSInstance: this.props.databaseInstances[0].value })
@@ -263,79 +264,6 @@ class Capture extends React.Component {
     this.setState({ captureRDSInstance: e.target.value });
   }
 
-  // Consumes a list of capture details and a capture state and produces a button of action 
-  getCapturesTable(data, captureState) {
-    let currentCaptures = [];
-    let current;
-    let captureEditAction;
-    let that = this;
-    function buttonFormatter(cell, row) {
-      if (captureState === 'past') {
-        return (
-          <div className='row'>
-            <Button className='btn-warning'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'REPLAY')}
-            >
-              REPLAY
-          </Button>
-            <Button className='btn-danger' style={{ marginLeft: '10px' }}
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'delete')}
-            >
-              DELETE
-          </Button>
-          </div>
-        );
-      }
-      else if (captureState === 'active') {
-        return (
-          <div className='row'>
-            <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'end')}
-            >
-              STOP
-          </Button>
-          </div>
-        );
-      }
-      else if (captureState === 'scheduled') {
-        return (
-          <div className='row'>
-            <Button className='btn-danger'
-              onClick={() => that.editCapture(row["captureName"], row["db"], 'cancel')}
-            >
-              CANCEL
-          </Button>
-          </div>
-        );
-      }
-    }
-
-    console.log("DATA!!!\n", data["captures"])
-    if (data["captures"].length > 0) {
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data["captures"]}>
-        <TableHeaderColumn dataField='captureName' isKey dataSort>Capture Name</TableHeaderColumn>
-        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn dataField='startTime' dataSort>Start Time</TableHeaderColumn>
-        <TableHeaderColumn dataField='endTime' dataSort>End Time</TableHeaderColumn>
-        <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
-      </BootstrapTable>
-    }
-    else {
-      let tester = [{
-        something: 1,
-      }]
-      return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
-        <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
-        <TableHeaderColumn >Database</TableHeaderColumn>
-        <TableHeaderColumn >RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn >Start Time</TableHeaderColumn>
-        <TableHeaderColumn >End Time</TableHeaderColumn>
-        <TableHeaderColumn >Action</TableHeaderColumn>
-
-      </BootstrapTable>
-    }
-  }
 
   // Consumes a capture type and produces a table of captures retrieved from the server
   displayCaptures(captureType) {
@@ -357,21 +285,14 @@ class Capture extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      let resultList = that.getCapturesTable(data, captureType)
       if (captureType === 'active') {
         that.props.dispatch(setCaptureCount(data.captures.length))
         that.props.dispatch(setCaptureActiveList(data.captures));
-        console.log('SETTING THE ACTIVES')
-        that.setState({ activeCaptureList: resultList })
       }
       else if (captureType === 'scheduled') {
-        console.log('SETTING THE SCHEDULED')
-        that.setState({ scheduledCaptureList: resultList })
         that.props.dispatch(setCaptureScheduledList(data.captures));
       }
       else {
-        console.log('SETTING THE COMPLETED')
-        that.setState({ completedCaptureList: resultList })
         that.props.dispatch(setCaptureCompletedList(data.captures));
       }
     })
@@ -379,7 +300,6 @@ class Capture extends React.Component {
 
   // Creates the tables for all capture types
   displayAllCaptures() {
-    console.log("DISPLAY ALL CAPTURES IS RUNNING");
     this.displayCaptures('active');
     setTimeout(this.displayCaptures('scheduled'), 2000);
     setTimeout(this.displayCaptures('past'), 4000);
@@ -522,10 +442,8 @@ class Capture extends React.Component {
         <div id="captureBody">
           {uniqueNameAlert}
 
-          <CaptureList
-            activeCaptures={this.state.activeCaptureList}
-            completedCaptures={this.state.completedCaptureList}
-            scheduledCaptures={this.state.scheduledCaptureList} />
+          <CaptureList />
+            
         </div>
       </div >
     )

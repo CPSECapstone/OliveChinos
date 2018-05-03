@@ -110,7 +110,7 @@ class Home extends Component {
     this.setUpWebSocketCaptureNumber();
     this.setUpWebSocketReplayNumber();
     this.loadDatabaseInstances();
-    socket.emit('alert_button', 'Message from Home.jsx');
+    socket.emit('get_capture_replay_number', 'Message from Home.jsx');
     setTimeout(this.getPythonAnalytics, 5000);
   }
 
@@ -144,19 +144,19 @@ class Home extends Component {
 
   currentAction(action) {
     if (action === 'capture') {
-      if (this.props.data.activeCaptures > 1) {
+      if (this.props.activeCapturesNum > 1) {
         return (
-          <div>{this.props.data.activeCaptures} Captures</div>
+          <div>{this.props.activeCapturesNum} Captures</div>
         )
-      } else if (this.props.data.activeCaptures == 1) {
+      } else if (this.props.activeCapturesNum == 1) {
         return <div>1 Capture</div>
       } else {
         return <div>No Captures</div>
       }
     } else if (action === 'replay') {
-      if (this.props.data.activeReplays > 1) {
-        return <div>{this.props.data.activeReplays} Replays</div>
-      } else if (this.props.data.activeReplays == 1) {
+      if (this.props.activeReplaysNum > 1) {
+        return <div>{this.props.activeReplaysNum} Replays</div>
+      } else if (this.props.activeReplaysNum == 1) {
         return <div>1 Replay</div>
       } else {
         return <div>No Replays</div>
@@ -166,9 +166,9 @@ class Home extends Component {
 
   render() {
     var captureActiveStyle =
-      this.props.data.activeCaptures > 0 ? styles.active : styles.notActive
+      this.props.activeCapturesNum > 0 ? styles.active : styles.notActive
     var replayActiveStyle =
-      this.props.data.activeReplays > 0 ? styles.active : styles.notActive
+      this.props.activeReplaysNum > 0 ? styles.active : styles.notActive
     var tabActiveStyle = this.props.stateForComponents;
     var classNames = require('classnames');
     let issueClose = () => this.setState({ issueShow: false });
@@ -247,7 +247,9 @@ const mapStateToProps = state => ({
   data: state,
   stateType: state.stateType,
   analyticsForGraph: state.analyticsForGraph,
-  databaseInstances: state.databaseInstances
+  databaseInstances: state.databaseInstances,
+  activeCapturesNum: state.activeCapturesNum,
+  activeReplaysNum: state.activeReplaysNum
 })
 
 export default connect(mapStateToProps)(Home)

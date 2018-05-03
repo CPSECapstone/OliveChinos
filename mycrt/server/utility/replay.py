@@ -130,6 +130,9 @@ def _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_pr
 def get_active_db():
   return [key for key, _ in db_in_use.items()]
 
+def get_replay_number():
+  return len(replays_in_progress)
+
 def get_active_replays():
   fields = ["replayName", "captureName", "db", "mode"]
   rep_list = []
@@ -143,14 +146,19 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
                  args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, ComManager()))
   proc.start()
 
+def _update_replay_count():
+  print("In _update_replay_count", file=sys.stderr)
+  requests.get("http://localhost:5000/update_replay_count")
+
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
   pid = os.getpid()
   #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
   #  time.sleep(3) # sleep three seconds and try again later
-  
+  _update_replay_count()
   _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
+  _update_replay_count()
 
 def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
   rds_client = cm.get_boto('rds')

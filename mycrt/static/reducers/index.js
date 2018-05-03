@@ -33,6 +33,8 @@ import {
 } from '../actions/constants'
 
 import alasql from 'alasql';
+import jquery from 'jquery'
+
 
 let initialState = {
   name: '',
@@ -63,6 +65,17 @@ let initialState = {
   databaseInstances: [],
   isCapturesLoaded: false,
   isReplaysLoaded : false
+}
+
+function apiRequest(url, action = "list_scheduled") {
+  return jquery.ajax({
+        url: window.location.href + 'capture/' + action,
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'json'
+      }).done(function (data) {
+        console.log("REDUCER API REQUEST: ", data)
+      })
 }
 
 function reducer(state = initialState, action) {
@@ -189,6 +202,7 @@ function reducer(state = initialState, action) {
       })
 
     case SET_CAPTURE_ACTIVE_LIST:
+      console.log("SET_CAPTURE_ACTIVE_LIST", action.key);
       return Object.assign({}, state, {
         capturesActive: action.key
       })
@@ -228,6 +242,13 @@ function reducer(state = initialState, action) {
       return Object.assign({}, state, {
         isReplaysLoaded: action.key
       })
+
+    // case FETCH_CAPTURES_ACTIVE:
+    //   obj = makeCall()
+    //   //TODO Use a promise
+    //   //TODO Use a callback?
+
+    //   return obj.capturesActive
 
     default:
       return state

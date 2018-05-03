@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import re
 import sys
+import requests
 from .communications import ComManager
 
 
@@ -145,9 +146,14 @@ def get_capture_details(capture_name, cm):
       "rds": rds
     }  
 
+def _update_capture_count():
+  print("In _update_capture_count", file=sys.stderr)
+  requests.get("http://localhost:5000/update_capture_count")
+  print("Finished get request in _update_capture_count", file=sys.stderr)
+
+
 def _process_capture_details(record):
   (name, db, start_time, end_time, status, rds) = record
-  print("end_time", end_time, file=sys.stderr)
   start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
   end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
@@ -266,6 +272,7 @@ def start_capture(capture_name, rds_name, db_name, start_time, username, passwor
   query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
                VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}') ON DUPLICATE KEY UPDATE status="ongoing"'''.format(db_name, capture_name, start_time, rds_name, username, password)
   cm.execute_query(query)
+  _update_capture_count()
 
 def end_capture(credentials, capture_name, db, cm):
   """Ends a specified capture.
@@ -305,6 +312,7 @@ def end_capture(credentials, capture_name, db, cm):
   query = ''' UPDATE Captures SET username = "", password = "" WHERE name = '{0}' '''.format(capture_name)
   cm.execute_query(query)
 
+  _update_capture_count()
   return start_time
 
 def delete_capture(credentials, capture_name, cm):
