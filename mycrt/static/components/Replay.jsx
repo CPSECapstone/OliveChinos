@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, startReplayFromCapture } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -11,47 +11,35 @@ import '../styles/replaystyles.css'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import '../styles/loader.css';
+import ReplayForm from './ReplayForm'
 
 class Replay extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      showAlert: false,
       show: false,
+      showAlert: false,
       replay: this.props.replay,
       activeReplays: this.props.activeReplays,
-      replayName: '',
-      inputHelpBlock: 'Optional. If not provided, name will be generated.',
       captureOptions: ["No captures available"],
-      replayRDSInstance: '',
-      captureToReplay: '',
-      replayDBName: '',
-      replayDBUsername: '',
-      replayDBPassword: '',
       databaseInstanceOptions: ["No instances available"],
       completedReplayList: null,
-      fastMode: true,
       replayInfoShow: false
     }
 
-    this.handleShowAlert = this.handleShowAlert.bind(this);
-    this.handleCloseAlert = this.handleCloseAlert.bind(this);
-    this.handleShow = this.handleShow.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.addReplay = this.addReplay.bind(this)
-    this.handleReplayNameChange = this.handleReplayNameChange.bind(this)
+    this.handleShow = this.handleShow.bind(this)
+    this.handleShowAlert = this.handleShowAlert.bind(this)
+    this.handleCloseAlert = this.handleCloseAlert.bind(this)
     this.displayReplays = this.displayReplays.bind(this)
     this.loadCapturesToReplay = this.loadCapturesToReplay.bind(this)
-    this.updateCaptureToReplay = this.updateCaptureToReplay.bind(this)
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this)
-    this.handleModeChange = this.handleModeChange.bind(this)
-    this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
-    this.updateReplayRDS = this.updateReplayRDS.bind(this)
-    this.handleDBNameChange = this.handleDBNameChange.bind(this)
-    this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
-    this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
+  }
 
+  // Function to show "New Replay" popup-form
+  handleShow() {
+    //this.setState({ show: true });
+    this.props.dispatch(startReplayFromCapture())
   }
 
   // Function to hide alert message
@@ -64,22 +52,6 @@ class Replay extends React.Component {
     this.setState({ showAlert: true });
   }
 
-  // Function to close "New Replay" popup-form
-  handleClose() {
-    this.setState({ show: false });
-  }
-
-  // Function to close "New Replay" popup-form and start a new replay
-  handleCloseAndAddReplay() {
-    this.setState({ show: false });
-    this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
-  }
-
-  // Function to show "New Replay" popup-form
-  handleShow() {
-    this.setState({ show: true });
-  }
-
   // Function to refresh the list of replays
   componentDidMount() {
     this.loadDatabaseInstances()
@@ -90,28 +62,6 @@ class Replay extends React.Component {
   // Function to change replay name
   handleReplayNameChange(event) {
     this.setState({ replayName: event.target.value });
-  }
-
-  // Function to change replay mode
-  handleModeChange(event) {
-    this.setState({ fastMode: !this.state.fastMode })
-  }
-
-  // Function to check if capture name is valid
-  getValidationState() {
-    if (this.state.replayName.indexOf(' ') >= 0 || this.state.replayName.indexOf(' ') >= 0) {
-      this.state.inputHelpBlock = 'No spaces or / allowed in name. Please try again';
-      return 'error';
-    }
-    else if (this.state.replayName.length > 0) {
-      this.state.inputHelpBlock = 'Looks great!';
-      return 'success';
-    }
-    else if (this.state.replayName.length == 0) {
-      this.state.inputHelpBlock = 'Optional. If not provided, name will be generated.';
-      return null;
-    }
-    else return null;
   }
 
   // Function to display the list of available captures to replay on
@@ -174,62 +124,6 @@ class Replay extends React.Component {
       })
       that.setState({ replayRDSInstance: returnList[0].props.value })
     })
-  }
-
-  // Function to start a new replay
-  addReplay(replayName, captureName, replayDB) {
-    this.setState({ replay: 'Replay Active' })
-    //this.props.dispatch(startNewReplay())
-    let postData = {
-      "db": this.state.replayDBName,
-      "rds": this.state.replayRDSInstance,
-      "captureName": this.state.captureToReplay,
-      "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
-      "username": this.state.replayDBUsername,
-      "password": this.state.replayDBPassword,
-      //"startTime": "now",
-      "fastMode": this.state.fastMode,
-      "restoreDb": false
-    }
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'replay',
-      type: 'POST',
-      data: JSON.stringify(postData),
-      contentType: 'application/json',
-      dataType: 'json'
-    })
-      .done(function (data) {
-        that.displayReplays()
-      })
-      .fail(function (data) {
-        that.handleShowAlert()
-      })
-  }
-
-  // Function to update the list of captures available
-  updateCaptureToReplay(e) {
-    this.setState({ captureToReplay: e.target.value });
-  }
-
-  // Function to update the RDS instance
-  updateReplayRDS(e) {
-    this.setState({ replayRDSInstance: e.target.value });
-  }
-
-  // Function to change the name of a DB instance
-  handleDBNameChange(event) {
-    this.setState({ replayDBName: event.target.value })
-  }
-
-  // Function to change the name of a DB instance username
-  handleDBUsernameChange(event) {
-    this.setState({ replayDBUsername: event.target.value })
-  }
-
-  // Function to change the name of a DB instance password
-  handleDBPasswordChange(event) {
-    this.setState({ replayDBPassword: event.target.value })
   }
 
   // Function to handle a "analyze" button click
@@ -394,69 +288,7 @@ class Replay extends React.Component {
           </div>
         </div>
 
-        <Modal show={this.state.show} onHide={this.handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>New Replay</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <form>
-              <FormGroup
-                validationState={this.getValidationState()}
-              >
-                <ControlLabel>Replay Name</ControlLabel>
-                <FormControl
-                  id='replayNameInput'
-                  type="text"
-                  value={this.state.replayName}
-                  placeholder="Enter name"
-                  onChange={this.handleReplayNameChange}
-                />
-                <FormControl.Feedback />
-                <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
-              </FormGroup>
-              <FormGroup controlId="formControlsSelectCapture">
-                <ControlLabel>Capture To Replay</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.captureToReplay} onChange={this.updateCaptureToReplay}>
-                  {this.state.captureOptions}
-                </FormControl>
-              </FormGroup>
-              <FormGroup controlId="formControlsSelectRDS">
-                <ControlLabel>RDS Instance</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
-                  {this.state.databaseInstanceOptions}
-                </FormControl>
-              </FormGroup>
-              <FormGroup>
-                <ControlLabel>DB Name</ControlLabel>
-                <FormControl type="text" placeholder="Enter name" value={this.state.replayDBName} onChange={this.handleDBNameChange} />
-              </FormGroup>
-              <FormGroup id="dbInfoForm">
-                <Col className="dbInfoFormCol" sm={6}>
-                  <ControlLabel>DB Username</ControlLabel>
-                  <FormControl type="text" placeholder="Enter username" value={this.state.replayDBUsername} onChange={this.handleDBUsernameChange} />
-                </Col>
-                <Col className="dbInfoFormCol" sm={6}>
-                  <ControlLabel>DB Password</ControlLabel>
-                  <FormControl type="password" placeholder="Enter password" value={this.state.replayDBPassword} onChange={this.handleDBPasswordChange} />
-                </Col>
-              </FormGroup>
-              <FormGroup>
-                <div>
-                  <ButtonToolbar>
-                    <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
-                      <ToggleButton value={true}>Fast Mode</ToggleButton>
-                      <ToggleButton value={false}>Time-Based Mode</ToggleButton>
-                    </ToggleButtonGroup>
-                  </ButtonToolbar>
-                </div>
-              </FormGroup>
-            </form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.handleClose}>Close</Button>
-            <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
-          </Modal.Footer>
-        </Modal>
+        <ReplayForm onReplayPage={true} store={this.props} show={this.props.showReplayModal} />
 
         <InfoReplay show={this.state.replayInfoShow} onHide={replayInfoClose} />
 
@@ -475,7 +307,8 @@ class Replay extends React.Component {
 const mapStateToProps = state => ({
   activeReplays: state.activeReplays,
   replay: state.replay,
-  analyticsForGraph: state.analyticsForGraph
+  analyticsForGraph: state.analyticsForGraph,
+  showReplayModal: state.showReplayModal
 })
 
 export default connect(mapStateToProps)(Replay)

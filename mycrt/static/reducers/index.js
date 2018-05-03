@@ -21,7 +21,9 @@ import {
   SET_TOTAL_NAMES_FOR_GRAPH,
   CHANGE_STATE_FOR_COMPONENTS,
   SET_GRAPH_DATA_FROM_REPLAY,
-  SET_SELECTED_REPLAY
+  SET_SELECTED_REPLAY,
+  START_REPLAY_FROM_CAPTURE,
+  CLOSE_REPLAY_MODAL
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -46,16 +48,17 @@ let initialState = {
   totalNames: false,
   currentCaptureForGraph: 'Capture Options',
   stateType: 'onCapture',
-  selectedReplay: false
+  selectedReplay: false,
+  showReplayModal: false
 }
 
 function reducer(state = initialState, action) {
   switch (action.type) {
 
     case CHANGE_STATE_FOR_COMPONENTS:
-       return Object.assign({}, state, {
+      return Object.assign({}, state, {
         stateType: action.key
-       })
+      })
 
     case SET_BOOLEANS_FOR_GRAPH:
       return Object.assign({}, state, {
@@ -63,7 +66,7 @@ function reducer(state = initialState, action) {
       })
 
     case SET_DATA_POINTS_FOR_GRAPH:
-    //leave this comment for now in case we end up putting the data points creation back into the redux state
+      //leave this comment for now in case we end up putting the data points creation back into the redux state
       // let dataPoints = getAssignments(action.booleanArray, action.totalNameArray, action.metric, action.analytics, action.dataPoints, action.captureName);
       return Object.assign({}, state, {
         dataPointsForGraph: action.key,
@@ -140,15 +143,15 @@ function reducer(state = initialState, action) {
       })
 
     case SET_TOTAL_NAMES_FOR_GRAPH:
-    let arrayOfFalses = [];
-    let falsesLength = Object.keys(action.key).length;
-    for(let i = 0; i < falsesLength; i++) {
-      arrayOfFalses.push(false);
-    }
-    return Object.assign({}, state, {
-      totalNames: action.key,
-      booleansForGraph: arrayOfFalses
-    })
+      let arrayOfFalses = [];
+      let falsesLength = Object.keys(action.key).length;
+      for (let i = 0; i < falsesLength; i++) {
+        arrayOfFalses.push(false);
+      }
+      return Object.assign({}, state, {
+        totalNames: action.key,
+        booleansForGraph: arrayOfFalses
+      })
 
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {
@@ -156,8 +159,8 @@ function reducer(state = initialState, action) {
       })
 
     case SET_GRAPH_DATA_FROM_REPLAY:
-    console.log('DISPATCHING THIS ACTION: ', action)
-    console.log('****** HERE!!!! ****', action.selectedReplay)
+      console.log('DISPATCHING THIS ACTION: ', action)
+      console.log('****** HERE!!!! ****', action.selectedReplay)
       return Object.assign({}, state, {
         booleansForGraph: action.booleans,
         currentCaptureForGraph: action.captureName,
@@ -170,6 +173,17 @@ function reducer(state = initialState, action) {
     case SET_SELECTED_REPLAY:
       return Object.assign({}, state, {
         selectedReplay: action.key
+      })
+
+    case START_REPLAY_FROM_CAPTURE:
+
+      return Object.assign({}, state, {
+        showReplayModal: true
+      })
+
+    case CLOSE_REPLAY_MODAL:
+      return Object.assign({}, state, {
+        showReplayModal: false
       })
 
     default:

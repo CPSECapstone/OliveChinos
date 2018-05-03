@@ -4,10 +4,11 @@ import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup,
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
 import InfoCapture from './InfoCapture'
+import ReplayForm from './ReplayForm'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { setCaptureCount, startCapture, stopCapture, changeStateForComponents } from '../actions'
+import { setCaptureCount, startCapture, stopCapture, changeStateForComponents, startReplayFromCapture } from '../actions'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import '../node_modules/react-bootstrap-table/dist/react-bootstrap-table-all.min.css';
 import CaptureList from './CaptureList'
@@ -38,7 +39,8 @@ class Capture extends React.Component {
       captureStartTime: new Date(),
       captureEndTime: new Date(),
       captureMode: 'interactive',
-      captureInfoShow: false
+      captureInfoShow: false,
+      captureToReplay: ''
     }
 
     //binding required for callback
@@ -166,7 +168,9 @@ class Capture extends React.Component {
       })
     }
     else if (action == 'REPLAY') {
-      this.props.dispatch(changeStateForComponents("onReplay"))
+      this.setState({ captureToReplay: captureName })
+      this.props.dispatch(startReplayFromCapture())
+      console.log("CHANGING showReplayModal state to ", this.props.showReplayModal)
     }
     else {
       let deleteData = {
@@ -515,6 +519,8 @@ class Capture extends React.Component {
           </Modal.Footer>
         </Modal>
 
+        <ReplayForm onReplayPage={false} captureToReplay={this.state.captureToReplay} store={this.props} show={this.props.showReplayModal} />
+
         <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
         <br />
@@ -534,7 +540,8 @@ class Capture extends React.Component {
 
 const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
-  capture: state.capture
+  capture: state.capture,
+  showReplayModal: state.showReplayModal
 })
 
 export default connect(mapStateToProps)(Capture)
