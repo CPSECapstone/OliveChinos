@@ -1,6 +1,7 @@
 import click
 import traceback
 from datetime import datetime, timedelta
+import calendar
 import time
 import requests #rest api
 import json
@@ -323,9 +324,13 @@ def list_metrics():
 @click.argument('replay-names', nargs=-1, required=True)
 @click.option('-m', '--metric-name', multiple=True, 
         help='-the name of the metric; use command "list-metrics" to see supported options')
+@click.option('-s', '--start-time', 
+        help='-grab all metrics after this time; format: YYYY-MM-DDTHH:MM:SS')
+@click.option('-e', '--end-time', 
+        help='-grab all metrics until this time; format: YYYY-MM-DDTHH:MM:SS')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(capture_name, replay_names, metric_name, raw):
+def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
     '''-view metrics for any number of replays'''
 
     analytics = requests.get('http://localhost:5000/analytics')
@@ -334,8 +339,14 @@ def view(capture_name, replay_names, metric_name, raw):
         return
 
     json_input = analytics.json()
+
+    if start_time: 
+        start_time = _convert_to_datetime(start_time)
+    if end_time: 
+        end_time = _convert_to_datetime(end_time)
+
     if raw: #print metrics in json format
-        _print_json_metrics(json_input, capture_name, replay_names, metric_name)
+        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time)
 
     else : #compute metric averages for each replay
         try:
@@ -352,13 +363,13 @@ def view(capture_name, replay_names, metric_name, raw):
             for replay in replay_names: 
                 click.echo('\nMetric Data for \'' + str(replay) + '\'') 
                 replay_data_points = capture_folder[replay]
-                _print_metric_averages(replay_data_points, metric_names)
+                _print_metric_averages(replay_data_points, metric_names, start_time, end_time)
 
         except (ValueError, KeyError, TypeError): 
             click.echo('''One or more of the specified replay names do not exist. Please try again.''')
             return
 
-def _print_metric_averages(metric_data_points, metric_names): 
+def _print_metric_averages(metric_data_points, metric_names, start_time, end_time): 
     '''Dict containing tuple with string for printing and aggregate average of 
     the metric'''
     metric_string = {
@@ -368,18 +379,22 @@ def _print_metric_averages(metric_data_points, metric_names):
             'WriteIOPS': 'Write IOPS (count/sec): '
     }
 
-    click.echo('Start Time: ' + str(metric_data_points['start_time']))
-    click.echo('End Time: ' + str(metric_data_points['end_time']))
+    start_time = start_time if start_time else metric_data_points['start_time']
+    end_time = end_time if end_time else metric_data_points['end_time']
+
+    click.echo('Start Time: ' + str(start_time))
+    click.echo('End Time: ' + str(end_time))
     click.echo('---METRIC AVERAGES---')
 
     for metric in metric_names: 
         data_points = metric_data_points[metric]
+        data_points = _filter_metrics_in_timeframe(data_points, start_time, end_time)
         average = get_average(data_points)
         click.echo(metric_string[metric] + str(average))
 
     click.echo()
 
-def _print_json_metrics(raw_json, capture_name, replay_names, metric_names):     
+def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, start_time, end_time):     
     '''Get the specified metrics for the specified replay under the given capture 
     name. If no metric_names are specified, get all the metrics.
     '''
@@ -387,13 +402,64 @@ def _print_json_metrics(raw_json, capture_name, replay_names, metric_names):
 
     for replay in replay_names: 
         if len(metric_names)==0: #no metric specified - display all
-            replay_metrics[replay] = raw_json[capture_name][replay]
-        else: #print only specified metrics
-            metrics = {}
-            for metric in metric_names: 
-                metrics[metric] = raw_json[capture_name][replay][metric]
-            replay_metrics[replay] = metrics
+            metric_names = ['CPUUtilization', 'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
+            #all_datapoints = raw_json[capture_name][replay]
+            #replay_metrics[replay] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
+        #else: #print only specified metrics
+        metrics = {}
+        for metric in metric_names: 
+            all_datapoints = raw_json[capture_name][replay][metric]
+            metrics[metric] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
+        replay_metrics[replay] = metrics
     click.echo(format_json(replay_metrics))
+
+def _filter_metrics_in_timeframe(metric_list, start_time, end_time): 
+    '''Expects list of JSON objects of metrics only - no preceeding tags. 
+    start_time and end_time must be in datetime format
+    '''
+    if not start_time and not end_time: #no filtering to be done
+        return metric_list
+    else: 
+        start_time = start_time if start_time else datetime.min
+        end_time = end_time if end_time else datetime.max
+        metrics = []
+        for metric in metric_list: 
+            timestamp = _convert_metric_time_string(metric['Timestamp'])
+            if start_time < timestamp < end_time : 
+                metrics.append(metric)
+
+        return metrics
+
+def _convert_metric_time_string(metric_time_string): 
+    #sample string: "Thu, 15 Mar 2018 06:00:00 GMT"
+    split_string = metric_time_string.split(',')[1].split(' ')
+    day = int(split_string[1])
+    month_abbr = split_string[2]
+    month = list(calendar.month_abbr).index(month_abbr)
+    year = int(split_string[3])
+
+    time = split_string[4].split(':')
+    hour = int(time[0])
+    minute = int(time[1])
+    second = int(time[2])
+
+    return datetime(year, month, day, hour, minute, second)
+
+def _convert_to_datetime(input_time): 
+    #sample user input: YYYY-MM-DDTHH:MM:SS
+    split_string = input_time.split('T')
+
+    date = split_string[0].split('-')
+    year = int(date[0])
+    month = int(date[1])
+    day = int(date[2])
+
+    time = split_string[1].split(':')
+    hour = int(time[0])
+    minute = int(time[1])
+    second = int(time[2])
+
+    return datetime(year, month, day, hour, minute, second)
 
 
 # Compute the average of all the average metric data points 
