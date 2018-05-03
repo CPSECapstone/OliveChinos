@@ -7,6 +7,8 @@ import re
 import sys
 import requests
 from .communications import ComManager
+from multiprocessing import Process
+
 
 
 # Example of credentials dictionary
@@ -146,9 +148,16 @@ def get_capture_details(capture_name, cm):
       "rds": rds
     }  
 
+def func_to_call(x): 
+      requests.get(x)
+
 def _update_capture_count():
   print("In _update_capture_count", file=sys.stderr)
-  requests.get("http://localhost:5000/update_capture_count")
+  address = "http://localhost:5000/update_capture_count"
+  
+  proc = Process(target = func_to_call,
+                 args = (address,))
+  proc.start()
   print("Finished get request in _update_capture_count", file=sys.stderr)
 
 
