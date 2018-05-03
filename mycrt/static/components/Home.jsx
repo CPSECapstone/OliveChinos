@@ -7,10 +7,25 @@ import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
-import { changeStateForComponents, setAnalyticsForGraph, setReplayCount, setCaptureCount } from '../actions/index';
+import { 
+  changeStateForComponents, 
+  setAnalyticsForGraph, 
+  setReplayCount, 
+  setCaptureCount, 
+  setDatabaseInstances,
+  fetchCaptures,
+  fetchReplays,
+  fetchCapturesToReplay
+} from '../actions/index';
 import { connect } from 'react-redux'
 import  IssueModal  from  './issueModal'
 import InfoAnalytics from './infoAnalytics'
+import io from 'socket.io-client';
+
+
+const uri = window.location.href;
+const options = {};
+const socket = io(uri, options);
 
 class Home extends Component {
   constructor(props) {
@@ -20,8 +35,6 @@ class Home extends Component {
       onCapture: true,
       onReplay: false,
       onAnalyze: false,
-      activeCaptures: this.props.activeCaptures,
-      activeReplays: this.props.activeReplays,
       captureTab: 'blue',
       replayTab: 'red',
       analyticsTab: 'orange',
@@ -30,10 +43,29 @@ class Home extends Component {
     }
 
     this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
-    this.pollingFunction = this.pollingFunction.bind(this);
     this.getNumberOfCaptures = this.getNumberOfCaptures.bind(this);
     this.getNumberOfReplays = this.getNumberOfReplays.bind(this);
+    this.setUpWebSocketReplayNumber = this.setUpWebSocketReplayNumber.bind(this);
+    this.setUpWebSocketCaptureNumber = this.setUpWebSocketCaptureNumber.bind(this);
+    this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this);
 
+  }
+
+  setUpWebSocketReplayNumber() {
+    var that = this;
+    socket.on('replayNumber', function (numReplays) {
+      console.log('Replay Number update from backend: ', numReplays);
+      that.props.dispatch(setReplayCount(numReplays))
+      that.props.dispatch(fetchReplays());
+    });
+  }
+  setUpWebSocketCaptureNumber() {
+    var that = this;
+    socket.on('captureNumber', function (numCaptures) {
+      console.log('Capture Number update from backend: ', numCaptures);
+      that.props.dispatch(setCaptureCount(numCaptures))
+      that.props.dispatch(fetchCaptures());
+    });
   }
 
   getPythonAnalytics() {
@@ -45,31 +77,42 @@ class Home extends Component {
   }
 
   getNumberOfReplays() {
+    var that = this;
     jquery.get(window.location.href + 'replay/number', (data) => {
-      this.setState({ activeReplays: data.replays.length }, this.render);
-      this.props.dispatch(setReplayCount(data.replays.length))
+      that.props.dispatch(setReplayCount(data.replays.length))
     });
   }
 
   getNumberOfCaptures() {
+    var that = this;
     jquery.get(window.location.href + 'capture/number', (data) => {
-      this.setState({ activeCaptures: data.numberOfCaptures }, this.render);
-      this.props.dispatch(setCaptureCount(data.numberOfCaptures))
+      that.props.dispatch(setCaptureCount(data.numberOfCaptures))
     });
   }
 
-  pollingFunction() {
-    this.getPythonAnalytics();
-    this.getNumberOfReplays();
-    this.getNumberOfCaptures();
+
+  loadDatabaseInstances() {
+    let that = this;
+    let returnList = []
+    jquery.ajax({
+      url: window.location.href + 'databaseInstances',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      that.props.dispatch(setDatabaseInstances(data));
+    })
   }
 
   componentWillMount() {
-    this.getPythonAnalytics();
-    this.getNumberOfReplays();
-    this.getNumberOfCaptures();
-    var that = this;
-    setInterval(that.pollingFunction, 10000)
+    this.setUpWebSocketCaptureNumber();
+    this.setUpWebSocketReplayNumber();
+    this.loadDatabaseInstances();
+    this.props.dispatch(fetchCaptures());
+    this.props.dispatch(fetchReplays());
+    this.props.dispatch(fetchCapturesToReplay());
+    socket.emit('get_capture_replay_number', 'Message from Home.jsx');
+    setTimeout(this.getPythonAnalytics, 5000);
   }
 
    
@@ -102,19 +145,19 @@ class Home extends Component {
 
   currentAction(action) {
     if (action === 'capture') {
-      if (this.props.data.activeCaptures > 1) {
+      if (this.props.activeCapturesNum > 1) {
         return (
-          <div>{this.props.data.activeCaptures} Captures</div>
+          <div>{this.props.activeCapturesNum} Captures</div>
         )
-      } else if (this.props.data.activeCaptures == 1) {
+      } else if (this.props.activeCapturesNum == 1) {
         return <div>1 Capture</div>
       } else {
         return <div>No Captures</div>
       }
     } else if (action === 'replay') {
-      if (this.props.data.activeReplays > 1) {
-        return <div>{this.props.data.activeReplays} Replays</div>
-      } else if (this.props.data.activeReplays == 1) {
+      if (this.props.activeReplaysNum > 1) {
+        return <div>{this.props.activeReplaysNum} Replays</div>
+      } else if (this.props.activeReplaysNum == 1) {
         return <div>1 Replay</div>
       } else {
         return <div>No Replays</div>
@@ -124,9 +167,9 @@ class Home extends Component {
 
   render() {
     var captureActiveStyle =
-      this.props.data.activeCaptures > 0 ? styles.active : styles.notActive
+      this.props.activeCapturesNum > 0 ? styles.active : styles.notActive
     var replayActiveStyle =
-      this.props.data.activeReplays > 0 ? styles.active : styles.notActive
+      this.props.activeReplaysNum > 0 ? styles.active : styles.notActive
     var tabActiveStyle = this.props.stateForComponents;
     var classNames = require('classnames');
     let issueClose = () => this.setState({ issueShow: false });
@@ -204,7 +247,10 @@ class Home extends Component {
 const mapStateToProps = state => ({
   data: state,
   stateType: state.stateType,
-  analyticsForGraph: state.analyticsForGraph
+  analyticsForGraph: state.analyticsForGraph,
+  databaseInstances: state.databaseInstances,
+  activeCapturesNum: state.activeCapturesNum,
+  activeReplaysNum: state.activeReplaysNum
 })
 
 export default connect(mapStateToProps)(Home)

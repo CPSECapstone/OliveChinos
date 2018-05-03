@@ -4,21 +4,96 @@ import { Button, ListGroup, ListGroupItem } from 'react-bootstrap'
 import '../styles/captureliststyles.css'
 import '../styles/capturestyles.css'
 import '../styles/loader.css'
+import { connect } from 'react-redux'
+import { editCapture } from '../actions'
 import { ButtonToolbar, ToggleButtonGroup, ToggleButton } from 'react-bootstrap'
 
 
-export default class CaptureList extends React.Component {
+class CaptureList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             captureType: 'Active'
         }
-
+        
         this.handleCaptureTypeChange = this.handleCaptureTypeChange.bind(this)
     }
 
     handleCaptureTypeChange(event) {
         this.setState({ captureType: event })
+    }
+
+
+    renderCapturesTable(data, captureState) {
+      let currentCaptures = [];
+      let current;
+      let captureEditAction;
+      let that = this;
+      function buttonFormatter(cell, row) {
+        if (captureState === 'completed') {
+          return (
+            <div className='row'>
+              <Button className='btn-warning'
+                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
+              >
+                REPLAY
+            </Button>
+              <Button className='btn-danger' style={{ marginLeft: '10px' }}
+                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
+              >
+                DELETE
+            </Button>
+            </div>
+          );
+        }
+        else if (captureState === 'active') {
+          return (
+            <div className='row'>
+              <Button className='btn-danger'
+                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'end'))}
+              >
+                STOP
+            </Button>
+            </div>
+          );
+        }
+        else if (captureState === 'scheduled') {
+          return (
+            <div className='row'>
+              <Button className='btn-danger'
+                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'cancel'))}
+              >
+                CANCEL
+            </Button>
+            </div>
+          );
+        }
+        else {
+          <div></div>
+        }
+      }
+
+      if (data.length > 0) {
+        return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data}>
+          <TableHeaderColumn dataField='captureName' isKey dataSort>Capture Name</TableHeaderColumn>
+          <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
+          <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
+          <TableHeaderColumn dataField='startTime' dataSort>Start Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='endTime' dataSort>End Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
+        </BootstrapTable>
+      }
+      else {
+        return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
+          <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
+          <TableHeaderColumn >Database</TableHeaderColumn>
+          <TableHeaderColumn >RDS Instance</TableHeaderColumn>
+          <TableHeaderColumn >Start Time</TableHeaderColumn>
+          <TableHeaderColumn >End Time</TableHeaderColumn>
+          <TableHeaderColumn >Action</TableHeaderColumn>
+
+        </BootstrapTable>
+      }
     }
 
     renderRadioButtons() {
@@ -42,44 +117,59 @@ export default class CaptureList extends React.Component {
     renderTable() {
         console.log('THE CAPTURE TYPE IS: ', this.state.captureType)
         if (this.state.captureType == 'Active') {
-            return (
-                <div>
-                    {this.props.activeCaptures}
-                </div>
-            )
-        }
-        else if (this.state.captureType == 'Scheduled') {
-            return (
-                <div>
-                    {this.props.scheduledCaptures}
-                </div>
-            )
-        }
-        else if (this.state.captureType == 'Completed') {
-            if (this.props["completedCaptures"].length <= 0) {
-                return (
-                    <div id="loader" className='col'></div>
-                )
+          if (this.props.capturesScheduled === false) {
+              return (
+                 <div>
+                     <div id="loader" className='col'></div>
+                 </div>
+              )
             }
             else {
-                return (
-                    <div>
-                        {this.props.completedCaptures}
-                    </div>
-                )
+              return (
+                <div>
+                    {this.renderCapturesTable(this.props.capturesActive, 'active')}
+                </div>
+              )
             }
+        }
+        else if (this.state.captureType == 'Scheduled') {
+            if (this.props.capturesScheduled === false) {
+              return (
+                 <div>
+                     <div id="loader" className='col'></div>
+                 </div>
+              )
+            }
+            else {
+              return (
+                <div>
+                    {this.renderCapturesTable(this.props.capturesScheduled, 'scheduled')}
+                </div>
+              )
+            }
+        }
+        else if (this.state.captureType == 'Completed') {
+            if (this.props.capturesCompleted === false) {
+              return (
+                 <div>
+                     <div id="loader" className='col'></div>
+                 </div>
+              )
+            }
+            else {
+              return (
+                <div>
+                    {this.renderCapturesTable(this.props.capturesCompleted, 'completed')}
+                </div>
+              )
+            }
+        }
+        else {
+            <div></div>
         }
     }
     render() {
-        if (this.props["activeCaptures"].length <= 0) {
-            return (
-                <div>
-                    {this.renderRadioButtons()}
-                    <div id="loader" className='col'></div>
-                </div>
-            )
-        }
-        else return (
+        return (
             <div>
                 {this.renderRadioButtons()}
                 {this.renderTable()}
@@ -87,3 +177,12 @@ export default class CaptureList extends React.Component {
         )
     }
 }
+
+const mapStateToProps = state => ({
+  isCapturesLoaded: state.isCapturesLoaded,
+  capturesActive: state.capturesActive,
+  capturesCompleted: state.capturesCompleted,
+  capturesScheduled: state.capturesScheduled,
+})
+
+export default connect(mapStateToProps)(CaptureList)
