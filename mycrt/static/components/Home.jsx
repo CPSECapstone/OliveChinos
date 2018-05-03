@@ -65,6 +65,7 @@ class Home extends Component {
       console.log('Capture Number update from backend: ', numCaptures);
       that.props.dispatch(setCaptureCount(numCaptures))
       that.props.dispatch(fetchCaptures());
+      that.props.dispatch(fetchCapturesToReplay());
     });
   }
 

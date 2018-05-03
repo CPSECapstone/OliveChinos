@@ -98,19 +98,30 @@ class Capture extends React.Component {
     this.setState({ show: true });
   }
 
+
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
     //this.setState({ capture: 'New Capture Started' })
 
     let postData;
-    console.log(this.state.captureMode)
+
+    
+    let rdsInstance;
+    if (this.state.captureRDSInstance === '') {
+      rdsInstance = this.props.databaseInstances.databases[0];
+    }
+    else {
+      rdsInstance = this.state.captureRDSInstance;
+    }
+
     if (this.state.captureMode === 'schedule') {
       var now = new Date();
       var timezoneOffset = now.getTimezoneOffset();
       console.log("Capture start time", this.state.captureStartTime);
+
       postData = {
         "db": this.state.captureDBName,
-        "rds": this.state.captureRDSInstance,
+        "rds": rdsInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -122,7 +133,7 @@ class Capture extends React.Component {
       //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
-        "rds": this.state.captureRDSInstance,
+        "rds": rdsInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -201,6 +212,7 @@ class Capture extends React.Component {
       </option>)
       dbList.push(selectOption)
     }
+    
     return dbList
   }
 
@@ -282,6 +294,9 @@ class Capture extends React.Component {
         </p>
       </Alert>
     }
+
+    console.log("this.props.databaseInstances[0]", this.props.databaseInstances);
+
 
     return (
       <div>
