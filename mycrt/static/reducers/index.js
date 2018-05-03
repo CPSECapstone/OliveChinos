@@ -33,7 +33,8 @@ import {
   SET_IS_CAPTURES_LOADED,
   SET_IS_REPLAYS_LOADED,
   SET_CAPTURES_TO_REPLAY,
-  SET_CAPTURE_TO_REPLAY
+  SET_CAPTURE_TO_REPLAY,
+  SET_LOADER_DISPLAY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -71,7 +72,8 @@ let initialState = {
   databaseInstances: [],
   isCapturesLoaded: false,
   isReplaysLoaded: false,
-  captureToReplay: false
+  captureToReplay: false,
+  displayLoader: false
 }
 
 function apiRequest(url, action = "list_scheduled") {
@@ -269,6 +271,11 @@ function reducer(state = initialState, action) {
     case SET_CAPTURE_TO_REPLAY:
       return Object.assign({}, state, {
         captureToReplay: action.key
+      })
+
+    case SET_LOADER_DISPLAY:
+      return Object.assign({}, state, {
+        displayLoader: action.key
       })
 
     // case FETCH_CAPTURES_ACTIVE:

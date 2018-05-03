@@ -31,7 +31,7 @@ class Replay extends React.Component {
     this.handleShow = this.handleShow.bind(this)
     this.handleShowAlert = this.handleShowAlert.bind(this)
     this.handleCloseAlert = this.handleCloseAlert.bind(this)
-    this.displayReplays = this.displayReplays.bind(this)
+    this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
   }
 
@@ -52,6 +52,9 @@ class Replay extends React.Component {
     this.setState({ showAlert: true });
   }
 
+  handleRefreshButton() {
+    this.props.dispatch(fetchReplays());
+  }
 
   // Function to close "New Replay" popup-form
   handleClose() {
@@ -62,11 +65,6 @@ class Replay extends React.Component {
   handleCloseAndAddReplay() {
     this.setState({ show: false });
     this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
-  }
-
-  // Function to show "New Replay" popup-form
-  handleShow() {
-    this.setState({ show: true });
   }
 
   // Function to change replay name
@@ -138,7 +136,6 @@ class Replay extends React.Component {
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
-      that.displayReplays()
       that.props.dispatch(fetchReplays());
     })
 
@@ -197,20 +194,6 @@ class Replay extends React.Component {
     }
   }
 
-  // Function to display the list of replays
-  displayReplays() {
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'replay/list',
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      let resultList = that.getReplayTable(data)
-      that.setState({ completedReplayList: resultList })
-    })
-  }
-
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
     if (this.props.replaysCompleted === false) {
@@ -254,7 +237,7 @@ class Replay extends React.Component {
           <div id="newReplayBtnContainer">
             <Button
               id="refreshReplayButton"
-              onClick={this.displayReplays}>
+              onClick={this.handleRefreshButton}>
               Refresh Replays
             </Button>
             <Button

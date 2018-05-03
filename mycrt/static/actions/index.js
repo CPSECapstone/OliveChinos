@@ -33,7 +33,8 @@ import {
   SET_IS_CAPTURES_LOADED,
   SET_IS_REPLAYS_LOADED,
   SET_CAPTURES_TO_REPLAY,
-  SET_CAPTURE_TO_REPLAY
+  SET_CAPTURE_TO_REPLAY,
+  SET_LOADER_DISPLAY
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -167,6 +168,10 @@ export function setCaptureToReplay(key) {
   return { type: SET_CAPTURE_TO_REPLAY, key }
 }
 
+export function setLoaderDisplay(key) {
+  return { type: SET_LOADER_DISPLAY, key }
+}
+
 export function fetchCaptures() {
   console.log("fetching all captures");
   return function (dispatch) {
@@ -178,6 +183,7 @@ export function fetchCaptures() {
     }).done(function (data) {
       console.log("RESPONSE DATA jquery active ", data);
       dispatch(setCaptureActiveList(data.captures));
+      dispatch(setLoaderDisplay(false));
     })
 
     jquery.ajax({
@@ -248,8 +254,9 @@ export function editCapture(captureName, captureDB, action) {
       "captureName": captureName
     }
     let that = this;
-
+    
     if (action === 'end' || action === 'cancel') {
+      dispatch(setLoaderDisplay(true));
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
         type: 'POST',
@@ -257,7 +264,8 @@ export function editCapture(captureName, captureDB, action) {
         contentType: 'application/json',
         dataType: 'json'
       }).done(function (data) {
-        fetchCaptures();
+        dispatch(fetchCaptures());
+        
       })
     }
     else if (action == 'REPLAY') {
@@ -269,6 +277,7 @@ export function editCapture(captureName, captureDB, action) {
       let deleteData = {
         "capture": captureName
       }
+      dispatch(setLoaderDisplay(true));
       jquery.ajax({
         url: window.location.href + 'capture/delete',
         type: 'DELETE',
@@ -276,7 +285,8 @@ export function editCapture(captureName, captureDB, action) {
         contentType: 'application/json',
         dataType: 'json'
       }).done(function (data) {
-        fetchCaptures();
+        dispatch(fetchCaptures());
+        dispatch(setLoaderDisplay(false));
       })
 
     }

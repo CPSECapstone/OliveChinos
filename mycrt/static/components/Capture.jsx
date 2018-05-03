@@ -71,6 +71,7 @@ class Capture extends React.Component {
 
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
+    this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
   }
 
@@ -98,6 +99,10 @@ class Capture extends React.Component {
   // Sets the state to show the new capture modal
   handleShow() {
     this.setState({ show: true });
+  }
+
+  handleRefreshButton() {
+    this.props.dispatch(fetchCaptures());
   }
 
 
@@ -313,7 +318,7 @@ class Capture extends React.Component {
 
           <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button id="refreshCapturesButton" onClick={this.props.fetchCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.handleRefreshButton}>
                 Refresh Capture
               </Button>
               <Button
