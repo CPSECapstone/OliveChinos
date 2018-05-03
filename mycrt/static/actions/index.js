@@ -22,6 +22,8 @@ import {
   CHANGE_STATE_FOR_COMPONENTS,
   SET_GRAPH_DATA_FROM_REPLAY,
   SET_SELECTED_REPLAY,
+  START_REPLAY_FROM_CAPTURE,
+  CLOSE_REPLAY_MODAL,
   SET_CAPTURE_ACTIVE_LIST,
   SET_CAPTURE_COMPLETED_LIST,
   SET_CAPTURE_SCHEDULED_LIST,
@@ -30,7 +32,8 @@ import {
   SET_DATABASE_INSTANCES,
   SET_IS_CAPTURES_LOADED,
   SET_IS_REPLAYS_LOADED,
-  SET_CAPTURES_TO_REPLAY
+  SET_CAPTURES_TO_REPLAY,
+  SET_CAPTURE_TO_REPLAY
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -38,7 +41,7 @@ export function setBooleansForGraph(key) {
 }
 
 export function changeStateForComponents(key) {
-   return { type: CHANGE_STATE_FOR_COMPONENTS, key }
+  return { type: CHANGE_STATE_FOR_COMPONENTS, key }
 }
 
 export function setPublicKey(key) {
@@ -105,56 +108,68 @@ export function setTotalNamesForGraph(key) {
 }
 
 export function setCaptureNameForGraph(key) {
-  return {type: SET_CAPTURE_NAME_FOR_GRAPH, key}
+  return { type: SET_CAPTURE_NAME_FOR_GRAPH, key }
 }
 
 export function setGraphDataFromReplay(bools, capture, metric, state, names, selReplay) {
-  return {type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names, selectedReplay: selReplay}
+  return { type: SET_GRAPH_DATA_FROM_REPLAY, booleans: bools, captureName: capture, metricName: metric, stateName: state, totNames: names, selectedReplay: selReplay }
 }
 
 export function setSelectedReplay(key) {
-  return {type: SET_SELECTED_REPLAY, key}
+  return { type: SET_SELECTED_REPLAY, key }
+}
+
+export function startReplayFromCapture() {
+  return { type: START_REPLAY_FROM_CAPTURE }
+}
+
+export function closeReplayModal() {
+  return { type: CLOSE_REPLAY_MODAL }
 }
 
 export function setCaptureActiveList(key) {
-  return {type: SET_CAPTURE_ACTIVE_LIST, key}
+  return { type: SET_CAPTURE_ACTIVE_LIST, key }
 }
 
 export function setCaptureScheduledList(key) {
-  return {type: SET_CAPTURE_SCHEDULED_LIST, key}
+  return { type: SET_CAPTURE_SCHEDULED_LIST, key }
 }
 
 export function setCaptureCompletedList(key) {
-  return {type: SET_CAPTURE_COMPLETED_LIST, key}
+  return { type: SET_CAPTURE_COMPLETED_LIST, key }
 }
 
 export function setReplayActiveList(key) {
-  return {type: SET_REPLAY_ACTIVE_LIST, key}
+  return { type: SET_REPLAY_ACTIVE_LIST, key }
 }
 
 export function setReplayCompletedList(key) {
-  return {type: SET_REPLAY_COMPLETED_LIST, key}
+  return { type: SET_REPLAY_COMPLETED_LIST, key }
 }
 
 export function setDatabaseInstances(key) {
-  return {type: SET_DATABASE_INSTANCES, key}
+  return { type: SET_DATABASE_INSTANCES, key }
 }
 
 export function setIsCapturesLoaded(key) {
-  return {type: SET_IS_CAPTURES_LOADED, key}
+  return { type: SET_IS_CAPTURES_LOADED, key }
 }
 
 export function setIsReplaysLoaded(key) {
-  return {type: SET_IS_REPLAYS_LOADED, key}
+  return { type: SET_IS_REPLAYS_LOADED, key }
 }
 
 export function setCapturesToReplayList(key) {
-  return {type: SET_CAPTURES_TO_REPLAY, key}
+  return { type: SET_CAPTURES_TO_REPLAY, key }
+}
+
+export function setCaptureToReplay(key) {
+  return { type: SET_CAPTURE_TO_REPLAY, key }
 }
 
 export function fetchCaptures() {
   console.log("fetching all captures");
-  return function(dispatch) {
+  return function (dispatch) {
     jquery.ajax({
       url: window.location.href + 'capture/list_ongoing',
       type: 'GET',
@@ -185,7 +200,7 @@ export function fetchCaptures() {
       dispatch(setCaptureCompletedList(data.captures));
     })
 
-    
+
     return null
   }
 }
@@ -193,7 +208,7 @@ export function fetchCaptures() {
 
 export function fetchReplays() {
   console.log("Fetching all replays");
-  return function(dispatch) {
+  return function (dispatch) {
     jquery.ajax({
       url: window.location.href + 'replay/list',
       type: 'GET',
@@ -209,7 +224,7 @@ export function fetchReplays() {
 }
 
 export function fetchCapturesToReplay() {
-  return function(dispatch) {
+  return function (dispatch) {
     let that = this;
     jquery.ajax({
       url: window.location.href + 'capture/completed_list',
@@ -223,9 +238,9 @@ export function fetchCapturesToReplay() {
 }
 
 
-  // Consumes a capture name, capture db, and action and calls that action on the specified capture
+// Consumes a capture name, capture db, and action and calls that action on the specified capture
 export function editCapture(captureName, captureDB, action) {
-  return function(dispatch) {
+  return function (dispatch) {
 
 
     let postData = {
@@ -233,7 +248,7 @@ export function editCapture(captureName, captureDB, action) {
       "captureName": captureName
     }
     let that = this;
-    
+
     if (action === 'end' || action === 'cancel') {
       jquery.ajax({
         url: window.location.href + 'capture/' + action,
@@ -246,7 +261,9 @@ export function editCapture(captureName, captureDB, action) {
       })
     }
     else if (action == 'REPLAY') {
-      dispatch(changeStateForComponents("onReplay"))
+      //dispatch(changeStateForComponents("onReplay"))
+      dispatch(setCaptureToReplay(captureName))
+      dispatch(startReplayFromCapture())
     }
     else {
       let deleteData = {

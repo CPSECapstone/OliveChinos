@@ -4,14 +4,16 @@ import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup,
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
 import InfoCapture from './InfoCapture'
+import ReplayForm from './ReplayForm'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { 
-  setCaptureCount, 
-  startCapture, 
-  stopCapture, 
-  changeStateForComponents, 
+import {
+  setCaptureCount,
+  startCapture,
+  stopCapture,
+  changeStateForComponents,
+  startReplayFromCapture,
   setCaptureActiveList,
   setCaptureCompletedList,
   setCaptureScheduledList,
@@ -388,6 +390,8 @@ class Capture extends React.Component {
           </Modal.Footer>
         </Modal>
 
+        <ReplayForm onReplayPage={false} captureToReplay={this.props.captureToReplay} store={this.props} show={this.props.showReplayModal} />
+
         <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
         <br />
@@ -396,7 +400,7 @@ class Capture extends React.Component {
           {uniqueNameAlert}
 
           <CaptureList />
-            
+
         </div>
       </div >
     )
@@ -406,12 +410,14 @@ class Capture extends React.Component {
 const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
   capture: state.capture,
+  showReplayModal: state.showReplayModal,
   isCapturesLoaded: state.isCapturesLoaded,
   databaseInstances: state.databaseInstances,
   capturesActive: state.capturesActive,
   capturesCompleted: state.capturesCompleted,
-  capturesScheduled: state.capturesScheduled
-  
+  capturesScheduled: state.capturesScheduled,
+  captureToReplay: state.captureToReplay
+
 })
 
 export default connect(mapStateToProps)(Capture)
