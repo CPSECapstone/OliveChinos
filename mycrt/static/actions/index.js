@@ -172,6 +172,14 @@ export function setLoaderDisplay(key) {
   return { type: SET_LOADER_DISPLAY, key }
 }
 
+export function getAnalyticsForGraph() {
+  return function(dispatch) {
+    jquery.get(window.location.href + 'analytics', (data) => {
+      dispatch(setAnalyticsForGraph(data))
+    });
+  }
+}
+
 export function fetchCaptures() {
   console.log("fetching all captures");
   return function (dispatch) {
@@ -287,6 +295,7 @@ export function editCapture(captureName, captureDB, action) {
       }).done(function (data) {
         dispatch(fetchCaptures());
         dispatch(setLoaderDisplay(false));
+        dispatch(getAnalyticsForGraph())
       })
 
     }
