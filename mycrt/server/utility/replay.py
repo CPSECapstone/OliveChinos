@@ -158,6 +158,14 @@ def _update_replay_count():
                  args = (address,))
   proc.start()
 
+def _update_analytics():
+  print("In update_analytics replay", file=sys.stderr)
+  address = "http://localhost:5000/update_analytics"
+  
+  proc = Process(target = func_to_call,
+                 args = (address,))
+  proc.start()
+
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
   pid = os.getpid()
@@ -167,7 +175,8 @@ def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
   _update_replay_count()
-
+  _update_analytics() 
+ 
 def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
   rds_client = cm.get_boto('rds')
   s3_client = cm.get_boto('s3')
