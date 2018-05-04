@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select, startReplayFromCapture, fetchReplays, fetchCapturesToReplay } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, startReplayFromCapture, fetchReplays, fetchCapturesToReplay, getAnalyticsForGraph } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -137,6 +137,7 @@ class Replay extends React.Component {
       dataType: 'json'
     }).done(function (data) {
       that.props.dispatch(fetchReplays());
+      that.props.dispatch(getAnalyticsForGraph());
     })
 
   }
