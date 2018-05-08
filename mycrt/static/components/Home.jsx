@@ -7,18 +7,19 @@ import styles from '../styles/tabstyles.css.js'
 import Analytics from './Analytics'
 import Capture from './Capture'
 import Replay from './Replay'
-import { 
-  changeStateForComponents, 
-  getAnalyticsForGraph, 
-  setReplayCount, 
-  setCaptureCount, 
+import {
+  changeStateForComponents,
+  getAnalyticsForGraph,
+  setReplayCount,
+  setCaptureCount,
   setDatabaseInstances,
   fetchCaptures,
   fetchReplays,
   fetchCapturesToReplay
 } from '../actions/index';
 import { connect } from 'react-redux'
-import  IssueModal  from  './issueModal'
+import IssueModal  from  './issueModal'
+import LogoutModal from './logoutModal'
 import InfoAnalytics from './infoAnalytics'
 import io from 'socket.io-client';
 
@@ -39,6 +40,7 @@ class Home extends Component {
       replayTab: 'red',
       analyticsTab: 'orange',
       issueShow: false,
+      logoutShow: false,
       analyticsInfoShow: false
     }
 
@@ -100,7 +102,7 @@ class Home extends Component {
     setTimeout(this.props.dispatch(getAnalyticsForGraph()), 5000);
   }
 
-   
+
 
   renderPage() {
     if (this.props.stateType === "onCapture") {
@@ -118,8 +120,8 @@ class Home extends Component {
     } else if (this.props.stateType == "onAnalyze") {
       return (
         <div className="tabcontent">
-          <h3 style={{ marginLeft: '20px' }}>Analytics 
-          <Glyphicon style={{paddingLeft:'20px', cursor:'pointer'}} glyph="info-sign" 
+          <h3 style={{ marginLeft: '20px' }}>Analytics
+          <Glyphicon style={{paddingLeft:'20px', cursor:'pointer'}} glyph="info-sign"
           onClick={() => this.setState({ analyticsInfoShow: true })}/>
           </h3>
           <Analytics />
@@ -158,7 +160,9 @@ class Home extends Component {
     var tabActiveStyle = this.props.stateForComponents;
     var classNames = require('classnames');
     let issueClose = () => this.setState({ issueShow: false });
+    let logoutClose = () => this.setState({ logoutShow: false });
     let analyticsInfoClose = () => this.setState({ analyticsInfoShow: false})
+
     return (
       <div>
         <div className="headerContainer">
@@ -183,15 +187,15 @@ class Home extends Component {
           </h1>
           </div>
           <div id="headerRight">
-          
+
             <div id="userContainer">
               <div id="userLogoContainer">
-                <span id="userLogo" className="glyphicon glyphicon-user"></span>
+                <span id="userLogo" className="glyphicon glyphicon-user" onClick={() => this.setState({ logoutShow: true })}></span>
               </div>
             </div>
             <div id="issueContainer">
               <div>
-                <Button 
+                <Button
                   className='issueButton'
                   onClick={() => this.setState({ issueShow: true })}
                 >Submit an Issue</Button>
@@ -219,8 +223,9 @@ class Home extends Component {
           </div>
           {this.renderPage()}
           <IssueModal show={this.state.issueShow} onHide={issueClose}/>
+          <LogoutModal show={this.state.logoutShow} onHide={logoutClose}/>
           <InfoAnalytics show={this.state.analyticsInfoShow} onHide={analyticsInfoClose}/>
-          
+
         </div>
       </div >
     )
