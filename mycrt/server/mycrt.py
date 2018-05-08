@@ -131,6 +131,11 @@ def update_replay_count_http():
     socketio.emit('replayNumber', replay_count)
     return ('', 200) 
 
+@application.route('/update_analytics', methods=["GET"])
+def update_analytics_http():
+    socketio.emit('analytics', True)
+    return ('', 200) 
+
 '''
 Runs before each test and checks that the public and private keys
 were passed in and valid for the user. 

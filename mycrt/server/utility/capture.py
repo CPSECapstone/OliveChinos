@@ -152,15 +152,20 @@ def func_to_call(x):
       requests.get(x)
 
 def _update_capture_count():
-  print("In _update_capture_count", file=sys.stderr)
   address = "http://localhost:5000/update_capture_count"
   
   proc = Process(target = func_to_call,
                  args = (address,))
   proc.start()
-  print("Finished get request in _update_capture_count", file=sys.stderr)
 
-
+def _update_analytics():
+  print("In update_analytics", file=sys.stderr)
+  address = "http://localhost:5000/update_analytics"
+  
+  proc = Process(target = func_to_call,
+                 args = (address,))
+  proc.start()
+ 
 def _process_capture_details(record):
   (name, db, start_time, end_time, status, rds) = record
 
@@ -177,7 +182,7 @@ def _process_capture_details(record):
     "status" : status,
     "rds": rds
   }  
-
+ 
 
 def get_capture_number(cm):
   query = '''
@@ -338,6 +343,7 @@ def end_capture(credentials, capture_name, db, cm):
   cm.execute_query(query)
 
   _update_capture_count()
+  _update_analytics()
   return start_time
 
 def delete_capture(credentials, capture_name, cm):

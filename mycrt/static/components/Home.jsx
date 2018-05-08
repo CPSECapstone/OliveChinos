@@ -9,7 +9,7 @@ import Capture from './Capture'
 import Replay from './Replay'
 import { 
   changeStateForComponents, 
-  setAnalyticsForGraph, 
+  getAnalyticsForGraph, 
   setReplayCount, 
   setCaptureCount, 
   setDatabaseInstances,
@@ -42,11 +42,9 @@ class Home extends Component {
       analyticsInfoShow: false
     }
 
-    this.getPythonAnalytics = this.getPythonAnalytics.bind(this);
-    this.getNumberOfCaptures = this.getNumberOfCaptures.bind(this);
-    this.getNumberOfReplays = this.getNumberOfReplays.bind(this);
     this.setUpWebSocketReplayNumber = this.setUpWebSocketReplayNumber.bind(this);
     this.setUpWebSocketCaptureNumber = this.setUpWebSocketCaptureNumber.bind(this);
+    this.setUpWebSocketAnalytics = this.setUpWebSocketAnalytics.bind(this);
     this.loadDatabaseInstances = this.loadDatabaseInstances.bind(this);
 
   }
@@ -65,31 +63,17 @@ class Home extends Component {
       console.log('Capture Number update from backend: ', numCaptures);
       that.props.dispatch(setCaptureCount(numCaptures))
       that.props.dispatch(fetchCaptures());
+      that.props.dispatch(fetchCapturesToReplay());
+
     });
   }
-
-  getPythonAnalytics() {
-    jquery.get(window.location.href + 'analytics', (data) => {
-      this.setState({ analytics: data }, this.render);
-      this.props.dispatch(setAnalyticsForGraph(data))
-    });
-
-  }
-
-  getNumberOfReplays() {
+  setUpWebSocketAnalytics() {
     var that = this;
-    jquery.get(window.location.href + 'replay/number', (data) => {
-      that.props.dispatch(setReplayCount(data.replays.length))
+    socket.on('analytics', function (placeholder) {
+      console.log('Analytics update from backend: ', placeholder);
+      that.props.dispatch(getAnalyticsForGraph());
     });
   }
-
-  getNumberOfCaptures() {
-    var that = this;
-    jquery.get(window.location.href + 'capture/number', (data) => {
-      that.props.dispatch(setCaptureCount(data.numberOfCaptures))
-    });
-  }
-
 
   loadDatabaseInstances() {
     let that = this;
@@ -107,12 +91,13 @@ class Home extends Component {
   componentWillMount() {
     this.setUpWebSocketCaptureNumber();
     this.setUpWebSocketReplayNumber();
+    this.setUpWebSocketAnalytics();
     this.loadDatabaseInstances();
     this.props.dispatch(fetchCaptures());
     this.props.dispatch(fetchReplays());
     this.props.dispatch(fetchCapturesToReplay());
     socket.emit('get_capture_replay_number', 'Message from Home.jsx');
-    setTimeout(this.getPythonAnalytics, 5000);
+    setTimeout(this.props.dispatch(getAnalyticsForGraph()), 5000);
   }
 
    

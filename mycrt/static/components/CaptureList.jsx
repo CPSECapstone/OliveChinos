@@ -169,9 +169,14 @@ class CaptureList extends React.Component {
         }
     }
     render() {
+      let loader = null;
+      if (this.props.displayLoader) {
+        loader = <div id="loader" className='col'></div>
+      }
         return (
             <div>
                 {this.renderRadioButtons()}
+                {loader}
                 {this.renderTable()}
             </div>
         )
@@ -183,6 +188,7 @@ const mapStateToProps = state => ({
   capturesActive: state.capturesActive,
   capturesCompleted: state.capturesCompleted,
   capturesScheduled: state.capturesScheduled,
+  displayLoader: state.displayLoader
 })
 
 export default connect(mapStateToProps)(CaptureList)

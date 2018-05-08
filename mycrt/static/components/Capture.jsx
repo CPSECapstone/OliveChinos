@@ -4,14 +4,16 @@ import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup,
 import 'flatpickr/dist/themes/material_green.css'
 import '../styles/capturestyles.css'
 import InfoCapture from './InfoCapture'
+import ReplayForm from './ReplayForm'
 import Flatpickr from 'react-flatpickr'
 import Datetime from 'react-datetime'
 import { connect } from 'react-redux'
-import { 
-  setCaptureCount, 
-  startCapture, 
-  stopCapture, 
-  changeStateForComponents, 
+import {
+  setCaptureCount,
+  startCapture,
+  stopCapture,
+  changeStateForComponents,
+  startReplayFromCapture,
   setCaptureActiveList,
   setCaptureCompletedList,
   setCaptureScheduledList,
@@ -69,6 +71,7 @@ class Capture extends React.Component {
 
     this.handleModeChange = this.handleModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
+    this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
   }
 
@@ -98,19 +101,34 @@ class Capture extends React.Component {
     this.setState({ show: true });
   }
 
+  handleRefreshButton() {
+    this.props.dispatch(fetchCaptures());
+  }
+
+
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
     //this.setState({ capture: 'New Capture Started' })
 
     let postData;
-    console.log(this.state.captureMode)
+
+    
+    let rdsInstance;
+    if (this.state.captureRDSInstance === '') {
+      rdsInstance = this.props.databaseInstances.databases[0];
+    }
+    else {
+      rdsInstance = this.state.captureRDSInstance;
+    }
+
     if (this.state.captureMode === 'schedule') {
       var now = new Date();
       var timezoneOffset = now.getTimezoneOffset();
       console.log("Capture start time", this.state.captureStartTime);
+
       postData = {
         "db": this.state.captureDBName,
-        "rds": this.state.captureRDSInstance,
+        "rds": rdsInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -122,7 +140,7 @@ class Capture extends React.Component {
       //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
-        "rds": this.state.captureRDSInstance,
+        "rds": rdsInstance,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -201,6 +219,7 @@ class Capture extends React.Component {
       </option>)
       dbList.push(selectOption)
     }
+    
     return dbList
   }
 
@@ -283,6 +302,9 @@ class Capture extends React.Component {
       </Alert>
     }
 
+    console.log("this.props.databaseInstances[0]", this.props.databaseInstances);
+
+
     return (
       <div>
         <div>
@@ -296,7 +318,7 @@ class Capture extends React.Component {
 
           <div className="row captureActionButtonsContainer">
             <div id="newCaptureBtnContainer">
-              <Button id="refreshCapturesButton" onClick={this.props.fetchCaptures}>
+              <Button id="refreshCapturesButton" onClick={this.handleRefreshButton}>
                 Refresh Capture
               </Button>
               <Button
@@ -373,6 +395,8 @@ class Capture extends React.Component {
           </Modal.Footer>
         </Modal>
 
+        <ReplayForm onReplayPage={false} captureToReplay={this.props.captureToReplay} store={this.props} show={this.props.showReplayModal} />
+
         <InfoCapture show={this.state.captureInfoShow} onHide={captureInfoClose} />
 
         <br />
@@ -381,7 +405,7 @@ class Capture extends React.Component {
           {uniqueNameAlert}
 
           <CaptureList />
-            
+
         </div>
       </div >
     )
@@ -391,12 +415,14 @@ class Capture extends React.Component {
 const mapStateToProps = state => ({
   activeCaptures: state.activeCaptures,
   capture: state.capture,
+  showReplayModal: state.showReplayModal,
   isCapturesLoaded: state.isCapturesLoaded,
   databaseInstances: state.databaseInstances,
   capturesActive: state.capturesActive,
   capturesCompleted: state.capturesCompleted,
-  capturesScheduled: state.capturesScheduled
-  
+  capturesScheduled: state.capturesScheduled,
+  captureToReplay: state.captureToReplay
+
 })
 
 export default connect(mapStateToProps)(Capture)
