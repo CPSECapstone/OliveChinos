@@ -2,7 +2,6 @@ import boto3
 import pymysql as sql
 import sqlite3 as util_sql
 import os
-import sys
 
 # One instance of a ComManager object will be used per process
 class ComManager:

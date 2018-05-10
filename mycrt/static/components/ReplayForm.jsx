@@ -222,23 +222,19 @@ export default class ReplayForm extends React.Component {
                 if (data.status === 400) {
                   that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
                 }
-                else if (data.status === 401) {
+                else if (data.status === 403) {
                   that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
                 }
                 else {
                   that.setAlertError("Unknown Error");
                 }
-                //that.handleShowAlert()
                 console.log("Failed from ReplayForm.jsx");
-                //that.handleShowAlert()
             })
     }
 
 
     render() {
-        console.log("PROPS: ", this.props.show);
-        console.log("STATE: ", this.state.showModal);
-
+        
         if (this.props.onReplayPage) {
             var captureToReplay = this.state.captureToReplay
             var captureOptions = this.state.captureOptions

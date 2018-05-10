@@ -403,7 +403,7 @@ def replay():
         abort(400)
 
     if not cm.valid_database_credentials(db_name, rds_name, username, password):
-        abort(401)
+        abort(403)
 
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
