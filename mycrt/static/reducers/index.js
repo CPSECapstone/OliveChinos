@@ -194,8 +194,6 @@ function reducer(state = initialState, action) {
       })
 
     case SET_GRAPH_DATA_FROM_REPLAY:
-      console.log('DISPATCHING THIS ACTION: ', action)
-      console.log('****** HERE!!!! ****', action.selectedReplay)
       return Object.assign({}, state, {
         booleansForGraph: action.booleans,
         currentCaptureForGraph: action.captureName,
@@ -222,7 +220,6 @@ function reducer(state = initialState, action) {
       })
 
     case SET_CAPTURE_ACTIVE_LIST:
-      console.log("SET_CAPTURE_ACTIVE_LIST", action.key);
       return Object.assign({}, state, {
         capturesActive: action.key
       })
@@ -248,7 +245,6 @@ function reducer(state = initialState, action) {
       })
 
     case SET_DATABASE_INSTANCES:
-      console.log("DB INSTANCES REDUCERS:", action.key);
       return Object.assign({}, state, {
         databaseInstances: action.key
       })
