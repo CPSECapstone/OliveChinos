@@ -362,6 +362,12 @@ class Graph extends Component {
 
          for (var i = 0; i < jsonObject.length; i++) {
             currentPoint = this.state.dataPointsForGraph[i];
+            //1,048,576
+            //console.log(currentPoint);
+            if(this.props.metricForGraph === "FreeableMemory") {
+               currentPoint = currentPoint/1048576
+            }
+
             if (currentPoint.seconds <= this.state.rightRange && currentPoint.seconds >= this.state.leftRange) {
                testArray.push(currentPoint);
             }
@@ -387,7 +393,7 @@ class Graph extends Component {
         yAxisPadding = 60;
       }
       else if (this.props.metricForGraph === "FreeableMemory") {
-        yAxisLabel = "Bytes";
+        yAxisLabel = "MB";
         yAxisPadding = 100;
       }
       else if (this.props.metricForGraph === "ReadIOPS" || this.props.metricForGraph === "WriteIOPS") {
