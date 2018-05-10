@@ -167,7 +167,7 @@ class Capture extends React.Component {
         if (data.status === 400) {
           that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
         }
-        else if (data.status === 403) {
+        else if (data.status === 401) {
           that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
         }
         else {
