@@ -21,11 +21,11 @@ class Replay extends React.Component {
       show: false,
       showAlert: false,
       replay: this.props.replay,
-      activeReplays: this.props.activeReplays,
       captureOptions: ["No captures available"],
       databaseInstanceOptions: ["No instances available"],
       completedReplayList: null,
-      replayInfoShow: false
+      replayInfoShow: false,
+      replayType: 'Active'
     }
 
     this.handleShow = this.handleShow.bind(this)
@@ -33,6 +33,7 @@ class Replay extends React.Component {
     this.handleCloseAlert = this.handleCloseAlert.bind(this)
     this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this)
+    this.handleReplayTypeChange = this.handleReplayTypeChange.bind(this)
   }
 
 
@@ -197,15 +198,51 @@ class Replay extends React.Component {
 
   // Function to check if replays have completed loading, if not display a loader spinner
   getReplayTableOrLoader() {
-    if (this.props.replaysCompleted === false) {
-      return <div id="loader"></div>
-    } else {
-      return (
-        <div>
-          {this.getReplayTable(this.props.replaysCompleted)}
-        </div>
-      );
+    if (this.state.replayType == 'Active') {
+      if (this.props.replaysActive === false) {
+        return <div id="loader"></div>
+      } else {
+        return (
+          <div>
+            {this.getReplayTable(this.props.replaysActive)}
+          </div>
+        );
+      }
+
     }
+    else if (this.state.replayType == 'Completed') {
+      if (this.props.replaysCompleted === false) {
+        return <div id="loader"></div>
+      } else {
+        return (
+          <div>
+            {this.getReplayTable(this.props.replaysCompleted)}
+          </div>
+        );
+      }
+    }
+    else {
+      <div />
+    }
+  }
+
+  handleReplayTypeChange(event) {
+    this.setState({ captureType: event })
+  }
+
+  renderRadioButtons() {
+    return (
+      <ButtonToolbar className="buttonToolbar">
+        <ToggleButtonGroup type="radio" name="options" value={this.state.replayType} onChange={this.handleReplayTypeChange}>
+          <ToggleButton className="toggleButton" id="toggle" value='Active' >
+            Active
+            </ToggleButton>
+          <ToggleButton className="toggleButton" id="toggle" value='Completed' >
+            Completed
+            </ToggleButton>
+        </ToggleButtonGroup>
+      </ButtonToolbar>
+    )
   }
 
   render() {
@@ -259,7 +296,7 @@ class Replay extends React.Component {
         <br />
 
         <div id="replayBody">
-          {uniqueNameAlert}
+          <div>{this.renderRadioButtons()}</div>
           <div>{this.getReplayTableOrLoader()}</div>
         </div>
       </div>
@@ -268,12 +305,12 @@ class Replay extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  activeReplays: state.activeReplays,
   replay: state.replay,
   analyticsForGraph: state.analyticsForGraph,
   showReplayModal: state.showReplayModal,
   databaseInstances: state.databaseInstances,
   replaysCompleted: state.replaysCompleted,
+  replaysActive: state.replaysActive,
   capturesToReplay: state.capturesToReplay
 })
 

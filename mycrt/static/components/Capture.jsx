@@ -118,7 +118,7 @@ class Capture extends React.Component {
 
     let postData;
 
-    
+
     let rdsInstance;
     if (this.state.captureRDSInstance === '') {
       rdsInstance = this.props.databaseInstances.databases[0];
@@ -234,7 +234,7 @@ class Capture extends React.Component {
       </option>)
       dbList.push(selectOption)
     }
-    
+
     return dbList
   }
 

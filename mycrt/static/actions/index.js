@@ -173,7 +173,7 @@ export function setLoaderDisplay(key) {
 }
 
 export function getAnalyticsForGraph() {
-  return function(dispatch) {
+  return function (dispatch) {
     jquery.get(window.location.href + 'analytics', (data) => {
       dispatch(setAnalyticsForGraph(data))
     });
@@ -233,6 +233,16 @@ export function fetchReplays() {
       dispatch(setReplayCompletedList(data.replays));
     })
 
+    jquery.ajax({
+      url: window.location.href + 'replay/active_list',
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      console.log("REPLAYS ACTION", data)
+      dispatch(setReplayActiveList(data.replays));
+    })
+
     return null
   }
 }
@@ -262,7 +272,7 @@ export function editCapture(captureName, captureDB, action) {
       "captureName": captureName
     }
     let that = this;
-    
+
     if (action === 'end' || action === 'cancel') {
       dispatch(setLoaderDisplay(true));
       jquery.ajax({
@@ -273,7 +283,7 @@ export function editCapture(captureName, captureDB, action) {
         dataType: 'json'
       }).done(function (data) {
         dispatch(fetchCaptures());
-        
+
       })
     }
     else if (action == 'REPLAY') {
