@@ -107,11 +107,12 @@ def _store_metrics(s3_client, metrics, bucket_id = None, log_key = "test-folder/
   )
 
 #Need to add "rds" if ever going to poll for replays in progress
-def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
+def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, rds, replays_in_progress, lock):
   replays_in_progress[capture_name + "/" + replay_name] = {
       "replayName" : replay_name,
       "captureName" : capture_name,
       "db" : db_id,
+      "rds": rds,
       "mode" : fast_mode,
       "pid" : os.getpid()
     }
@@ -134,11 +135,19 @@ def get_replay_number():
   return len(replays_in_progress)
 
 def get_active_replays():
-  fields = ["replayName", "captureName", "db", "mode"]
+  fields = ["replayName", "captureName", "db", "rds", "mode"]
+  field_conversion = {
+    "replayName" : "replay",
+    "captureName" : "capture",
+    "rds" : "rds",
+    "db" : "db",
+    "mode" : "mode"
+  }
   rep_list = []
   for _, replay in replays_in_progress.items():
-    rep_list.append({field : replay[field] for field in fields})
-
+    dict_to_add = {field_conversion[field] : replay[field] for field in fields}
+    dict_to_add[field_conversion["mode"]] = "fast" if dict_to_add[field_conversion["mode"]] else "time"
+    rep_list.append(dict_to_add)
   return { "replays" : rep_list }
 
 def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
@@ -167,7 +176,7 @@ def _update_analytics():
   proc.start()
 
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
-  _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
+  _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, rds_name, replays_in_progress, lock)
   pid = os.getpid()
   #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
   #  time.sleep(3) # sleep three seconds and try again later

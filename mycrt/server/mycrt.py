@@ -22,7 +22,7 @@ except:
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
-    from utility.login import * 
+    from utility.login import *
     from utility.scheduler import *
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -454,6 +454,19 @@ def delete_replay_http():
     capture_name = data['capture'] 
     replay_name = data['replay']
     delete_replay(credentials, capture_name, replay_name, cm)
+    return jsonify({'status': 'complete'})
+
+'''
+Stops an active capture.
+'''
+@application.route("/replay/active", methods=["DELETE"])
+def stop_active_replay_http():
+    global cm
+    #Need a capture name and replay name in order to stop replay
+    # data = request.get_json()
+    # capture_name = data['capture'] 
+    # replay_name = data['replay']
+    # delete_replay(credentials, capture_name, replay_name, cm)
     return jsonify({'status': 'complete'})
 
 '''

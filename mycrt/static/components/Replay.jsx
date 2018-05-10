@@ -143,7 +143,26 @@ class Replay extends React.Component {
 
   }
 
-  getReplayTable(data) {
+  stopActiveReplay(captureName, replayName) {
+    //Callback for deleting a replay
+    let stopData = {
+      "capture": captureName,
+      "replay": replayName
+    }
+    let that = this;
+    jquery.ajax({
+      url: window.location.href + 'replay/active',
+      type: 'DELETE',
+      data: JSON.stringify(deleteData),
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(function (data) {
+      that.props.dispatch(fetchReplays());
+    })
+
+  }
+
+  getReplayTable(data, rType) {
     let currentCaptures = [];
     let current;
     let captureEditAction;
@@ -155,22 +174,41 @@ class Replay extends React.Component {
     };
 
     function buttonFormatter(cell, row) {
-      return (
-        <div className='row'>
-          <Button
-            className='btn-info'
-            onClick={() => that.analyze(row["capture"], row["replay"])}
-          >
-            ANALYZE
-        </Button>
-          <Button
-            className='btn-danger' style={{ marginLeft: '10px' }}
-            onClick={() => that.deleteReplay(row["capture"], row["replay"])}
-          >
-            DELETE
-        </Button>
-        </div>
-      );
+      //TODO Implement STOP active replay functionality
+      if (rType === 'Active') {
+        return (
+          <div className='row'>
+            <Button
+              className='btn-danger' style={{ marginLeft: '10px' }}
+              onClick={() => that.stopActiveReplay(row["capture"], row["replay"])}
+            >
+              STOP
+            </Button>
+          </div>
+        )
+      }
+      else if (rType === 'Completed') {
+        return (
+          <div className='row'>
+            <Button
+              className='btn-info'
+              onClick={() => that.analyze(row["capture"], row["replay"])}
+            >
+              ANALYZE
+          </Button>
+            <Button
+              className='btn-danger' style={{ marginLeft: '10px' }}
+              onClick={() => that.deleteReplay(row["capture"], row["replay"])}
+            >
+              DELETE
+          </Button>
+          </div>
+        );
+      }
+      else {
+        <div></div>
+      }
+      
     }
 
     if (data.length > 0) {
@@ -204,7 +242,7 @@ class Replay extends React.Component {
       } else {
         return (
           <div>
-            {this.getReplayTable(this.props.replaysActive)}
+            {this.getReplayTable(this.props.replaysActive, 'Active')}
           </div>
         );
       }
@@ -216,7 +254,7 @@ class Replay extends React.Component {
       } else {
         return (
           <div>
-            {this.getReplayTable(this.props.replaysCompleted)}
+            {this.getReplayTable(this.props.replaysCompleted, 'Completed')}
           </div>
         );
       }
@@ -227,7 +265,7 @@ class Replay extends React.Component {
   }
 
   handleReplayTypeChange(event) {
-    this.setState({ captureType: event })
+    this.setState({ replayType: event })
   }
 
   renderRadioButtons() {
