@@ -203,6 +203,7 @@ export default class ReplayForm extends React.Component {
             dataType: 'json'
         })
             .fail(function (data) {
+                console.log("Failed from ReplayForm.jsx");
                 that.handleShowAlert()
             })
     }

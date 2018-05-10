@@ -2,6 +2,7 @@ import boto3
 import pymysql as sql
 import sqlite3 as util_sql
 import os
+import sys
 
 # One instance of a ComManager object will be used per process
 class ComManager:
@@ -20,6 +21,17 @@ class ComManager:
             self.boto_conns[service] = boto3.client(service, **(ComManager.credentials))
         return self.boto_conns[service]
 
+    def _test_sql_connection(self, db_info):
+        try:
+            connection = sql.connect(host = db_info["hostname"], 
+                         user = db_info["username"], 
+                         passwd = db_info["password"], 
+                         db = db_info["database"])
+            connection.close()
+            return True
+        except:
+            return False
+
     def get_sql(self, db_info = None):
         '''
         db_info : {
@@ -29,7 +41,7 @@ class ComManager:
             database = String
         }
         '''
-
+  
         if db_info is None:
             connection = util_sql.connect('util.db', isolation_level = None) # autocommit on by default
             cursor = connection.cursor()
@@ -104,3 +116,32 @@ class ComManager:
             cursor = self.get_sql()
             cursor.execute(capture_command)
             cursor.execute(replays_command)
+
+    def list_databases(self):
+      """Find all databases and create a mapping between the id and endpoints
+
+      Args:
+        cm: A ComManager object to handle connections
+
+      Returns:
+        A dictionary whe vff vfre the keys are the database instance ids available to the user 
+        and the values are the associated endpoints.
+      """
+
+      rds_client = self.get_boto('rds')
+      instances = rds_client.describe_db_instances()
+      
+      return {item['DBInstanceIdentifier'] : item['Endpoint']['Address'] for item in instances['DBInstances']}
+  
+
+    def valid_database_credentials(self, db_name, rds_name, username, password):
+        databases = self.list_databases()
+        address = databases[rds_name]
+        db_info = {
+            "hostname" : address, 
+            "username" : username, 
+            "password" : password, 
+            "database" : db_name
+        }
+
+        return self._test_sql_connection(db_info)

@@ -200,7 +200,7 @@ Retrieves all database instances for a user
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
     global cm
-    db_instances = list_databases(cm)
+    db_instances = cm.list_databases()
     db_instances = list(db_instances.keys())
     return jsonify({
         "databases" : db_instances
@@ -281,7 +281,8 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
-    
+    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+      abort(403)
 
     end_time = data.get('endTime', [None])
     end_time = end_time[0]
@@ -401,6 +402,8 @@ def replay():
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
 
+    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+        abort(401)
 
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
