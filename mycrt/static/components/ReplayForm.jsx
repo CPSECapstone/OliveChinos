@@ -209,8 +209,6 @@ export default class ReplayForm extends React.Component {
 
 
     render() {
-        console.log("PROPS: ", this.props.show);
-        console.log("STATE: ", this.state.showModal);
 
         if (this.props.onReplayPage) {
             var captureToReplay = this.state.captureToReplay
@@ -218,9 +216,9 @@ export default class ReplayForm extends React.Component {
         }
         else {
             var captureToReplay = this.props.captureToReplay
-            console.log("CAPTURE TO REPLAY ISSSS: ", captureToReplay)
             var captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
         }
+        console.log('in the replay form: ', this.props.show)
 
         return (
             <Modal show={this.props.show} onHide={this.handleClose} >
