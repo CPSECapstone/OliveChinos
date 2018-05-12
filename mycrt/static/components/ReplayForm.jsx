@@ -116,8 +116,6 @@ export default class ReplayForm extends React.Component {
 
     // Function to close "New Replay" popup-form
     handleClose() {
-        console.log("entering close function")
-        //this.setState({ showModal: false });
         this.props.store.dispatch(closeReplayModal())
     }
 
@@ -193,15 +191,19 @@ export default class ReplayForm extends React.Component {
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
         this.setState({ replay: 'Replay Active' })
-        //this.props.dispatch(startNewReplay())
+        if(this.props.onReplayPage) {
+            var capToReplay = this.state.captureToReplay;
+        }
+        else {
+            var capToReplay = this.props.captureToReplay;
+        }
         let postData = {
             "db": this.state.replayDBName,
             "rds": this.state.replayRDSInstance,
-            "captureName": this.state.captureToReplay,
+            captureName: capToReplay,
             "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
             "username": this.state.replayDBUsername,
             "password": this.state.replayDBPassword,
-            //"startTime": "now",
             "fastMode": this.state.fastMode,
             "restoreDb": false
         }
@@ -234,16 +236,16 @@ export default class ReplayForm extends React.Component {
 
 
     render() {
-        
         if (this.props.onReplayPage) {
             var captureToReplay = this.state.captureToReplay
             var captureOptions = this.state.captureOptions
         }
         else {
             var captureToReplay = this.props.captureToReplay
-            console.log("CAPTURE TO REPLAY ISSSS: ", captureToReplay)
+            console.log('THE CAPTURE TO REPLAY IS: ', captureToReplay)
             var captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
         }
+        console.log('in the replay form: ', this.props.show)
 
         let uniqueNameAlert = null;
         if (this.state.alertError !== null) {
