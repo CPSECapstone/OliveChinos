@@ -168,7 +168,7 @@ def sendIssueReport():
 
     msg.recipients = ["smithygirl@gmail.com", "jakepickett67@gmail.com", "andrewcofano@gmail.com", "alex.jboyd@yahoo.com", "yengkerngtan@gmail.com", "costinpirvu64@gmail.com", "c.leigh.b@gmail.com"]
     print(pprint.pprint(data), file = sys.stderr)
-    msg.body = 'Version: %s\nType: %s\nPriority: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['description'])
+    msg.body = 'Version: %s\nType: %s\nPriority: %s\nOS: %s\nBrowser: %s\nDescription: %s\n'%(data['version'], data['type'], data['priority'], data['os'], data['browser'], data['description'])
     mail.send(msg)
     return "Success"
 

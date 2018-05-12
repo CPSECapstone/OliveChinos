@@ -7,14 +7,13 @@ export default class IssueModal extends Component {
         super(props)
 
         this.state = {
-          version: '0.0.1',
-          issueType: '',
-          issuePriority: '',
+          version: 'Version 0.0.2',
+          issueType: 'Bug Report',
+          issuePriority: 'Critical',
           issueTitle: '',
-          OSType: '',
-          browser: '',
-          description: '',
-          email: ''
+          OSType: 'Microsoft',
+          browser: 'Chrome',
+          description: ''
         }
 
         this.handleVersionChange = this.handleVersionChange.bind(this)
@@ -38,6 +37,7 @@ export default class IssueModal extends Component {
 
   updateBrowser(event) {
      this.setState({ browser: event.target.value });
+     console.log('UPDATED BROWSER TO: ', event.target.value)
  }
 
   updateOSType(event) {
@@ -57,7 +57,7 @@ export default class IssueModal extends Component {
   }
 
   submit(event) {
-    console.log('SUBMIT BUTTON WAS PRESSED!!!');
+    console.log('BROWSER IS: ', this.state.browser)
     var issueJSON = {
       "version": this.state.version,
       "type": this.state.issueType,
@@ -94,7 +94,7 @@ export default class IssueModal extends Component {
                <FormGroup
                 controlId="formBasicText"
               >
-                <ControlLabel>Version 0.0.1</ControlLabel>
+                <ControlLabel>{this.state.version}</ControlLabel>
               </FormGroup>
               <FormGroup controlId="formControlsSelect">
                 <ControlLabel>Category</ControlLabel>
@@ -120,6 +120,7 @@ export default class IssueModal extends Component {
                   <option value="microsoft">Microsoft</option>
                   <option value="macintosh">Mac OS</option>
                   <option value="linux">Linux</option>
+                  <option value="linux">other</option>
                 </FormControl>
               </FormGroup>
 
@@ -131,6 +132,7 @@ export default class IssueModal extends Component {
                   <option value="ie">Internet Explorer</option>
                   <option value="safari">Safari</option>
                   <option value="opera">Opera</option>
+                  <option value="other">other</option>
                 </FormControl>
               </FormGroup>
 
