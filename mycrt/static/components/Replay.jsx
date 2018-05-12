@@ -153,7 +153,7 @@ class Replay extends React.Component {
     jquery.ajax({
       url: window.location.href + 'replay/active',
       type: 'DELETE',
-      data: JSON.stringify(deleteData),
+      data: JSON.stringify(stopData),
       contentType: 'application/json',
       dataType: 'json'
     }).done(function (data) {
@@ -208,7 +208,7 @@ class Replay extends React.Component {
       else {
         <div></div>
       }
-      
+
     }
 
     if (data.length > 0) {
