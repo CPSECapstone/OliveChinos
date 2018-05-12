@@ -102,10 +102,20 @@ class CaptureReplaySelector extends React.Component {
             }
             var that = this;
             var capName = refProps.currentCaptureForGraph;
+            /**
+             * 
+             * This is the functionality for the 'start a new replay'
+             * button that shows up in the table of captures under the 
+             * analytics feature.
+             */
             function buttonFormatter(cell, row){
+                /**
+                 * This function dispatches the action
+                 * to open the replay modal (DOES NOT START A REPLAY)
+                 * it sets the state's capture name to the selected capture
+                 * @param {capture name to be replayed} capN 
+                 */
                 function fakeDispatch(capN) {
-                    console.log('in the functionnnn')
-                    // if(that.state.captureNameForReplayForm !== capN) {
                     if(that.props.showReplayModal == false) {
                         that.setState({
                             captureNameForReplayForm:capN
@@ -118,9 +128,6 @@ class CaptureReplaySelector extends React.Component {
                 type="submit"
                 bsSize="small"
                 bsStyle="success"
-                // onClick={that.setState({
-                //     captureNameForReplayForm:capName
-                // }, fakeDispatch())}
                 onClick={() => fakeDispatch(capName)}
                 >
                 Start a New Replay
