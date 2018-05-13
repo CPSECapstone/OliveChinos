@@ -463,10 +463,10 @@ Stops an active capture.
 def stop_active_replay_http():
     global cm
     #Need a capture name and replay name in order to stop replay
-    # data = request.get_json()
-    # capture_name = data['capture'] 
-    # replay_name = data['replay']
-    # delete_replay(credentials, capture_name, replay_name, cm)
+    data = request.get_json()
+    capture_name = data['capture'] 
+    replay_name = data['replay']
+    stop_replay(credentials, capture_name, replay_name, cm)
     return jsonify({'status': 'complete'})
 
 '''

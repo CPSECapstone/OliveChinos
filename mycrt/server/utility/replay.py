@@ -5,7 +5,7 @@ import pickle
 import sys
 import time
 from multiprocessing import Manager, Process, Lock
-import os
+import os, signal
 
 from .capture import *
 from .communications import ComManager
@@ -125,8 +125,11 @@ def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_i
 
 def _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock):
   with lock:
-    del replays_in_progress[capture_name + "/" + replay_name]
-    db_in_use[db_id] = db_in_use[db_id][1:] # remove first element
+    try:
+      del replays_in_progress[capture_name + "/" + replay_name]
+      db_in_use[db_id] = db_in_use[db_id][1:] # remove first element
+    except:
+      pass
 
 def get_active_db():
   return [key for key, _ in db_in_use.items()]
@@ -218,7 +221,37 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   cm.execute_query(query)
-  
+
+def stop_replay(credentials, capture_name, replay_name, cm):
+  '''Stop an active replay.
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexisting capture name
+    replay_name: A preexisting replay name
+    cm: A communications manager object
+  '''
+  global lock
+  global db_in_use
+  global replays_in_progress
+
+  rep_id = capture_name + "/" + replay_name
+  replay_in_progress = replays_in_progress[rep_id]
+  db_id = replay_in_progress["db"]
+  pid = replay_in_progress["pid"]
+  try:
+    os.kill(pid, signal.SIGTERM)
+    _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
+  except Exception as e:
+    print(e, file = sys.stderr)
+    print("Process for replay {} has already completed.".format(rep_id), file = sys.stderr)
+
+
+  # Try to delete incase process got far enough to record any artifacts
+  delete_replay(credentials, capture_name, replay_name, cm)
+  _update_replay_count()
+
+
 def delete_replay(credentials, capture_name, replay_name, cm):
   '''Remove all traces of a replay in S3.
 
