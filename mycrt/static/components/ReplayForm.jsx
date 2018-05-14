@@ -18,6 +18,7 @@ export default class ReplayForm extends React.Component {
 
         this.state = {
             showModal: this.props.show,
+            alertError: null,
             replayName: '',
             inputHelpBlock: 'Optional. If not provided, name will be generated.',
             captureToReplay: '',
@@ -38,6 +39,8 @@ export default class ReplayForm extends React.Component {
         this.handleModeChange = this.handleModeChange.bind(this);
         this.handleClose = this.handleClose.bind(this);
         this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this);
+        this.setAlertError = this.setAlertError.bind(this);
+        this.handleCloseAlert = this.handleCloseAlert.bind(this);
     }
 
     componentDidMount() {
@@ -49,6 +52,14 @@ export default class ReplayForm extends React.Component {
     handleShow() {
         console.log("entering show function")
         this.setState({ showModal: true });
+    }
+
+    setAlertError(errorMessage) {
+        this.setState({ alertError: errorMessage });
+    }
+
+    handleCloseAlert(errorMessage) {
+        this.setState({ alertError: null });
     }
 
     // Function to change replay name
@@ -105,14 +116,12 @@ export default class ReplayForm extends React.Component {
 
     // Function to close "New Replay" popup-form
     handleClose() {
-        console.log("entering close function")
-        //this.setState({ showModal: false });
         this.props.store.dispatch(closeReplayModal())
     }
 
     // Function to close "New Replay" popup-form and start a new replay
     handleCloseAndAddReplay() {
-        this.props.store.dispatch(closeReplayModal())
+        //this.props.store.dispatch(closeReplayModal())
         this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
     }
 
@@ -182,15 +191,19 @@ export default class ReplayForm extends React.Component {
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
         this.setState({ replay: 'Replay Active' })
-        //this.props.dispatch(startNewReplay())
+        if(this.props.onReplayPage) {
+            var capToReplay = this.state.captureToReplay;
+        }
+        else {
+            var capToReplay = this.props.captureToReplay;
+        }
         let postData = {
             "db": this.state.replayDBName,
             "rds": this.state.replayRDSInstance,
-            "captureName": this.state.captureToReplay,
+            captureName: capToReplay,
             "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
             "username": this.state.replayDBUsername,
             "password": this.state.replayDBPassword,
-            //"startTime": "now",
             "fastMode": this.state.fastMode,
             "restoreDb": false
         }
@@ -202,24 +215,47 @@ export default class ReplayForm extends React.Component {
             contentType: 'application/json',
             dataType: 'json'
         })
+        .done(function(data) {
+            console.log("closing modal");
+            that.setAlertError(null);
+            that.props.store.dispatch(closeReplayModal());
+        })
             .fail(function (data) {
-                that.handleShowAlert()
+                if (data.status === 400) {
+                  that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
+                }
+                else if (data.status === 403) {
+                  that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+                }
+                else {
+                  that.setAlertError("Unknown Error");
+                }
+                console.log("Failed from ReplayForm.jsx");
             })
     }
 
 
     render() {
-        console.log("PROPS: ", this.props.show);
-        console.log("STATE: ", this.state.showModal);
-
         if (this.props.onReplayPage) {
             var captureToReplay = this.state.captureToReplay
             var captureOptions = this.state.captureOptions
         }
         else {
             var captureToReplay = this.props.captureToReplay
-            console.log("CAPTURE TO REPLAY ISSSS: ", captureToReplay)
+            console.log('THE CAPTURE TO REPLAY IS: ', captureToReplay)
             var captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
+        }
+        console.log('in the replay form: ', this.props.show)
+
+        let uniqueNameAlert = null;
+        if (this.state.alertError !== null) {
+          uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
+            <h4>Oh snap! You got an error!</h4>
+            <p>{this.state.alertError}</p>
+            <p>
+              <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+            </p>
+          </Alert>
         }
 
         return (
@@ -228,6 +264,7 @@ export default class ReplayForm extends React.Component {
                     <Modal.Title>New Replay</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {uniqueNameAlert}
                     <form>
                         <FormGroup
                             validationState={this.getValidationState()}
