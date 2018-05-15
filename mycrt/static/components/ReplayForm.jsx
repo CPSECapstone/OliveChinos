@@ -43,10 +43,6 @@ export default class ReplayForm extends React.Component {
         this.handleCloseAlert = this.handleCloseAlert.bind(this);
     }
 
-    // componentDidMount() {
-    //     this.loadCapturesToReplay()
-    // }
-
     // Function to show "New Replay" popup-form
     handleShow() {
         console.log("entering show function")
@@ -69,7 +65,6 @@ export default class ReplayForm extends React.Component {
     // Function to update the list of captures available
     updateCaptureToReplay(e) {
         this.props.store.dispatch(setCaptureToReplay(e.target.value));
-        //this.setState({ captureToReplay: e.target.value });
     }
 
     // Function to check if capture name is valid
@@ -121,7 +116,6 @@ export default class ReplayForm extends React.Component {
 
     // Function to close "New Replay" popup-form and start a new replay
     handleCloseAndAddReplay() {
-        //this.props.store.dispatch(closeReplayModal())
         this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
     }
 
@@ -143,26 +137,8 @@ export default class ReplayForm extends React.Component {
         return captureList
     }
 
-    // // Function to fetch the list of captures available to replay on
-    // loadCapturesToReplay() {
-    //     let that = this;
-    //     jquery.ajax({
-    //         url: window.location.href + 'capture/completed_list',
-    //         type: 'GET',
-    //         contentType: 'application/json',
-    //         dataType: 'json'
-    //     }).done(function (data) {
-    //         let resultList = that.createCapturesSelect(data)
-    //         that.setState({ captureOptions: resultList })
-    //         that.setState({ captureToReplay: resultList[0].props.value })
-
-    //     })
-    // }
-
     // Function to display the list of available DB instances
     createDBInstancesSelect(data) {
-        console.log("Jake ", data);
-        console.log("STORE ", this.props.store);
         let dbInstances = data && data["databases"];
         if (!dbInstances) {
             dbInstances = [];
@@ -182,7 +158,6 @@ export default class ReplayForm extends React.Component {
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
         this.setState({ replay: 'Replay Active' })
-        //this.props.dispatch(startNewReplay())
         let rdsInstance;
         if (this.state.replayRDSInstance === '') {
           rdsInstance = this.props.store.databaseInstances.databases[0];
@@ -232,11 +207,9 @@ export default class ReplayForm extends React.Component {
     render() {
         var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
         if (this.props.onReplayPage) {
-            //var captureToReplay = captureOptions[0].props.value
             this.props.store.dispatch(setCaptureToReplay(captureOptions[0].props.value));
         }
         else {
-            //var captureToReplay = this.props.captureToReplay
             this.props.store.dispatch(setCaptureToReplay(this.props.captureToReplay));
             captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
         }
