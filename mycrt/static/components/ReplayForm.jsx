@@ -207,7 +207,8 @@ export default class ReplayForm extends React.Component {
     render() {
         var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
         if (this.props.onReplayPage) {
-            this.props.store.dispatch(setCaptureToReplay(captureOptions[0].props.value));
+            var capOpt = captureOptions[0] && captureOptions[0].props.value;
+            this.props.store.dispatch(setCaptureToReplay(capOpt));
         }
         else {
             this.props.store.dispatch(setCaptureToReplay(this.props.captureToReplay));
