@@ -33,6 +33,7 @@ class Capture extends React.Component {
 
     this.state = {
       showAlert: false,
+      alertError: '',
       show: false,
       capture: this.props.capture,
       activeCaptures: this.props.activeCaptures,
@@ -73,6 +74,7 @@ class Capture extends React.Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
+    this.setAlertError = this.setAlertError.bind(this)
   }
 
   // Sets state of error alert to close
@@ -83,6 +85,10 @@ class Capture extends React.Component {
   // Sets state of error alert to show
   handleShowAlert() {
     this.setState({ showAlert: true });
+  }
+
+  setAlertError(errorMessage) {
+    this.setState({ alertError: errorMessage });
   }
 
   // Closes the new capture modal
@@ -112,7 +118,7 @@ class Capture extends React.Component {
 
     let postData;
 
-    
+
     let rdsInstance;
     if (this.state.captureRDSInstance === '') {
       rdsInstance = this.props.databaseInstances.databases[0];
@@ -158,6 +164,15 @@ class Capture extends React.Component {
         that.props.dispatch(fetchCaptures());
       })
       .fail(function (data) {
+        if (data.status === 400) {
+          that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
+        }
+        else if (data.status === 403) {
+          that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+        }
+        else {
+          that.setAlertError("Unknown Error");
+        }
         that.handleShowAlert()
       })
   }
@@ -219,7 +234,7 @@ class Capture extends React.Component {
       </option>)
       dbList.push(selectOption)
     }
-    
+
     return dbList
   }
 
@@ -292,10 +307,7 @@ class Capture extends React.Component {
     if (this.state.showAlert) {
       uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
         <h4>Oh snap! You got an error!</h4>
-        <p>
-          Looks like the capture name you provided is not unique.
-          Please provide a unique capture name.
-        </p>
+        <p>{this.state.alertError}</p>
         <p>
           <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
         </p>

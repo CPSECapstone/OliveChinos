@@ -79,6 +79,7 @@ export default class IssueModal extends Component {
   }
 
     render() {
+      console.log("HELLO YOUTUBE");
       return (
         <Modal
           {...this.props}

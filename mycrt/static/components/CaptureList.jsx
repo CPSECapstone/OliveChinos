@@ -117,7 +117,7 @@ class CaptureList extends React.Component {
     renderTable() {
         console.log('THE CAPTURE TYPE IS: ', this.state.captureType)
         if (this.state.captureType == 'Active') {
-          if (this.props.capturesScheduled === false) {
+          if (this.props.capturesActive === false) {
               return (
                  <div>
                      <div id="loader" className='col'></div>
