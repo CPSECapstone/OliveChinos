@@ -3,7 +3,7 @@ import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
 import { startReplay, setGraphDataFromReplay } from '../actions'
 import { connect } from 'react-redux'
-import { setReplay, startNewReplay, stopReplay, select, closeReplayModal } from '../actions'
+import { setReplay, startNewReplay, stopReplay, select, closeReplayModal, setCaptureToReplay } from '../actions'
 import Flatpickr from 'react-flatpickr'
 import InfoReplay from './InfoReplay'
 import Datetime from 'react-datetime'
@@ -43,10 +43,9 @@ export default class ReplayForm extends React.Component {
         this.handleCloseAlert = this.handleCloseAlert.bind(this);
     }
 
-    componentDidMount() {
-        this.loadDatabaseInstances()
-        this.loadCapturesToReplay()
-    }
+    // componentDidMount() {
+    //     this.loadCapturesToReplay()
+    // }
 
     // Function to show "New Replay" popup-form
     handleShow() {
@@ -69,7 +68,8 @@ export default class ReplayForm extends React.Component {
 
     // Function to update the list of captures available
     updateCaptureToReplay(e) {
-        this.setState({ captureToReplay: e.target.value });
+        this.props.store.dispatch(setCaptureToReplay(e.target.value));
+        //this.setState({ captureToReplay: e.target.value });
     }
 
     // Function to check if capture name is valid
@@ -127,7 +127,11 @@ export default class ReplayForm extends React.Component {
 
     // Function to display the list of available captures to replay on
     createCapturesSelect(data) {
-        let captures = data
+        console.log("CREATE Captures SELECT: ", data);
+        let captures = data;
+        if (!captures) {
+            captures = [];
+        }
         let captureList = [];
         for (let i = 0; i < captures.length; i++) {
             let capture_name = captures[i];
@@ -139,25 +143,30 @@ export default class ReplayForm extends React.Component {
         return captureList
     }
 
-    // Function to fetch the list of captures available to replay on
-    loadCapturesToReplay() {
-        let that = this;
-        jquery.ajax({
-            url: window.location.href + 'capture/completed_list',
-            type: 'GET',
-            contentType: 'application/json',
-            dataType: 'json'
-        }).done(function (data) {
-            let resultList = that.createCapturesSelect(data)
-            that.setState({ captureOptions: resultList })
-            that.setState({ captureToReplay: resultList[0].props.value })
+    // // Function to fetch the list of captures available to replay on
+    // loadCapturesToReplay() {
+    //     let that = this;
+    //     jquery.ajax({
+    //         url: window.location.href + 'capture/completed_list',
+    //         type: 'GET',
+    //         contentType: 'application/json',
+    //         dataType: 'json'
+    //     }).done(function (data) {
+    //         let resultList = that.createCapturesSelect(data)
+    //         that.setState({ captureOptions: resultList })
+    //         that.setState({ captureToReplay: resultList[0].props.value })
 
-        })
-    }
+    //     })
+    // }
 
     // Function to display the list of available DB instances
     createDBInstancesSelect(data) {
-        let dbInstances = data["databases"];
+        console.log("Jake ", data);
+        console.log("STORE ", this.props.store);
+        let dbInstances = data && data["databases"];
+        if (!dbInstances) {
+            dbInstances = [];
+        }
         let dbList = [];
         for (let i = 0; i < dbInstances.length; i++) {
             let instance = dbInstances[i];
@@ -169,38 +178,23 @@ export default class ReplayForm extends React.Component {
         return dbList
     }
 
-    // Function to fetch the list of DB instances
-    loadDatabaseInstances() {
-        let that = this;
-        let returnList = []
-        jquery.ajax({
-            url: window.location.href + 'databaseInstances',
-            type: 'GET',
-            contentType: 'application/json',
-            dataType: 'json'
-        }).done(function (data) {
-            returnList = that.createDBInstancesSelect(data)
-            that.setState({
-                databaseInstanceOptions: returnList
-            })
-            that.setState({ replayRDSInstance: returnList[0].props.value })
-        })
-    }
-
 
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
         this.setState({ replay: 'Replay Active' })
-        if(this.props.onReplayPage) {
-            var capToReplay = this.state.captureToReplay;
+        //this.props.dispatch(startNewReplay())
+        let rdsInstance;
+        if (this.state.replayRDSInstance === '') {
+          rdsInstance = this.props.store.databaseInstances.databases[0];
         }
         else {
-            var capToReplay = this.props.captureToReplay;
+          rdsInstance = this.state.replayRDSInstance;
         }
+        
         let postData = {
             "db": this.state.replayDBName,
-            "rds": this.state.replayRDSInstance,
-            captureName: capToReplay,
+            "rds": rdsInstance,
+            "captureName": this.props.store.captureToReplay,
             "replayName": this.state.replayName.length > 0 ? this.state.replayName : '',
             "username": this.state.replayDBUsername,
             "password": this.state.replayDBPassword,
@@ -236,17 +230,17 @@ export default class ReplayForm extends React.Component {
 
 
     render() {
+        var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
         if (this.props.onReplayPage) {
-            var captureToReplay = this.state.captureToReplay
-            var captureOptions = this.state.captureOptions
+            //var captureToReplay = captureOptions[0].props.value
+            this.props.store.dispatch(setCaptureToReplay(captureOptions[0].props.value));
         }
         else {
-            var captureToReplay = this.props.captureToReplay
-            console.log('THE CAPTURE TO REPLAY IS: ', captureToReplay)
-            var captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
+            //var captureToReplay = this.props.captureToReplay
+            this.props.store.dispatch(setCaptureToReplay(this.props.captureToReplay));
+            captureOptions = (<option value={this.props.captureToReplay} key={0}>{this.props.captureToReplay}</option>)
         }
-        console.log('in the replay form: ', this.props.show)
-
+        //this.setState({ captureToReplay: captureToReplay });
         let uniqueNameAlert = null;
         if (this.state.alertError !== null) {
           uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
@@ -282,14 +276,14 @@ export default class ReplayForm extends React.Component {
                         </FormGroup>
                         <FormGroup controlId="formControlsSelectCapture">
                             <ControlLabel>Capture To Replay</ControlLabel>
-                            <FormControl componentClass="select" placeholder="select" value={captureToReplay} onChange={this.updateCaptureToReplay}>
+                            <FormControl componentClass="select" placeholder="select" value={this.props.store.captureToReplay} onChange={this.updateCaptureToReplay}>
                                 {captureOptions}
                             </FormControl>
                         </FormGroup>
                         <FormGroup controlId="formControlsSelectRDS">
                             <ControlLabel>RDS Instance</ControlLabel>
                             <FormControl componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
-                                {this.state.databaseInstanceOptions}
+                                {this.createDBInstancesSelect(this.props.store.databaseInstances)}
                             </FormControl>
                         </FormGroup>
                         <FormGroup>
