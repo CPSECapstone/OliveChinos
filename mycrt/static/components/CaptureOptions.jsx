@@ -42,6 +42,21 @@ class CaptureOptions extends React.Component {
             CaptureData.push(captureInfo)
         }
             let replayCaptureOptions = Object.keys(this.props.analyticsForGraph);
+            //HERE IS WHERE THE UI WILL CHANGE FIRST
+            /**
+             * {
+             *  cap1 : {
+             *       replays : {
+             *              repl1: {}, etc.
+             * 
+             * 
+             *                  },
+             *        end_time: "TIME"
+             *          
+             *          }
+             *     
+             * }
+             */
             return (
             <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
                 <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
