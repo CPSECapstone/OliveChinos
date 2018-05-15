@@ -349,7 +349,8 @@ const mapStateToProps = state => ({
   databaseInstances: state.databaseInstances,
   replaysCompleted: state.replaysCompleted,
   replaysActive: state.replaysActive,
-  capturesToReplay: state.capturesToReplay
+  capturesToReplay: state.capturesToReplay,
+  captureToReplay: state.captureToReplay
 })
 
 export default connect(mapStateToProps)(Replay)

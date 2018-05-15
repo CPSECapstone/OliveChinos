@@ -201,6 +201,8 @@ class CaptureReplaySelector extends React.Component {
 const mapStateToProps = state => ({
     booleansForGraph: state.booleansForGraph,
     analyticsForGraph: state.analyticsForGraph,
+    databaseInstances: state.databaseInstances,
+    captureToReplay: state.captureToReplay,
     currentCaptureForGraph: state.currentCaptureForGraph,
     selectedReplay: state.selectedReplay,
     showReplayModal: state.showReplayModal
