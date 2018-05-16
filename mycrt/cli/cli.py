@@ -6,6 +6,7 @@ import time
 import requests #rest api
 import json
 
+web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
 
 @click.group()
 def cli(): 
@@ -44,7 +45,7 @@ def view(completed, ongoing, scheduled):
 
 def _get_capture_list(status): 
     endpoint='list_' + status
-    captures = requests.get('http://localhost:5000/capture/'+endpoint)
+    captures = requests.get(web_address + 'capture/'+endpoint)
 
     if captures.status_code != 200: #there was an error
         click.echo('''There was an error connecting to your database.''')
@@ -104,7 +105,7 @@ def start(credentials_file, capture_name, start_time, end_time):
             'endTime': [end_time]
     }
 
-    resp = requests.post('http://localhost:5000/capture/start', json=task)
+    resp = requests.post(web_address + 'capture/start', json=task)
 
     if resp.status_code != 200:
         if resp.status_code == 400: #capture name must be unique
@@ -149,7 +150,7 @@ def end(credentials_file, capture_name):
     task = {'captureName': capture_name,
             'db': credential_dict['db-name']}
 
-    resp = requests.post('http://localhost:5000/capture/end', json=task)
+    resp = requests.post(web_address + 'capture/end', json=task)
 
     #TODO may need to add more checking here - capture exists 
     if resp.status_code != 200: 
@@ -174,7 +175,7 @@ def cancel(capture_name):
     """
     task = {'captureName': capture_name}
 
-    resp = requests.post('http://localhost:5000/capture/cancel', json=task)
+    resp = requests.post(web_address + 'capture/cancel', json=task)
      
     #Check if the capture exists 
     if resp.status_code != 200: 
@@ -194,7 +195,7 @@ def delete(capture_name):
     #NOTE did we decide that deleting a capture will also remove all replays associated with it? 
     task={'capture': capture_name}
 
-    resp = requests.delete('http://localhost:5000/capture/delete', json=task)
+    resp = requests.delete(web_address + 'capture/delete', json=task)
 
     if resp.status_code != 200: 
         click.echo('''There was an error. Please make sure the capture name is correct and that the specified capture has completed.''')
@@ -245,7 +246,7 @@ def start(credentials_file, capture_name, replay_name, fast_mode, restore):
             'replayName': (replay_name if replay_name else '') 
     }
 
-    resp = requests.post('http://localhost:5000/replay', json=task)
+    resp = requests.post(web_address + 'replay', json=task)
 
     if resp.status_code != 200: #TODO will this error out if replay name not unique?
         click.echo('''There was an error. Please make sure the specified capture name exists and check the database credentials.''')
@@ -266,7 +267,7 @@ def delete(capture_name, replay_name):
     task={'capture': capture_name, 
             'replay': replay_name
     }
-    resp = requests.delete('http://localhost:5000/replay/delete', json=task)
+    resp = requests.delete(web_address + 'replay/delete', json=task)
 
     if resp.status_code != 200:
         click.echo('Please make sure the capture and replay names are correct.')
@@ -301,7 +302,7 @@ def _echo_replay_list(is_ongoing):
     path = 'list'
     if is_ongoing: 
         path = 'active_' + path
-    replay_list = requests.get('http://localhost:5000/replay/' + path)
+    replay_list = requests.get(web_address + 'replay/' + path)
     if replay_list.status_code != 200: 
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -333,7 +334,7 @@ def list_metrics():
 def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
     '''-view metrics for any number of replays'''
 
-    analytics = requests.get('http://localhost:5000/analytics')
+    analytics = requests.get(web_address + 'analytics')
     if analytics.status_code != 200: #there was an error
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -450,14 +451,10 @@ def _convert_to_datetime(input_time):
     split_string = input_time.split('T')
 
     date = split_string[0].split('-')
-    year = int(date[0])
-    month = int(date[1])
-    day = int(date[2])
+    year, month, day = int(date[0])
 
     time = split_string[1].split(':')
-    hour = int(time[0])
-    minute = int(time[1])
-    second = int(time[2])
+    hour, minute, second = int(time[0])
 
     return datetime(year, month, day, hour, minute, second)
 
