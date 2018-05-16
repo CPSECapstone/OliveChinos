@@ -202,22 +202,6 @@ def check_if_capture_name_is_unique(name, cm):
   results = cm.execute_query(query)
   return len(results) == 0
 
-def list_databases(cm):
-  """Find all databases and create a mapping between the id and endpoints
-
-  Args:
-    cm: A ComManager object to handle connections
-
-  Returns:
-    A dictionary whe vff vfre the keys are the database instance ids available to the user 
-    and the values are the associated endpoints.
-  """
-
-  rds_client = cm.get_boto('rds')
-  instances = rds_client.describe_db_instances()
-  
-  return {item['DBInstanceIdentifier'] : item['Endpoint']['Address'] for item in instances['DBInstances']}
-  
 
 def _create_bucket(s3_client):
   """Creates an S3 bucket to hold captures and metrics.
@@ -322,9 +306,9 @@ def end_capture(credentials, capture_name, db, cm):
   start_time, rds, username, password = query_res[0]
   s3_client = cm.get_boto('s3')
   
-  databases = list_databases(cm)
+  databases = cm.list_databases()
   address = databases[rds]
-  
+   
   query = '''
       SELECT event_time, argument 
       FROM mysql.general_log 

@@ -22,7 +22,7 @@ except:
     from utility.capture import *
     from utility.analytics import *
     from utility.replay import *
-    from utility.login import * 
+    from utility.login import *
     from utility.scheduler import *
 
 application = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -200,7 +200,7 @@ Retrieves all database instances for a user
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
     global cm
-    db_instances = list_databases(cm)
+    db_instances = cm.list_databases()
     db_instances = list(db_instances.keys())
     return jsonify({
         "databases" : db_instances
@@ -281,7 +281,8 @@ def capture_start():
     if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
-    
+    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+      abort(403)
 
     end_time = data.get('endTime', [None])
     end_time = end_time[0]
@@ -401,6 +402,8 @@ def replay():
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
 
+    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+        abort(403)
 
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
@@ -451,6 +454,19 @@ def delete_replay_http():
     capture_name = data['capture'] 
     replay_name = data['replay']
     delete_replay(credentials, capture_name, replay_name, cm)
+    return jsonify({'status': 'complete'})
+
+'''
+Stops an active capture.
+'''
+@application.route("/replay/active", methods=["DELETE"])
+def stop_active_replay_http():
+    global cm
+    #Need a capture name and replay name in order to stop replay
+    data = request.get_json()
+    capture_name = data['capture'] 
+    replay_name = data['replay']
+    stop_replay(credentials, capture_name, replay_name, cm)
     return jsonify({'status': 'complete'})
 
 '''

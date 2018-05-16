@@ -3,15 +3,20 @@ import { Button, Glyphicon } from 'react-bootstrap';
 import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
+import ReplayForm from './ReplayForm'
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay } from '../actions'
+import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay, startReplayFromCapture } from '../actions'
 
 var selectedColor = "#ADD8E6";
 
 class ReplayButton extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            captureNameForReplayForm: ''
+        }
     }
 
     render() {
@@ -58,23 +63,6 @@ class CaptureReplaySelector extends React.Component {
         );
       }
 
-     //this is a helper function to change the background color of the metric
-    //that has been selected for the user to see
-    getbackgroundColor(uniqueName) {
-        let captureReplaysSelected = []
-        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
-            if(this.props.booleansForGraph[i]) {
-                let totalNames = this.state.totalReplayNames
-                captureReplaysSelected.push(totalNames[i])
-            }
-        }
-        if(this.contains(uniqueName, captureReplaysSelected)) {
-            return selectedColor;
-        } else {
-            return "white";
-        }
-    }
-
     //renders all of the table rows that hold the values for all capture and replay options to graph
     getReplayCapturesWithData(refProps, names) {
         const selectRowProp = {
@@ -112,13 +100,35 @@ class CaptureReplaySelector extends React.Component {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
+            var that = this;
+            var capName = refProps.currentCaptureForGraph;
+            /**
+             * 
+             * This is the functionality for the 'start a new replay'
+             * button that shows up in the table of captures under the 
+             * analytics feature.
+             */
             function buttonFormatter(cell, row){
+                /**
+                 * This function dispatches the action
+                 * to open the replay modal (DOES NOT START A REPLAY)
+                 * it sets the state's capture name to the selected capture
+                 * @param {capture name to be replayed} capN 
+                 */
+                function fakeDispatch(capN) {
+                    if(that.props.showReplayModal == false) {
+                        that.setState({
+                            captureNameForReplayForm:capN
+                        })
+                        refProps.dispatch(startReplayFromCapture())
+                    }
+                }
                 return (
                 <Button
                 type="submit"
                 bsSize="small"
                 bsStyle="success"
-                onClick={ () => refProps.dispatch(changeStateForComponents("onReplay"))}
+                onClick={() => fakeDispatch(capName)}
                 >
                 Start a New Replay
                 </Button>
@@ -151,14 +161,13 @@ class CaptureReplaySelector extends React.Component {
                 }
                 replayData.push(replayInfo)
             }
-            console.log('THE SELECTED REPLAY IS: ', this.props.selectedReplay)
             return(
                 <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
                 </BootstrapTable>
             )
         }
-        }
+    }
 
     //reRenders the capture options by dispatching this action when back button is clicked
     //ignore that it says deleteButton - it is required for react-bootstrap-table
@@ -178,9 +187,12 @@ class CaptureReplaySelector extends React.Component {
 
 
     render() {
-        //console.log('********this is the props: ', this.props)
+        console.log('********this is the props in caprepsel: ', this.props.showReplayModal)
         return(
-            this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)
+            <div>
+            {this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)}
+            <ReplayForm onReplayPage={false} captureToReplay={this.state.captureNameForReplayForm} store={this.props} show={this.props.showReplayModal}/>
+            </div>
         );
     }
 
@@ -189,8 +201,11 @@ class CaptureReplaySelector extends React.Component {
 const mapStateToProps = state => ({
     booleansForGraph: state.booleansForGraph,
     analyticsForGraph: state.analyticsForGraph,
+    databaseInstances: state.databaseInstances,
+    captureToReplay: state.captureToReplay,
     currentCaptureForGraph: state.currentCaptureForGraph,
-    selectedReplay: state.selectedReplay
+    selectedReplay: state.selectedReplay,
+    showReplayModal: state.showReplayModal
   })
 
   export default connect(mapStateToProps)(CaptureReplaySelector)
