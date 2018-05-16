@@ -231,11 +231,27 @@ class Graph extends Component {
 
    getMinYAxis() {
       let totalValues = []
+      console.log("HELLO");
+      console.log(this.props.metricForGraph);
+      if (this.props.metricForGraph === "FreeableMemory") {
+         for (let j = 0; j < this.props.totalNames.length; j++) {
+            if (this.props.booleansForGraph[j] === true) {
+               for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+                  var tmp = this.state.dataPointsForGraph[i][this.props.totalNames[j]];
 
-      for (let j = 0; j < this.props.totalNames.length; j++) {
-         if (this.props.booleansForGraph[j] === true) {
-            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
-               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+                  tmp = tmp/1048576
+                  totalValues.push(tmp);
+                  //totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+               }
+            }
+         }
+      } else {
+
+         for (let j = 0; j < this.props.totalNames.length; j++) {
+            if (this.props.booleansForGraph[j] === true) {
+               for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+                  totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+               }
             }
          }
       }
@@ -248,15 +264,31 @@ class Graph extends Component {
          return Math.min(a, b)
       })
 
+      console.log("YOUTUBE1");
+      console.log(dataMin);
       return Math.floor(dataMin)
    }
 
    getMaxYAxis() {
       let totalValues = []
-      for (let j = 0; j < this.props.totalNames.length; j++) {
-         if (this.props.booleansForGraph[j] === true) {
-            for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
-               totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+
+      if (this.props.metricForGraph === "FreeableMemory") {
+         for (let j = 0; j < this.props.totalNames.length; j++) {
+            if (this.props.booleansForGraph[j] === true) {
+               for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+                  var tmp = this.state.dataPointsForGraph[i][this.props.totalNames[j]];
+                  tmp = tmp/1048576
+                  totalValues.push(tmp);
+                  //totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+               }
+            }
+         }
+      } else {
+         for (let j = 0; j < this.props.totalNames.length; j++) {
+            if (this.props.booleansForGraph[j] === true) {
+               for (let i = 0; i < this.state.dataPointsForGraph.length; i++) {
+                  totalValues.push(this.state.dataPointsForGraph[i][this.props.totalNames[j]])
+               }
             }
          }
       }
@@ -269,6 +301,8 @@ class Graph extends Component {
          return Math.max(a, b)
       })
 
+      console.log("YOUTUBE2");
+      console.log(dataMax);
       return Math.ceil(dataMax)
    }
 
@@ -354,7 +388,20 @@ class Graph extends Component {
       var currentPoint;
 
       if (this.state.leftRange === 0 && this.state.rightRange === 0) {
-         testArray = this.state.dataPointsForGraph;
+         //testArray = this.state.dataPointsForGraph;
+
+         if(this.props.metricForGraph === "FreeableMemory") {
+            var jsonObject = Object.keys(this.state.dataPointsForGraph);
+
+            for (var i = 0; i < jsonObject.length; i++) {
+               currentPoint = this.state.dataPointsForGraph[i];
+               //currentPoint.wtf = currentPoint.wtf/1048576
+               }
+               testArray.push(currentPoint);
+            } else {
+            testArray = this.state.dataPointsForGraph;
+         }
+
       } else {
          var jsonObject = Object.keys(this.state.dataPointsForGraph);
          leftMin = parseInt(this.state.leftRange);
@@ -362,10 +409,9 @@ class Graph extends Component {
 
          for (var i = 0; i < jsonObject.length; i++) {
             currentPoint = this.state.dataPointsForGraph[i];
-            //1,048,576
-            //console.log(currentPoint);
+
             if(this.props.metricForGraph === "FreeableMemory") {
-               currentPoint = currentPoint/1048576
+               //currentPoint.wtf = currentPoint.wtf/1048576
             }
 
             if (currentPoint.seconds <= this.state.rightRange && currentPoint.seconds >= this.state.leftRange) {

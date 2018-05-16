@@ -9,7 +9,7 @@ import os
 
 from .capture import *
 from .communications import ComManager
-from .analytics import get_capture_replay_list 
+from .analytics import get_capture_replay_list
 
 #db_id = "pi"
 #hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
@@ -53,7 +53,7 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
     except:
       pass
   end_time = datetime.utcnow()
-  
+
   connection.close()
   return start_time, end_time
 
@@ -148,12 +148,12 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   _update_replay_count()
 
 
-def func_to_call(x): 
+def func_to_call(x):
       requests.get(x)
 
 def _update_replay_count():
   address = "http://localhost:5000/update_replay_count"
-  
+
   proc = Process(target = func_to_call,
                  args = (address,))
   proc.start()
@@ -161,7 +161,7 @@ def _update_replay_count():
 def _update_analytics():
   print("In update_analytics replay", file=sys.stderr)
   address = "http://localhost:5000/update_analytics"
-  
+
   proc = Process(target = func_to_call,
                  args = (address,))
   proc.start()
@@ -175,8 +175,8 @@ def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
   _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
   _update_replay_count()
-  _update_analytics() 
- 
+  _update_analytics()
+
 def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
   rds_client = cm.get_boto('rds')
   s3_client = cm.get_boto('s3')
@@ -185,6 +185,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   hostname = _get_hostname(rds_client, rds_name)
   path_name = capture_name.replace(".cap", "")
   capture_path = "mycrt/" + path_name + "/" + path_name + ".cap"
+  print("log key:", capture_path, file=sys.stderr)
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
@@ -206,10 +207,10 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   }
 
   _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
- 
+
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   cm.execute_query(query)
-  
+
 def delete_replay(credentials, capture_name, replay_name, cm):
   '''Remove all traces of a replay in S3.
 
@@ -241,13 +242,12 @@ def get_replays_from_table(cm):
 def _populate_replay_table(cm):
   table_replays = cm.execute_query("select replay, capture from Replays")
   table_replays = set((capture, replay) for (replay, capture) in table_replays)
-  s3_replays = get_capture_replay_list({"region_name":"us-east-2"}) 
+  s3_replays = get_capture_replay_list({"region_name":"us-east-2"})
   replays_to_add = set()
   for capture, replays in s3_replays:
     for replay in replays:
       replay = replay.replace(".replay", "")
       if (capture, replay) not in table_replays:
-        query = '''INSERT INTO Replays (replay, capture, db, mode, rds) 
+        query = '''INSERT INTO Replays (replay, capture, db, mode, rds)
                    VALUES ('{0}', '{1}', 'unknown', 'unknown', 'unknown')'''.format(replay, capture)
         cm.execute_query(query)
-
