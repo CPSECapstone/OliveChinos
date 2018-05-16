@@ -440,9 +440,7 @@ def _convert_metric_time_string(metric_time_string):
     year = int(split_string[3])
 
     time = split_string[4].split(':')
-    hour = int(time[0])
-    minute = int(time[1])
-    second = int(time[2])
+    hour, minute, second = map(int, time)
 
     return datetime(year, month, day, hour, minute, second)
 
@@ -451,10 +449,10 @@ def _convert_to_datetime(input_time):
     split_string = input_time.split('T')
 
     date = split_string[0].split('-')
-    year, month, day = int(date[0])
+    year, month, day = map(int, date)
 
     time = split_string[1].split(':')
-    hour, minute, second = int(time[0])
+    hour, minute, second = map(int, time)
 
     return datetime(year, month, day, hour, minute, second)
 
