@@ -1,7 +1,7 @@
 #headerLeft {
     display: inline;
     float: left;
-    width: 25%;
+    width: 35%;
 }
 
 /*#headerRight {
@@ -54,7 +54,7 @@
     top:0px;
     right:0px;
     height:100px;
-    width:25%;
+    width:15%;
 }
 
 .progressBarContainer {
