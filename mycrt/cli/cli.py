@@ -1,10 +1,12 @@
 import click
 import traceback
 from datetime import datetime, timedelta
+import calendar
 import time
 import requests #rest api
 import json
 
+web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
 
 @click.group()
 def cli(): 
@@ -43,7 +45,7 @@ def view(completed, ongoing, scheduled):
 
 def _get_capture_list(status): 
     endpoint='list_' + status
-    captures = requests.get('http://localhost:5000/capture/'+endpoint)
+    captures = requests.get(web_address + 'capture/'+endpoint)
 
     if captures.status_code != 200: #there was an error
         click.echo('''There was an error connecting to your database.''')
@@ -103,7 +105,7 @@ def start(credentials_file, capture_name, start_time, end_time):
             'endTime': [end_time]
     }
 
-    resp = requests.post('http://localhost:5000/capture/start', json=task)
+    resp = requests.post(web_address + 'capture/start', json=task)
 
     if resp.status_code != 200:
         if resp.status_code == 400: #capture name must be unique
@@ -148,7 +150,7 @@ def end(credentials_file, capture_name):
     task = {'captureName': capture_name,
             'db': credential_dict['db-name']}
 
-    resp = requests.post('http://localhost:5000/capture/end', json=task)
+    resp = requests.post(web_address + 'capture/end', json=task)
 
     #TODO may need to add more checking here - capture exists 
     if resp.status_code != 200: 
@@ -173,7 +175,7 @@ def cancel(capture_name):
     """
     task = {'captureName': capture_name}
 
-    resp = requests.post('http://localhost:5000/capture/cancel', json=task)
+    resp = requests.post(web_address + 'capture/cancel', json=task)
      
     #Check if the capture exists 
     if resp.status_code != 200: 
@@ -193,7 +195,7 @@ def delete(capture_name):
     #NOTE did we decide that deleting a capture will also remove all replays associated with it? 
     task={'capture': capture_name}
 
-    resp = requests.delete('http://localhost:5000/capture/delete', json=task)
+    resp = requests.delete(web_address + 'capture/delete', json=task)
 
     if resp.status_code != 200: 
         click.echo('''There was an error. Please make sure the capture name is correct and that the specified capture has completed.''')
@@ -244,7 +246,7 @@ def start(credentials_file, capture_name, replay_name, fast_mode, restore):
             'replayName': (replay_name if replay_name else '') 
     }
 
-    resp = requests.post('http://localhost:5000/replay', json=task)
+    resp = requests.post(web_address + 'replay', json=task)
 
     if resp.status_code != 200: #TODO will this error out if replay name not unique?
         click.echo('''There was an error. Please make sure the specified capture name exists and check the database credentials.''')
@@ -265,7 +267,7 @@ def delete(capture_name, replay_name):
     task={'capture': capture_name, 
             'replay': replay_name
     }
-    resp = requests.delete('http://localhost:5000/replay/delete', json=task)
+    resp = requests.delete(web_address + 'replay/delete', json=task)
 
     if resp.status_code != 200:
         click.echo('Please make sure the capture and replay names are correct.')
@@ -300,7 +302,7 @@ def _echo_replay_list(is_ongoing):
     path = 'list'
     if is_ongoing: 
         path = 'active_' + path
-    replay_list = requests.get('http://localhost:5000/replay/' + path)
+    replay_list = requests.get(web_address + 'replay/' + path)
     if replay_list.status_code != 200: 
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -320,31 +322,32 @@ def list_metrics():
 
 @analyze.command()
 @click.argument('capture-name', nargs=1)
-@click.argument('replay-names', nargs=-1)
+@click.argument('replay-names', nargs=-1, required=True)
 @click.option('-m', '--metric-name', multiple=True, 
-        help='-the name of the metric; use command "list-metrics to see supported options"')
+        help='-the name of the metric; use command "list-metrics" to see supported options')
+@click.option('-s', '--start-time', 
+        help='-grab all metrics after this time; format: YYYY-MM-DDTHH:MM:SS')
+@click.option('-e', '--end-time', 
+        help='-grab all metrics until this time; format: YYYY-MM-DDTHH:MM:SS')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(capture_name, replay_names, metric_names, raw):
+def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
     '''-view metrics for any number of replays'''
 
-    analytics = requests.get('http://localhost:5000/analytics')
+    analytics = requests.get(web_address + 'analytics')
     if analytics.status_code != 200: #there was an error
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
 
     json_input = analytics.json()
+
+    if start_time: 
+        start_time = _convert_to_datetime(start_time)
+    if end_time: 
+        end_time = _convert_to_datetime(end_time)
+
     if raw: #print metrics in json format
-        for replay in replay_names: 
-            click.echo('\nMetric data for \'' + str(replay) + '\'')
-            if len(metric_names)==0: #no metric specified - display all
-                click.echo(format_json(json_input[capture_name][replay]))
-            else: #print only specified metrics
-                for metric in metric_names: 
-                    output = '\"'+ metric + '\": '
-                    click.echo(output + 
-                            format_json(json_input[capture_name][replay][metric]))
-        click.echo()
+        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time)
 
     else : #compute metric averages for each replay
         try:
@@ -356,29 +359,103 @@ def view(capture_name, replay_names, metric_names, raw):
             '''
             #Average of data points
             capture_folder = json_input[capture_name]
+            metric_names = metric_name if metric_name else ['CPUUtilization', 
+                    'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
             for replay in replay_names: 
                 click.echo('\nMetric Data for \'' + str(replay) + '\'') 
                 replay_data_points = capture_folder[replay]
-                _print_metric_averages(replay_data_points)
+                _print_metric_averages(replay_data_points, metric_names, start_time, end_time)
 
         except (ValueError, KeyError, TypeError): 
             click.echo('''One or more of the specified replay names do not exist. Please try again.''')
             return
 
-def _print_metric_averages(metric_data_points): 
-    cpu_util = get_average(metric_data_points['CPUUtilization'])
-    freeable_mem = get_average(metric_data_points['FreeableMemory'])
-    read_iops = get_average(metric_data_points['ReadIOPS'])
-    write_iops = get_average(metric_data_points['WriteIOPS'])
+def _print_metric_averages(metric_data_points, metric_names, start_time, end_time): 
+    '''Dict containing tuple with string for printing and aggregate average of 
+    the metric'''
+    metric_string = {
+            'CPUUtilization': 'CPU Utilization (%): ', 
+            'FreeableMemory': 'Freeable Memory (bytes): ', 
+            'ReadIOPS': 'Read IOPS (count/sec): ', 
+            'WriteIOPS': 'Write IOPS (count/sec): '
+    }
 
-    click.echo('Start Time: ' + str(metric_data_points['start_time']))
-    click.echo('End Time: ' + str(metric_data_points['end_time']))
+    start_time = start_time if start_time else metric_data_points['start_time']
+    end_time = end_time if end_time else metric_data_points['end_time']
+
+    click.echo('Start Time: ' + str(start_time))
+    click.echo('End Time: ' + str(end_time))
     click.echo('---METRIC AVERAGES---')
-    click.echo('CPU Utilization (%): ' + str(cpu_util))
-    click.echo('Freeable Memory (bytes): ' + str(freeable_mem))
-    click.echo('Read IOPS (count/sec): ' + str(read_iops))
-    click.echo('Write IOPS (count/sec): ' + str(write_iops))
+
+    for metric in metric_names: 
+        data_points = metric_data_points[metric]
+        data_points = _filter_metrics_in_timeframe(data_points, start_time, end_time)
+        average = get_average(data_points)
+        click.echo(metric_string[metric] + str(average))
+
     click.echo()
+
+def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, start_time, end_time):     
+    '''Get the specified metrics for the specified replay under the given capture 
+    name. If no metric_names are specified, get all the metrics.
+    '''
+    replay_metrics = {}
+
+    for replay in replay_names: 
+        if len(metric_names)==0: #no metric specified - display all
+            metric_names = ['CPUUtilization', 'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
+            #all_datapoints = raw_json[capture_name][replay]
+            #replay_metrics[replay] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
+        #else: #print only specified metrics
+        metrics = {}
+        for metric in metric_names: 
+            all_datapoints = raw_json[capture_name][replay][metric]
+            metrics[metric] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
+        replay_metrics[replay] = metrics
+    click.echo(format_json(replay_metrics))
+
+def _filter_metrics_in_timeframe(metric_list, start_time, end_time): 
+    '''Expects list of JSON objects of metrics only - no preceeding tags. 
+    start_time and end_time must be in datetime format
+    '''
+    if not start_time and not end_time: #no filtering to be done
+        return metric_list
+    else: 
+        start_time = start_time if start_time else datetime.min
+        end_time = end_time if end_time else datetime.max
+        metrics = []
+        for metric in metric_list: 
+            timestamp = _convert_metric_time_string(metric['Timestamp'])
+            if start_time < timestamp < end_time : 
+                metrics.append(metric)
+
+        return metrics
+
+def _convert_metric_time_string(metric_time_string): 
+    #sample string: "Thu, 15 Mar 2018 06:00:00 GMT"
+    split_string = metric_time_string.split(',')[1].split(' ')
+    day = int(split_string[1])
+    month_abbr = split_string[2]
+    month = list(calendar.month_abbr).index(month_abbr)
+    year = int(split_string[3])
+
+    time = split_string[4].split(':')
+    hour, minute, second = map(int, time)
+
+    return datetime(year, month, day, hour, minute, second)
+
+def _convert_to_datetime(input_time): 
+    #sample user input: YYYY-MM-DDTHH:MM:SS
+    split_string = input_time.split('T')
+
+    date = split_string[0].split('-')
+    year, month, day = map(int, date)
+
+    time = split_string[1].split(':')
+    hour, minute, second = map(int, time)
+
+    return datetime(year, month, day, hour, minute, second)
+
 
 # Compute the average of all the average metric data points 
 def get_average(metric_list): 

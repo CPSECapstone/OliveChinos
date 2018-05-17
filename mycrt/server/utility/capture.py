@@ -149,7 +149,7 @@ def get_capture_details(capture_name, cm):
     }  
 
 def func_to_call(x): 
-      requests.get(x)
+  requests.get(x)
 
 def _update_capture_count():
   address = "http://localhost:5000/update_capture_count"
@@ -317,8 +317,10 @@ def end_capture(credentials, capture_name, db, cm):
       AND command_type = 'Query'
   '''.format(start_time, end_time)
 
-  transactions = cm.execute_query(query, hostname = address, username = username, password = password, database = db) # need to give username and password eventually
-
+  db_info = dict(hostname = address, username = username, password = password, database = db)
+  transactions = cm.execute_query(query, **db_info) # need to give username and password eventually
+  cm.close_sql(db_info = db_info)
+  
   bucket_id = ComManager.S3name
 
   _put_bucket(s3_client, transactions, bucket_id, log_key = "mycrt/{0}/{0}.cap".format(capture_name), cm = cm)

@@ -95,8 +95,7 @@ class CaptureReplaySelector extends React.Component {
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
 
-
-        if(this.state.totalReplayNames.length == 0) {
+        if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]).length == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
@@ -142,8 +141,8 @@ class CaptureReplaySelector extends React.Component {
             </div>
             )
         }
-        else if(this.state.totalReplayNames != false) {
-            let replayOptions = this.state.totalReplayNames;
+        else if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]) != false) {
+            let replayOptions = Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph])
             console.log("________Date Needed_______")
             console.log(this.props.analyticsForGraph);
             console.log("_______________")
@@ -190,7 +189,7 @@ class CaptureReplaySelector extends React.Component {
         console.log('********this is the props in caprepsel: ', this.props.showReplayModal)
         return(
             <div>
-            {this.getReplayCapturesWithData(this.props, this.state.totalReplayNames)}
+            {this.getReplayCapturesWithData(this.props, Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]))}
             <ReplayForm onReplayPage={false} captureToReplay={this.state.captureNameForReplayForm} store={this.props} show={this.props.showReplayModal}/>
             </div>
         );
@@ -201,6 +200,8 @@ class CaptureReplaySelector extends React.Component {
 const mapStateToProps = state => ({
     booleansForGraph: state.booleansForGraph,
     analyticsForGraph: state.analyticsForGraph,
+    databaseInstances: state.databaseInstances,
+    captureToReplay: state.captureToReplay,
     currentCaptureForGraph: state.currentCaptureForGraph,
     selectedReplay: state.selectedReplay,
     showReplayModal: state.showReplayModal
