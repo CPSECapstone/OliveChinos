@@ -19,7 +19,7 @@ class CaptureOptions extends React.Component {
     getCapturesWithData(refProps) {
         function setCaptureName(uniqueName) {
             refProps.dispatch(setCaptureNameForGraph(uniqueName));
-            let totalReplayNames = Object.keys(refProps.analyticsForGraph[uniqueName]);
+            let totalReplayNames = Object.keys(refProps.analyticsForGraph[uniqueName]['replays']);
             refProps.dispatch(setTotalNamesForGraph(totalReplayNames))
         }
 
@@ -30,36 +30,19 @@ class CaptureOptions extends React.Component {
         }
 
         let CaptureOptions = Object.keys(this.props.analyticsForGraph);
-        console.log("________DatabaseName needed_______")
-        console.log(this.props.analyticsForGraph);
-        console.log("_______________")
         var CaptureData = [];
         for(let i = 0; i < CaptureOptions.length; i++) {
             let captureInfo = {
-                Name : CaptureOptions[i]
-                /* Add in more information for a second column in the future */
+                Name : CaptureOptions[i],
+                Date : this.props.analyticsForGraph[CaptureOptions[i]]['end_time']
             }
             CaptureData.push(captureInfo)
         }
             let replayCaptureOptions = Object.keys(this.props.analyticsForGraph);
-            //HERE IS WHERE THE UI WILL CHANGE FIRST
-            /**
-             * {
-             *  cap1 : {
-             *       replays : {
-             *              repl1: {}, etc.
-             * 
-             * 
-             *                  },
-             *        end_time: "TIME"
-             *          
-             *          }
-             *     
-             * }
-             */
             return (
             <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
                 <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
+                <TableHeaderColumn dataField='Date'></TableHeaderColumn>
             </BootstrapTable>
             );
         }

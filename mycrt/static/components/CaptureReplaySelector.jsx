@@ -37,7 +37,7 @@ class CaptureReplaySelector extends React.Component {
         super(props);
         this.state = {
         //list of the total replay names of the currently selected capture that will be displayed
-        totalReplayNames: Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph])
+        totalReplayNames: Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'])
         };
     }
 
@@ -95,7 +95,7 @@ class CaptureReplaySelector extends React.Component {
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
 
-        if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]).length == 0) {
+        if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']).length == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
@@ -141,11 +141,8 @@ class CaptureReplaySelector extends React.Component {
             </div>
             )
         }
-        else if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]) != false) {
-            let replayOptions = Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph])
-            console.log("________Date Needed_______")
-            console.log(this.props.analyticsForGraph);
-            console.log("_______________")
+        else if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']) != false) {
+            let replayOptions = Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'])
             let replayData = [];
             var options = {
                 onRowClick: function(row) {
@@ -155,14 +152,15 @@ class CaptureReplaySelector extends React.Component {
             }
             for(let i = 0; i < replayOptions.length; i++) {
                 let replayInfo = {
-                    Name : replayOptions[i]
-                    /* Add in more information for a second column in the future */
+                    Name : replayOptions[i],
+                    Date : this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][replayOptions[i]]['end_time']
                 }
                 replayData.push(replayInfo)
             }
             return(
                 <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
+                    <TableHeaderColumn dataField='Date'></TableHeaderColumn>
                 </BootstrapTable>
             )
         }
@@ -186,10 +184,9 @@ class CaptureReplaySelector extends React.Component {
 
 
     render() {
-        console.log('********this is the props in caprepsel: ', this.props.showReplayModal)
         return(
             <div>
-            {this.getReplayCapturesWithData(this.props, Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]))}
+            {this.getReplayCapturesWithData(this.props, Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']))}
             <ReplayForm onReplayPage={false} captureToReplay={this.state.captureNameForReplayForm} store={this.props} show={this.props.showReplayModal}/>
             </div>
         );

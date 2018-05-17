@@ -110,8 +110,7 @@ class Graph extends Component {
 
    getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
       let currMetric = metric;
-      let listOfAnalytics = analytics[captureName];
-
+      let listOfAnalytics = analytics[captureName]['replays'];
       if (booleanArray !== false && currMetric !== false) {
          for (let outer = 0; outer < booleanArray.length; outer++) {
             let pointsValues = []
@@ -465,6 +464,7 @@ class Graph extends Component {
    }
 
    render() {
+
       return (<div>
          {this.renderGraph()}
       </div>)
