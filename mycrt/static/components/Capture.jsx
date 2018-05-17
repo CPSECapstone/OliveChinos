@@ -54,7 +54,9 @@ class Capture extends React.Component {
       captureStartTime: new Date(),
       captureEndTime: new Date(),
       captureMode: 'interactive',
-      captureInfoShow: false
+      captureInfoShow: false,
+      rdsMode: 'instance_name',
+      customEndpoint: ''
     }
 
     //binding required for callback
@@ -65,12 +67,14 @@ class Capture extends React.Component {
     this.startNewCapture = this.startNewCapture.bind(this)
 
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
+    this.handleCustomEndpointChange = this.handleCustomEndpointChange.bind(this)
     this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
     this.handleDBNameChange = this.handleDBNameChange.bind(this)
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
 
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleRDSModeChange = this.handleRDSModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
@@ -118,7 +122,7 @@ class Capture extends React.Component {
 
     let postData;
 
-    
+
     let rdsInstance;
     if (this.state.captureRDSInstance === '') {
       rdsInstance = this.props.databaseInstances.databases[0];
@@ -135,6 +139,7 @@ class Capture extends React.Component {
       postData = {
         "db": this.state.captureDBName,
         "rds": rdsInstance,
+        "customEndpoint": this.state.customEndpoint,
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -201,6 +206,11 @@ class Capture extends React.Component {
     this.setState({ captureName: event.target.value });
   }
 
+  // Sets the state of the custom endpoint name to show changes in the custom endpoint form
+  handleCustomEndpointChange(event) {
+    this.setState({ customEndpoint: event.target.value });
+  }
+
   // Sets the state of the Database name to show changes in the capture db name form
   handleDBNameChange(event) {
     this.setState({ captureDBName: event.target.value })
@@ -223,6 +233,13 @@ class Capture extends React.Component {
     console.log(this.state.captureMode)
   }
 
+  // Changes the rds mode between instance_name and given_endpoint
+  handleRDSModeChange(event) {
+    console.log(event)
+    this.setState({ rdsMode: event })
+    console.log(this.state.rdsMode)
+  }
+
   // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
     let dbInstances = data["databases"] || [];
@@ -234,7 +251,7 @@ class Capture extends React.Component {
       </option>)
       dbList.push(selectOption)
     }
-    
+
     return dbList
   }
 
@@ -303,6 +320,24 @@ class Capture extends React.Component {
       </FormGroup>
     }
 
+    let rdsChanger = null;
+    if (this.state.rdsMode == 'instance_name') {
+      rdsChanger = <FormGroup controlId="formControlsSelect">
+        <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
+          {this.createDBInstancesSelect(this.props.databaseInstances)}
+        </FormControl>
+      </FormGroup>
+    }
+    else if (this.state.rdsMode == 'given_endpoint') {
+      rdsChanger = <FormControl
+        id='rdsNameInput'
+        type="text"
+        value={this.state.customEndpoint}
+        placeholder="Enter Custom Endpoint"
+        onChange={this.handleCustomEndpointChange}
+      />
+    }
+
     let uniqueNameAlert = null;
     if (this.state.showAlert) {
       uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
@@ -368,12 +403,17 @@ class Capture extends React.Component {
                 <FormControl.Feedback />
                 <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
               </FormGroup>
-              <FormGroup controlId="formControlsSelect">
-                <ControlLabel>RDS Instance</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
-                  {this.createDBInstancesSelect(this.props.databaseInstances)}
-                </FormControl>
+              <FormGroup>
+                <div className="modeButtonContainer">
+                  <ButtonToolbar>
+                    <ToggleButtonGroup id="toggleRdsCustomBtn" type="radio" name="options" value={this.state.rdsMode} onChange={this.handleRDSModeChange}>
+                      < ToggleButton id="toggle" value='instance_name'>RDS Instance</ToggleButton>
+                      <ToggleButton id="toggle" value='given_endpoint'>Custom Endpoint</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
               </FormGroup>
+              {rdsChanger}
               <FormGroup>
                 <ControlLabel>DB Name</ControlLabel>
                 <FormControl type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
