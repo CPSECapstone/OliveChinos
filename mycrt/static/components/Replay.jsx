@@ -213,11 +213,11 @@ class Replay extends React.Component {
 
     if (data.length > 0) {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data} options={options}>
-        <TableHeaderColumn dataField='replay' isKey dataSort>Replay Name</TableHeaderColumn>
-        <TableHeaderColumn dataField='capture' dataSort>Capture</TableHeaderColumn>
-        <TableHeaderColumn dataField='db' dataSort>Database</TableHeaderColumn>
-        <TableHeaderColumn dataField='rds' dataSort>RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn dataField='mode' dataSort>Mode</TableHeaderColumn>
+        <TableHeaderColumn dataField='replay' columnTitle isKey dataSort>Replay Name</TableHeaderColumn>
+        <TableHeaderColumn dataField='capture' columnTitle dataSort>Capture</TableHeaderColumn>
+        <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
+        <TableHeaderColumn dataField='rds' columnTitle dataSort>RDS Instance</TableHeaderColumn>
+        <TableHeaderColumn dataField='mode' columnTitle dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
     }
