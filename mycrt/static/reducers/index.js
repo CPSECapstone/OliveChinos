@@ -91,9 +91,25 @@ function reducer(state = initialState, action) {
   switch (action.type) {
 
     case CHANGE_STATE_FOR_COMPONENTS:
-      return Object.assign({}, state, {
-        stateType: action.key
-      })
+      if(action.key == 'onAnalyze') {
+        return Object.assign({}, state, {
+          stateType: action.key,
+          totalNames : false,
+          currentCaptureForGraph: 'Capture Options',
+          selectedReplay: false,
+          dataPointsForGraph: false,
+          valuesForGraph: false,
+          metricForGraph: false,
+          numLinesForGraph: 0,
+          booleansForGraph: false,
+          replayCaptureNamesForGraph: false,
+        })
+      } else {
+          return Object.assign({}, state, {
+            stateType: action.key
+          })
+      }
+      
 
     case SET_BOOLEANS_FOR_GRAPH:
       return Object.assign({}, state, {

@@ -213,8 +213,8 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "FreeableMemory": FreeableMemoryMetric["Datapoints"],
     "ReadIOPS": ReadIOPSMetric["Datapoints"],
     "WriteIOPS": WriteIOPSMetric["Datapoints"],
-    "start_time": start_time,
-    "end_time": end_time,
+    "start_time": datetime.strftime(start_time, "%Y-%m-%d %H:%M:%S"),
+    "end_time": datetime.strftime(end_time, "%Y-%m-%d %H:%M:%S"),
     "period": period,
     "db_id": db_id
   }
