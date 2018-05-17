@@ -20,7 +20,6 @@ export default class IssueModal extends Component {
   }
 
     render() {
-      console.log("WTF");
       return (
         <Modal
           {...this.props}

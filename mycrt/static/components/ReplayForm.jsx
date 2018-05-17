@@ -165,7 +165,7 @@ export default class ReplayForm extends React.Component {
         else {
           rdsInstance = this.state.replayRDSInstance;
         }
-        
+
         let postData = {
             "db": this.state.replayDBName,
             "rds": rdsInstance,
@@ -206,9 +206,12 @@ export default class ReplayForm extends React.Component {
 
     render() {
         var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
+        var capToReplay = this.props.store.captureToReplay;
         if (this.props.onReplayPage) {
             var capOpt = captureOptions[0] && captureOptions[0].props.value;
-            this.props.store.dispatch(setCaptureToReplay(capOpt));
+            if (capToReplay === false) {
+                this.props.store.dispatch(setCaptureToReplay(capOpt));
+            }
         }
         else {
             this.props.store.dispatch(setCaptureToReplay(this.props.captureToReplay));
@@ -250,7 +253,7 @@ export default class ReplayForm extends React.Component {
                         </FormGroup>
                         <FormGroup controlId="formControlsSelectCapture">
                             <ControlLabel>Capture To Replay</ControlLabel>
-                            <FormControl componentClass="select" placeholder="select" value={this.props.store.captureToReplay} onChange={this.updateCaptureToReplay}>
+                            <FormControl componentClass="select" placeholder="select" value={capToReplay} onChange={this.updateCaptureToReplay}>
                                 {captureOptions}
                             </FormControl>
                         </FormGroup>
