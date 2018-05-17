@@ -5,7 +5,7 @@ import pickle
 import sys
 import time
 from multiprocessing import Manager, Process, Lock
-import os
+import os, signal
 
 from .capture import *
 from .communications import ComManager
@@ -49,6 +49,7 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
 
   for _, command in transactions:
     try:
+      #print(command, file=sys.stderr)
       cur.execute(command)
     except:
       pass
@@ -74,16 +75,16 @@ def _get_transactions(s3_client, bucket_id = None, log_key = "test-log.txt"):
 
 def check_if_replay_name_is_unique(capture_name, replay_name, cm):
    query = '''SELECT * FROM Replays WHERE capture='{0}' AND replay='{1}' '''.format(capture_name, replay_name)
-   print(query)
+   #print(query)
    return len(cm.execute_query(query)) == 0
 
-def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
+def _get_metrics(cloudwatch_client, metric_name, start_time, end_time, rds_instance):
   return cloudwatch_client.get_metric_statistics(
       Namespace='AWS/RDS',
       MetricName=metric_name,
       Dimensions = [{
            "Name" : "DBInstanceIdentifier",
-           "Value" : "pi"
+           "Value" : rds_instance
       }],
       #StartTime=start_time,
       StartTime=end_time - timedelta(hours=1),
@@ -107,11 +108,12 @@ def _store_metrics(s3_client, metrics, bucket_id = None, log_key = "test-folder/
   )
 
 #Need to add "rds" if ever going to poll for replays in progress
-def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock):
+def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, rds, replays_in_progress, lock):
   replays_in_progress[capture_name + "/" + replay_name] = {
       "replayName" : replay_name,
       "captureName" : capture_name,
       "db" : db_id,
+      "rds": rds,
       "mode" : fast_mode,
       "pid" : os.getpid()
     }
@@ -124,8 +126,11 @@ def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_i
 
 def _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock):
   with lock:
-    del replays_in_progress[capture_name + "/" + replay_name]
-    db_in_use[db_id] = db_in_use[db_id][1:] # remove first element
+    try:
+      del replays_in_progress[capture_name + "/" + replay_name]
+      db_in_use[db_id] = db_in_use[db_id][1:] # remove first element
+    except:
+      pass
 
 def get_active_db():
   return [key for key, _ in db_in_use.items()]
@@ -134,11 +139,19 @@ def get_replay_number():
   return len(replays_in_progress)
 
 def get_active_replays():
-  fields = ["replayName", "captureName", "db", "mode"]
+  fields = ["replayName", "captureName", "db", "rds", "mode"]
+  field_conversion = {
+    "replayName" : "replay",
+    "captureName" : "capture",
+    "rds" : "rds",
+    "db" : "db",
+    "mode" : "mode"
+  }
   rep_list = []
   for _, replay in replays_in_progress.items():
-    rep_list.append({field : replay[field] for field in fields})
-
+    dict_to_add = {field_conversion[field] : replay[field] for field in fields}
+    dict_to_add[field_conversion["mode"]] = "fast" if dict_to_add[field_conversion["mode"]] else "time"
+    rep_list.append(dict_to_add)
   return { "replays" : rep_list }
 
 def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
@@ -159,7 +172,7 @@ def _update_replay_count():
   proc.start()
 
 def _update_analytics():
-  print("In update_analytics replay", file=sys.stderr)
+  #print("In update_analytics replay", file=sys.stderr)
   address = "http://localhost:5000/update_analytics"
   
   proc = Process(target = func_to_call,
@@ -167,7 +180,7 @@ def _update_analytics():
   proc.start()
 
 def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
-  _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, replays_in_progress, lock)
+  _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, rds_name, replays_in_progress, lock)
   pid = os.getpid()
   #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
   #  time.sleep(3) # sleep three seconds and try again later
@@ -188,28 +201,59 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
-
-  CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time)
-  FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time)
-  ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time)
-  WriteIOPSMetric = _get_metrics(cloudwatch_client, "WriteIOPS", start_time, end_time)
+  #print(start_time, end_time, file = sys.stderr)
+  #time.sleep(10)
+  CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time, rds_name)
+  FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time, rds_name)
+  ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time, rds_name)
+  WriteIOPSMetric = _get_metrics(cloudwatch_client, "WriteIOPS", start_time, end_time, rds_name)
 
   metrics = {
     "CPUUtilization": CPUUtilizationMetric["Datapoints"],
     "FreeableMemory": FreeableMemoryMetric["Datapoints"],
     "ReadIOPS": ReadIOPSMetric["Datapoints"],
     "WriteIOPS": WriteIOPSMetric["Datapoints"],
-    "start_time": start_time,
-    "end_time": end_time,
+    "start_time": datetime.strftime(start_time, "%Y-%m-%d %H:%M:%S"),
+    "end_time": datetime.strftime(end_time, "%Y-%m-%d %H:%M:%S"),
     "period": period,
     "db_id": db_id
   }
-
+  #print(metrics, file = sys.stderr)
   _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
   cm.execute_query(query)
-  
+
+def stop_replay(credentials, capture_name, replay_name, cm):
+  '''Stop an active replay.
+
+  Args:
+    credentials: A dictionary resembling the structure at the top of the file
+    capture_name: A preexisting capture name
+    replay_name: A preexisting replay name
+    cm: A communications manager object
+  '''
+  global lock
+  global db_in_use
+  global replays_in_progress
+
+  rep_id = capture_name + "/" + replay_name
+  replay_in_progress = replays_in_progress[rep_id]
+  db_id = replay_in_progress["db"]
+  pid = replay_in_progress["pid"]
+  try:
+    os.kill(pid, signal.SIGTERM)
+    _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
+  except Exception as e:
+    print(e, file = sys.stderr)
+    print("Process for replay {} has already completed.".format(rep_id), file = sys.stderr)
+
+
+  # Try to delete incase process got far enough to record any artifacts
+  delete_replay(credentials, capture_name, replay_name, cm)
+  _update_replay_count()
+
+
 def delete_replay(credentials, capture_name, replay_name, cm):
   '''Remove all traces of a replay in S3.
 

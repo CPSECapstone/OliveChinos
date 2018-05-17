@@ -63,8 +63,12 @@ class ComManager:
             db_name = db_info["database"]
         else:
             db_name = db_info
-        connection, _ = self.sql_conns[db_name]
+        obj = self.sql_conns[db_name]
+        cursor = obj['cur']
+        connection = obj['conn']
+        cursor.close()
         connection.close()
+        del self.sql_conns[db_name]
 
     def execute_query(self, query, **kwargs):
         """Executes a query on a cursor.
