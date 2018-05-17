@@ -49,6 +49,7 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
 
   for _, command in transactions:
     try:
+      #print(command, file=sys.stderr)
       cur.execute(command)
     except:
       pass
@@ -74,16 +75,16 @@ def _get_transactions(s3_client, bucket_id = None, log_key = "test-log.txt"):
 
 def check_if_replay_name_is_unique(capture_name, replay_name, cm):
    query = '''SELECT * FROM Replays WHERE capture='{0}' AND replay='{1}' '''.format(capture_name, replay_name)
-   print(query)
+   #print(query)
    return len(cm.execute_query(query)) == 0
 
-def _get_metrics(cloudwatch_client, metric_name, start_time, end_time):
+def _get_metrics(cloudwatch_client, metric_name, start_time, end_time, rds_instance):
   return cloudwatch_client.get_metric_statistics(
       Namespace='AWS/RDS',
       MetricName=metric_name,
       Dimensions = [{
            "Name" : "DBInstanceIdentifier",
-           "Value" : "pi"
+           "Value" : rds_instance
       }],
       #StartTime=start_time,
       StartTime=end_time - timedelta(hours=1),
@@ -171,7 +172,7 @@ def _update_replay_count():
   proc.start()
 
 def _update_analytics():
-  print("In update_analytics replay", file=sys.stderr)
+  #print("In update_analytics replay", file=sys.stderr)
   address = "http://localhost:5000/update_analytics"
   
   proc = Process(target = func_to_call,
@@ -200,11 +201,12 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
-
-  CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time)
-  FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time)
-  ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time)
-  WriteIOPSMetric = _get_metrics(cloudwatch_client, "WriteIOPS", start_time, end_time)
+  #print(start_time, end_time, file = sys.stderr)
+  #time.sleep(10)
+  CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time, rds_name)
+  FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time, rds_name)
+  ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time, rds_name)
+  WriteIOPSMetric = _get_metrics(cloudwatch_client, "WriteIOPS", start_time, end_time, rds_name)
 
   metrics = {
     "CPUUtilization": CPUUtilizationMetric["Datapoints"],
@@ -216,7 +218,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "period": period,
     "db_id": db_id
   }
-
+  #print(metrics, file = sys.stderr)
   _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
