@@ -5,6 +5,7 @@ import calendar
 import time
 import requests #rest api
 import json
+import re
 
 web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
 
@@ -331,7 +332,9 @@ def list_metrics():
         help='-grab all metrics until this time; format: YYYY-MM-DDTHH:MM:SS')
 @click.option('-r', '--raw', is_flag = True,
         help='-get raw json format')
-def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
+@click.option('-p', '--path', 
+        help='-export the metrics to the specified path')
+def view(capture_name, replay_names, metric_name, start_time, end_time, raw, path):
     '''-view metrics for any number of replays'''
 
     analytics = requests.get(web_address + 'analytics')
@@ -347,7 +350,7 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
         end_time = _convert_to_datetime(end_time)
 
     if raw: #print metrics in json format
-        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time)
+        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time, path)
 
     else : #compute metric averages for each replay
         try:
@@ -362,15 +365,14 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw):
             metric_names = metric_name if metric_name else ['CPUUtilization', 
                     'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
             for replay in replay_names: 
-                click.echo('\nMetric Data for \'' + str(replay) + '\'') 
-                replay_data_points = capture_folder[replay]
-                _print_metric_averages(replay_data_points, metric_names, start_time, end_time)
+                replay_data_points = capture_folder['replays'][replay]
+                _print_metric_averages(replay, replay_data_points, metric_names, start_time, end_time, path)
 
         except (ValueError, KeyError, TypeError): 
             click.echo('''One or more of the specified replay names do not exist. Please try again.''')
             return
 
-def _print_metric_averages(metric_data_points, metric_names, start_time, end_time): 
+def _print_metric_averages(replay_name, metric_data_points, metric_names, start_time, end_time, path): 
     '''Dict containing tuple with string for printing and aggregate average of 
     the metric'''
     metric_string = {
@@ -379,23 +381,37 @@ def _print_metric_averages(metric_data_points, metric_names, start_time, end_tim
             'ReadIOPS': 'Read IOPS (count/sec): ', 
             'WriteIOPS': 'Write IOPS (count/sec): '
     }
+    
+    output_string = ''
+    #TODO FIX THE START TIME. IT'S WRONG RIGHT NOW
+    start_time = start_time if start_time else datetime.min
+    end_time = end_time if end_time else _convert_to_datetime(metric_data_points['end_time'])
 
-    start_time = start_time if start_time else metric_data_points['start_time']
-    end_time = end_time if end_time else metric_data_points['end_time']
-
-    click.echo('Start Time: ' + str(start_time))
-    click.echo('End Time: ' + str(end_time))
-    click.echo('---METRIC AVERAGES---')
+    output_string += ('\nMetric Data for \'' + str(replay_name) + '\'\n') 
+    output_string += ('Start Time: ' + str(start_time) + '\n')
+    output_string += ('End Time: ' + str(end_time) + '\n')
+    output_string += '---METRIC AVERAGES---\n'
 
     for metric in metric_names: 
         data_points = metric_data_points[metric]
         data_points = _filter_metrics_in_timeframe(data_points, start_time, end_time)
         average = get_average(data_points)
-        click.echo(metric_string[metric] + str(average))
+        output_string += (metric_string[metric] + str(average) + '\n')
 
-    click.echo()
+    output_string += '\n'
 
-def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, start_time, end_time):     
+    if path: 
+        #write to specified file
+        try: 
+            with open(path,'w') as f: 
+                f.write(output_string)
+        except: 
+            click.echo('The given path is invalid.')
+    else: 
+        click.echo(output_string)
+
+
+def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, start_time, end_time, path):
     '''Get the specified metrics for the specified replay under the given capture 
     name. If no metric_names are specified, get all the metrics.
     '''
@@ -404,15 +420,24 @@ def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, star
     for replay in replay_names: 
         if len(metric_names)==0: #no metric specified - display all
             metric_names = ['CPUUtilization', 'FreeableMemory', 'ReadIOPS', 'WriteIOPS']
-            #all_datapoints = raw_json[capture_name][replay]
-            #replay_metrics[replay] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
-        #else: #print only specified metrics
         metrics = {}
         for metric in metric_names: 
-            all_datapoints = raw_json[capture_name][replay][metric]
+            all_datapoints = raw_json[capture_name]['replays'][replay][metric]
             metrics[metric] = _filter_metrics_in_timeframe(all_datapoints, start_time, end_time)
         replay_metrics[replay] = metrics
-    click.echo(format_json(replay_metrics))
+
+    output_string = format_json(replay_metrics)
+
+    if path: 
+        #write to specified file
+        try: 
+            with open(path,'w') as f: 
+                f.write(output_string)
+        except: 
+            click.echo('The given path is invalid.')
+
+    else: 
+        click.echo(output_string)
 
 def _filter_metrics_in_timeframe(metric_list, start_time, end_time): 
     '''Expects list of JSON objects of metrics only - no preceeding tags. 
@@ -446,7 +471,7 @@ def _convert_metric_time_string(metric_time_string):
 
 def _convert_to_datetime(input_time): 
     #sample user input: YYYY-MM-DDTHH:MM:SS
-    split_string = input_time.split('T')
+    split_string = re.split('T| ', input_time)
 
     date = split_string[0].split('-')
     year, month, day = map(int, date)
