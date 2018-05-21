@@ -37,7 +37,7 @@ def get_analytics(credentials, cm):
   rep_cap_names = cm.execute_query(rep_cap_name_query)
   metrics = {capture_name : {"replays": {}} for (capture_name,) in cap_names}
   #capture_list = get_capture_list(credentials, cm)
-  cap_name_time = cm.execute_query("SELECT name, end_time FROM Captures")
+  cap_name_time = cm.execute_query("SELECT name, end_time FROM Captures WHERE status='completed'")
   for cap, end_time in cap_name_time:
     metrics[cap]["end_time"] = end_time
 
