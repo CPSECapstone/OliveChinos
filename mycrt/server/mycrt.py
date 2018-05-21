@@ -267,21 +267,24 @@ def capture_start():
     data = request.get_json()
     db_name = data['db']
     rds_name = data['rds']
+    endpoint = data['customEndpoint']
     username = data['username']
     password = data['password']
+
+    endpoint = cm.process_endpoint(rds_name, endpoint)
 
     now = [convertDatetimeToString(datetime.utcnow())]
     start_time = data.get('startTime', now)
     start_time = start_time[0]
     
-    capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
+    capture_name = data.get('captureName', createCaptureName(endpoint.split(".")[0] + "_" + db_name, start_time))
     if capture_name == "":
-      capture_name = createCaptureName(rds_name + "_" + db_name, start_time)
+      capture_name = createCaptureName(endpoint.split(".")[0] + "_" + db_name, start_time)
 
     if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
-    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+    if not cm.valid_database_credentials(db_name, endpoint, username, password):
       abort(403)
 
     end_time = data.get('endTime', [None])
@@ -300,7 +303,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, rds_name, username, password, cm)
+                            db_name, start_time, end_time, endpoint, username, password, cm)
    
     return jsonify({
         "status": "started",
