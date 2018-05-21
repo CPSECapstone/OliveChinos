@@ -1,11 +1,11 @@
 import click
-import traceback
 from datetime import datetime, timedelta
 import calendar
 import time
 import requests #rest api
 import json
 import re
+import os.path
 
 web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
 
@@ -55,18 +55,32 @@ def _get_capture_list(status):
     return format_json(captures.json())
 
 @capture.command(short_help='-start capturing a database workload')
-@click.argument('credentials-file', type=click.File('rb'))
 @click.option('-n', '--capture-name', type=str, 
         help='-a unique name for the capture')
 @click.option('-s', '--start-time',
         help='-time to start a scheduled capture, format: YYYY-MM-DDTHH:MM:SS.xZ')
 @click.option('-e', '--end-time',
         help='-time to end a scheduled capture, format: YYYY-MM-DDTHH:MM:SS.xZ')
-def start(credentials_file, capture_name, start_time, end_time): 
+@click.option('-c', '--credentials-file', type=click.File('rb'),
+        help='-name of the credentials file; if none given, \'credentials\' will  be used')
+def start(capture_name, start_time, end_time, credentials_file): 
     '''-start capturing a database workload 
         
-        To start an interactive capture, specify an Amazon RDS instance identifier
-        and a name (optional). End this capture using the "end" command.
+        Before starting a capture, add a credentials file which contains the 
+        RDS instance, database name, username, and password. For example,\n
+        {\n
+            "rds-instance": "my-instance",\n
+            "db-name": "database",\n
+            "username": "bobsmith",\n
+            "password": "abc123"\n
+        }\n
+        If you name the file "credentials", the CLI will automatically find this
+        file. However, if you desire something else, simply specify the filepath 
+        using the "-c" argument. 
+
+        To start an interactive capture, use the "start" command. Optionally, you
+        may specify a name for the capture. To end this capture, use the "end" 
+        command.
 
         To schedule a capture in the future, include the -s and -e flags to 
         set the start and end times of the capture. Note you must include both 
@@ -75,11 +89,16 @@ def start(credentials_file, capture_name, start_time, end_time):
 
     credential_dict = None
     try: 
+        if not credentials_file: 
+            credentials_file = open('credentials', 'rb')
         credential_dict = json.load(credentials_file)
 
     except JSONDecodeError: 
         click.echo("Please check the format of the given credentials file.")
         return
+    
+    if not capture_name: 
+        capture_name = ''
 
     if not start_time: #interactive capture
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
@@ -133,15 +152,20 @@ def _make_compatible(raw_time):
 
 
 @capture.command(short_help='-end an ongoing capture')
-@click.argument('credentials-file', type=click.File('rb'))
 @click.argument('capture-name')
-def end(credentials_file, capture_name): 
+@click.option('-c', '--credentials-file', type=click.File('rb'),
+        help='-name of the credentials file; if none given, \'credentials\' will  be used')
+def end(capture_name, credentials_file ): 
     '''-end an ongoing capture
 
     Note the specified capture must currently be in progress in order to end it. 
+
+
     '''
     credential_dict = None
     try: 
+        if not credentials_file: 
+            credentials_file = open('credentials', 'rb')
         credential_dict = json.load(credentials_file)
 
     except JSONDecodeError: 
