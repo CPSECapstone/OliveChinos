@@ -101,7 +101,7 @@ class ComManager:
                 start_time text DEFAULT NULL,
                 end_time text DEFAULT NULL,
                 status text DEFAULT NULL,
-                rds text DEFAULT NULL,
+                endpoint text DEFAULT NULL,
                 username text DEFAULT NULL,
                 password text DEFAULT NULL,
                 PRIMARY KEY (name))
@@ -137,14 +137,18 @@ class ComManager:
       return {item['DBInstanceIdentifier'] : item['Endpoint']['Address'] for item in instances['DBInstances']}
   
 
-    def valid_database_credentials(self, db_name, rds_name, username, password):
-        databases = self.list_databases()
-        address = databases[rds_name]
+    def valid_database_credentials(self, db_name, endpoint, username, password):
         db_info = {
-            "hostname" : address, 
+            "hostname" : endpoint, 
             "username" : username, 
             "password" : password, 
             "database" : db_name
         }
 
         return self._test_sql_connection(db_info)
+
+    def process_endpoint(self, rds_name, endpoint):
+        if endpoint != "":
+            return endpoint
+        else:
+            return self.list_databases[rds_name]
