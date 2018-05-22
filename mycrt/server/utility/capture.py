@@ -50,7 +50,7 @@ def get_all_scheduled_capture_details(cm):
 
   # FIX LATER (is inefficient)
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "scheduled"
   '''
   results = cm.execute_query(query)
@@ -78,7 +78,7 @@ def get_all_completed_capture_details(cm):
 
   # FIX LATER (is inefficient)
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "completed"
   '''
   results = cm.execute_query(query)
@@ -102,7 +102,7 @@ def get_all_ongoing_capture_details(cm):
   """
 
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "ongoing"
   '''
   results = cm.execute_query(query)
@@ -126,7 +126,7 @@ def get_capture_details(capture_name, cm):
   """  
 
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE name = '{0}'
   '''.format(capture_name)
 
@@ -138,6 +138,7 @@ def get_capture_details(capture_name, cm):
     status = "Unknown"
     start_time = "Unknown"
     end_time = "Unknown"
+    endpoint = "Unkown"
 
     return {
       "captureName" : capture_name,
@@ -145,7 +146,7 @@ def get_capture_details(capture_name, cm):
       "endTime" : end_time,
       "startTime" : start_time,
       "status" : status,
-      "rds": rds
+      "rds": endpoint #TODO Change "rds" to "endpoint"
     }  
 
 def func_to_call(x): 
@@ -167,7 +168,7 @@ def _update_analytics():
   proc.start()
  
 def _process_capture_details(record):
-  (name, db, start_time, end_time, status, rds) = record
+  (name, db, start_time, end_time, status, endpoint) = record
 
   #start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
   #end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
@@ -180,7 +181,7 @@ def _process_capture_details(record):
     "endTime" : end_time,
     "startTime" : start_time,
     "status" : status,
-    "rds": rds
+    "rds": endpoint #TODO Change "rds" to "endpoint"
   }  
  
 
@@ -255,20 +256,20 @@ def _process_time(time_str):
   else:
     return time_str
 
-def schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password, cm):
+def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, username, password, cm):
   """Schedules a capture to be logged into the database.
 
   """
   start_time = _process_time(start_time)
   end_time = _process_time(end_time)
   print('scheduling capture', file=sys.stderr)
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, rds_name, username, password)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, endpoint, username, password) 
+               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, endpoint, username, password)
 
   cm.execute_query(query)
 
 
-def start_capture(capture_name, rds_name, db_name, start_time, username, password, cm):
+def start_capture(capture_name, endpoint, db_name, start_time, username, password, cm):
   """Starts a capture.
 
   No real work is done by this function for now other than marking 
@@ -283,8 +284,8 @@ def start_capture(capture_name, rds_name, db_name, start_time, username, passwor
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''UPDATE OR IGNORE Captures SET status="ongoing" WHERE name="{0}"'''.format(capture_name)
   cm.execute_query(query)
-  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, endpoint, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, endpoint, username, password)
   cm.execute_query(query)
   _update_capture_count()
 
@@ -301,13 +302,13 @@ def end_capture(credentials, capture_name, db, cm):
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   cm.execute_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE name = '{1}' '''.format(end_time, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query = '''SELECT start_time, rds, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  query = '''SELECT start_time, endpoint, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
   query_res = cm.execute_query(query) 
-  start_time, rds, username, password = query_res[0]
+  start_time, endpoint, username, password = query_res[0]
   s3_client = cm.get_boto('s3')
   
-  databases = cm.list_databases()
-  address = databases[rds]
+  #databases = cm.list_databases()
+  #address = databases[rds]
    
   query = '''
       SELECT event_time, argument 
@@ -317,7 +318,7 @@ def end_capture(credentials, capture_name, db, cm):
       AND command_type = 'Query'
   '''.format(start_time, end_time)
 
-  db_info = dict(hostname = address, username = username, password = password, database = db)
+  db_info = dict(hostname = endpoint, username = username, password = password, database = db)
   transactions = cm.execute_query(query, **db_info) # need to give username and password eventually
   cm.close_sql(db_info = db_info)
   
