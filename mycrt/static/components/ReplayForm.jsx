@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import jquery from 'jquery'
 import { Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert, Glyphicon } from 'react-bootstrap'
-import { startReplay, setGraphDataFromReplay } from '../actions'
+import { startReplay, setGraphDataFromReplay, setBooleansForGraph, setTotalNamesForGraph } from '../actions'
 import { connect } from 'react-redux'
 import { setReplay, startNewReplay, stopReplay, select, closeReplayModal, setCaptureToReplay } from '../actions'
 import Flatpickr from 'react-flatpickr'
@@ -157,6 +157,10 @@ export default class ReplayForm extends React.Component {
 
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
+        if(this.props.fromAnalytics) {
+            this.props.store.dispatch(setTotalNamesForGraph([replayName]))
+            this.props.store.dispatch(setBooleansForGraph([false]))
+        }
         this.setState({ replay: 'Replay Active' })
         let rdsInstance;
         if (this.state.replayRDSInstance === '') {

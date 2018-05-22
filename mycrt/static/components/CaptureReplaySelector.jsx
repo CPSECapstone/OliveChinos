@@ -187,7 +187,7 @@ class CaptureReplaySelector extends React.Component {
         return(
             <div>
             {this.getReplayCapturesWithData(this.props, Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']))}
-            <ReplayForm onReplayPage={false} captureToReplay={this.state.captureNameForReplayForm} store={this.props} show={this.props.showReplayModal}/>
+            <ReplayForm fromAnalytics={true} onReplayPage={false} captureToReplay={this.state.captureNameForReplayForm} store={this.props} show={this.props.showReplayModal}/>
             </div>
         );
     }
