@@ -138,8 +138,8 @@ class Capture extends React.Component {
 
       postData = {
         "db": this.state.captureDBName,
-        "rds": rdsInstance,
-        "customEndpoint": this.state.customEndpoint,
+        "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
+        "customEndpoint": this.state.rdsMode == 'given_endpoint' ? this.state.customEndpoint : '',
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -151,7 +151,8 @@ class Capture extends React.Component {
       //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
-        "rds": rdsInstance,
+        "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
+        "customEndpoint": this.state.rdsMode == 'given_endpoint' ? this.state.customEndpoint : '',
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -173,7 +174,7 @@ class Capture extends React.Component {
           that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
         }
         else if (data.status === 403) {
-          that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+          that.setAlertError("Database name, username, password and/or custom endpoint are incorrect. Unable to connect to database: '" + postData.db + "'");
         }
         else {
           that.setAlertError("Unknown Error");
@@ -258,40 +259,6 @@ class Capture extends React.Component {
   // Changes the selected rds instance for capture
   updateCaptureRDS(e) {
     this.setState({ captureRDSInstance: e.target.value });
-  }
-
-
-  // Consumes a capture type and produces a table of captures retrieved from the server
-  displayCaptures(captureType) {
-    let captureRoute;
-    if (captureType === 'active') {
-      captureRoute = 'list_ongoing'
-    }
-    else if (captureType === 'scheduled') {
-      captureRoute = 'list_scheduled'
-    }
-    else {
-      captureRoute = 'list_completed'
-    }
-
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/' + captureRoute,
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      if (captureType === 'active') {
-        that.props.dispatch(setCaptureCount(data.captures.length))
-        that.props.dispatch(setCaptureActiveList(data.captures));
-      }
-      else if (captureType === 'scheduled') {
-        that.props.dispatch(setCaptureScheduledList(data.captures));
-      }
-      else {
-        that.props.dispatch(setCaptureCompletedList(data.captures));
-      }
-    })
   }
 
   render() {

@@ -376,7 +376,7 @@ def get_all_captures():
     captures = get_capture_list(credentials, cm)    
     return jsonify(captures)
 
-'''
+''' 
 ----------------REPLAY ENDPOINTS-------------------
 '''
 '''

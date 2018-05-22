@@ -151,4 +151,4 @@ class ComManager:
         if endpoint != "":
             return endpoint
         else:
-            return self.list_databases[rds_name]
+            return self.list_databases()[rds_name]
