@@ -46,7 +46,7 @@ def view(completed, ongoing, scheduled):
 
 def _get_capture_list(status): 
     endpoint='list_' + status
-    captures = requests.get(web_address + 'capture/'+endpoint)
+    captures = get_endpoint('capture/', endpoint)
 
     if captures.status_code != 200: #there was an error
         click.echo('''There was an error connecting to your database.''')
@@ -327,7 +327,7 @@ def _echo_replay_list(is_ongoing):
     path = 'list'
     if is_ongoing: 
         path = 'active_' + path
-    replay_list = requests.get(web_address + 'replay/' + path)
+    replay_list = get_endpoint('replay/', path)
     if replay_list.status_code != 200: 
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -361,7 +361,7 @@ def list_metrics():
 def view(capture_name, replay_names, metric_name, start_time, end_time, raw, path):
     '''-view metrics for any number of replays'''
 
-    analytics = requests.get(web_address + 'analytics')
+    analytics = get_endpoint('analytics', '')
     if analytics.status_code != 200: #there was an error
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -517,3 +517,6 @@ def get_average(metric_list):
 
 def format_json(json_input): 
     return json.dumps(json_input, indent=4, sort_keys=True)
+
+def get_endpoint(feature, path): 
+    return requests.get(web_address + feature + path)
