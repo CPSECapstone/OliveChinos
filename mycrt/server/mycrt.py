@@ -389,6 +389,7 @@ def replay():
     data = request.get_json()
     db_name = data['db'] 
     rds_name = data['rds']
+    endpoint = cm.process_endpoint(rds_name, "")
     username = data['username']
     password = data['password']
 
@@ -405,7 +406,7 @@ def replay():
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
 
-    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+    if not cm.valid_database_credentials(db_name, endpoint, username, password):
         abort(403)
 
     fast_mode = data.get('fastMode', False)
