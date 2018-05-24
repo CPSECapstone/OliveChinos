@@ -108,11 +108,12 @@ class ComManager:
             '''
             replays_command = '''
                 CREATE TABLE Replays (
-                replay varchar(255) NOT NULL DEFAULT '',
-                capture varchar(255) NOT NULL DEFAULT '',
-                db varchar(255) DEFAULT NULL,
-                mode varchar(16) DEFAULT NULL,
-                rds varchar(255) DEFAULT NULL,
+                replay text NOT NULL DEFAULT '',
+                capture text NOT NULL DEFAULT '',
+                db text DEFAULT NULL,
+                start_time text DEFAULT '',
+                mode text DEFAULT NULL,
+                rds text DEFAULT NULL,
                 PRIMARY KEY (replay,capture))
             '''
 
