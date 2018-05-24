@@ -136,6 +136,17 @@ class Capture extends React.Component {
       var timezoneOffset = now.getTimezoneOffset();
       console.log("Capture start time", this.state.captureStartTime);
 
+      if (this.state.captureStartTime[0] < new Date()) {
+        this.setAlertError("Scheduled capture start time must be in the future.");
+        this.handleShowAlert();
+        return;
+      }
+      else if (this.state.captureStartTime[0] >= this.state.captureEndTime[0]) {
+        this.setAlertError("Scheduled capture start time must come before the scheduled capture end time.")
+        this.handleShowAlert();
+        return;
+      }
+
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
@@ -148,7 +159,6 @@ class Capture extends React.Component {
       }
     }
     else {
-      //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
         "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
@@ -168,6 +178,7 @@ class Capture extends React.Component {
     })
       .done(function (data) {
         that.props.dispatch(fetchCaptures());
+        that.handleCloseAlert();
       })
       .fail(function (data) {
         if (data.status === 400) {
@@ -181,6 +192,7 @@ class Capture extends React.Component {
         }
         that.handleShowAlert()
       })
+      that.handleCloseAlert();      
   }
 
 
