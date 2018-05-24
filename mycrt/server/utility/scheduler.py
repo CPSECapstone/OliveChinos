@@ -127,9 +127,11 @@ def cancel_capture_process(capture_name, cm):
         capture_name: unique name of the capture to be cancelled
     """
     #kill scheduler process
-    scheduler_pid = capture_scheduler_pids[capture_name]
-    os.kill(scheduler_pid, signal.SIGTERM)
-
+    try:
+        scheduler_pid = capture_scheduler_pids[capture_name]
+        os.kill(scheduler_pid, signal.SIGTERM)
+    except:
+        print("Scheduled Capture process not found when trying to kill.", capture_name, file=sys.stderr)
     #remove record from utility db
     cancel_capture(capture_name, cm)
 
