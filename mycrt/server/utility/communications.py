@@ -44,17 +44,15 @@ class ComManager:
         if db_info is None:
             connection = util_sql.connect('util.db', isolation_level = None) # autocommit on by default
             cursor = connection.cursor()
-            self.sql_conns['util.db'] = {"conn" : connection, "cur" : cursor}
-            db_info = {"database" : 'util.db'}
-        elif db_info["database"] not in self.sql_conns:
+            return {"conn" : connection, "cur" : cursor}
+        else:
             connection = sql.connect(host = db_info["hostname"], 
                                      user = db_info["username"], 
                                      passwd = db_info["password"], 
                                      db = db_info["database"], 
                                      autocommit = True)
             cursor = connection.cursor()
-            self.sql_conns[db_info["database"]] = {"conn" : connection, "cur" : cursor}
-        return self.sql_conns[db_info["database"]]["cur"]
+            return {"conn" : connection, "cur" : cursor}
 
     def close_sql(self, db_info = None):
         if db_info is None:
@@ -87,9 +85,12 @@ class ComManager:
         else:
             db_info = kwargs
 
-        cursor = self.get_sql(db_info)
+        con_obj = self.get_sql(db_info)
+        connection, cursor = con_obj["conn"], con_obj["cur"]
         cursor.execute(query)
         results = cursor.fetchall()
+        cursor.close()
+        connection.close()
         return results
 
     def setup_utility_database(self):
@@ -128,7 +129,7 @@ class ComManager:
         cm: A ComManager object to handle connections
 
       Returns:
-        A dictionary whe vff vfre the keys are the database instance ids available to the user 
+        A dictionary where the keys are the database instance ids available to the user 
         and the values are the associated endpoints.
       """
 

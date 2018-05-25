@@ -320,7 +320,7 @@ def end_capture(credentials, capture_name, db, cm):
 
   db_info = dict(hostname = endpoint, username = username, password = password, database = db)
   transactions = cm.execute_query(query, **db_info) # need to give username and password eventually
-  cm.close_sql(db_info = db_info)
+  #cm.close_sql(db_info = db_info) Not needed anymore
   
   bucket_id = ComManager.S3name
 
