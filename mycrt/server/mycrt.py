@@ -393,6 +393,7 @@ def replay():
     endpoint = cm.process_endpoint(rds_name, "")
     username = data['username']
     password = data['password']
+    filters = data.get("filters", "")
 
     start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
 
@@ -413,7 +414,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, cm)
     return jsonify({
         "status": "started",
         "db": db_name,
