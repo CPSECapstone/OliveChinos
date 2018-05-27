@@ -44,15 +44,29 @@ def _get_hostname(rds_client, db_id):
 def _execute_transactions(hostname, transactions, fast_mode, database, username, password):
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
   cur = connection.cursor()
-  start_time = datetime.utcnow()
-  start_test = datetime.now()
 
-  for _, command in transactions:
-    try:
-      #print(command, file=sys.stderr)
+  transactions = list(transactions)
+  transactions.sort(key = lambda x: x[0]) # ensure proper ordering by time 
+  if not fast_mode:
+    first_time = transactions[0][0]
+    transactions = [((time - first_time).total_seconds(), command) for time, command in transactions]
+  start_time = datetime.utcnow()
+
+  if fast_mode:
+    for _, command in transactions:
+      try:
+        print("fast: ", command, file=sys.stderr)
+        cur.execute(command)
+      except:
+        pass
+  else:
+    for seconds_to_elapse, command in transactions:
+      seconds_elapsed = (datetime.utcnow() - start_time).total_seconds()
+      if seconds_elapsed < seconds_to_elapse:
+        time.sleep(seconds_to_elapse - seconds_elapsed)
       cur.execute(command)
-    except:
-      pass
+      print("time: ", command, file=sys.stderr)
+
   end_time = datetime.utcnow()
   
   connection.close()
