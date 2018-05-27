@@ -35,7 +35,7 @@ def get_analytics(credentials, cm):
   cap_names = get_capture_list(credentials, cm)
   rep_cap_name_query = '''SELECT replay, capture FROM Replays'''
   rep_cap_names = cm.execute_query(rep_cap_name_query)
-  metrics = {capture_name : {"replays": {}} for (capture_name,) in cap_names}
+  metrics = {capture_name : {"replays": {}, "capture_analytics" : False} for (capture_name,) in cap_names}
   #capture_list = get_capture_list(credentials, cm)
   cap_name_time = cm.execute_query("SELECT name, end_time FROM Captures WHERE status='completed'")
   for cap, end_time in cap_name_time:
@@ -44,7 +44,10 @@ def get_analytics(credentials, cm):
   top_folder = "mycrt/"
   for (replay_name, capture_name) in rep_cap_names:
     key = top_folder + capture_name + "/" + replay_name + ".replay"
-    metrics[capture_name]["replays"][replay_name] = retrieve_analytics(s3_client, log_key = key)
+    if replay_name == capture_name:
+      metrics[capture_name]["capture_analytics"] = {capture_name : retrieve_analytics(s3_client, log_key = key)}
+    else:
+      metrics[capture_name]["replays"][replay_name] = retrieve_analytics(s3_client, log_key = key)
   #for capture in capture_list:
   #  replay_list = get_replays_for_capture(credentials, capture, cm)
   #  metrics[capture] = {replay.replace(capture, "").replace("/", "").replace(".replay", ""): retrieve_analytics(s3_client, log_key = replay) for replay in replay_list}
