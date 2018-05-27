@@ -106,6 +106,7 @@ class ComManager:
                 username text DEFAULT NULL,
                 password text DEFAULT NULL,
                 rds text DEFAULT NULL,
+                filters text DEFAULT NULL,
                 PRIMARY KEY (name))
             '''
             replays_command = '''

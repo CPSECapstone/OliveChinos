@@ -270,6 +270,7 @@ def capture_start():
     endpoint = data['customEndpoint']
     username = data['username']
     password = data['password']
+    filters = data.get("filters", "")
 
     endpoint = cm.process_endpoint(rds_name, endpoint)
 
@@ -303,7 +304,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, endpoint, rds_name, username, password, cm)
+                            db_name, start_time, end_time, endpoint, rds_name, username, password, filters, cm)
    
     return jsonify({
         "status": "started",
