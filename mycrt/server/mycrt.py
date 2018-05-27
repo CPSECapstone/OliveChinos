@@ -303,7 +303,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, endpoint, username, password, cm)
+                            db_name, start_time, end_time, endpoint, rds_name, username, password, cm)
    
     return jsonify({
         "status": "started",

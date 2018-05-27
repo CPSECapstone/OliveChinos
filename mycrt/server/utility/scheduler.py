@@ -32,7 +32,7 @@ def init_scheduler():
 
 
 def new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, endpoint, username, password, cm): 
+                            db_name, start_time, end_time, endpoint, rds_name, username, password, cm): 
     """Initiate a capture event. 
     If capture is interactive, a start-capture process will be started immediately.
     If capture is scheduled, an event will be scheduled to run at the specified 
@@ -55,7 +55,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
     """
 
     if not is_scheduled: #interactive capture
-        start_capture(capture_name, endpoint, db_name, start_time, username, password, cm)
+        start_capture(capture_name, endpoint, rds_name, db_name, start_time, username, password, cm)
 
     else: #scheduled capture
         '''scheduler = sched.scheduler(time.time, time.sleep)
@@ -73,7 +73,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
 
         #TODO test to make sure no delay from start time to actual run time
         schedule_process = multiprocessing.Process(target=create_and_run_scheduler, 
-            args=(credentials, capture_name, endpoint, db_name, start_time, end_time, username, password, ComManager()))
+            args=(credentials, capture_name, endpoint, rds_name, db_name, start_time, end_time, username, password, ComManager()))
         schedule_process.start()
         
 
@@ -81,16 +81,16 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         _add_to_scheduled_captures(capture_name, schedule_process.pid)
 
         #add to db for front-end
-        schedule_capture(capture_name, db_name, start_time, end_time, endpoint, username, password, cm)
+        schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_name, username, password, cm)
           
 
         return SUCCESS
 
-def create_and_run_scheduler(credentials, capture_name, endpoint, db_name, start_time, end_time, username, password, cm):
+def create_and_run_scheduler(credentials, capture_name, endpoint, rds_name, db_name, start_time, end_time, username, password, cm):
     scheduler = sched.scheduler(time.time, time.sleep)
 
     _create_scheduled_event(scheduler, start_capture, 
-            (capture_name, endpoint, db_name, start_time, username, password, cm), start_time)
+            (capture_name, endpoint, rds_name, db_name, start_time, username, password, cm), start_time)
 
     _create_scheduled_event(scheduler, end_capture, 
             (credentials, capture_name, db_name, cm), end_time)
@@ -163,7 +163,7 @@ def start_orphaned_captures(credentials, cm):
 
     captures_to_start = cm.execute_query("SELECT * FROM Captures WHERE status = 'scheduled'")
     cm.execute_query("DELETE FROM Captures WHERE status = 'scheduled'")
-    for (db_name, capture_name, start_time, end_time, status, endpoint, username, password) in captures_to_start:
+    for (db_name, capture_name, start_time, end_time, status, endpoint, username, password, rds_name) in captures_to_start:
         print(capture_name, file=sys.stderr)
         new_capture_process(True, credentials, capture_name, 
-                            db_name, start_time, end_time, endpoint, username, password, cm)
+                            db_name, start_time, end_time, endpoint, rds_name, username, password, cm)

@@ -105,6 +105,7 @@ class ComManager:
                 endpoint text DEFAULT NULL,
                 username text DEFAULT NULL,
                 password text DEFAULT NULL,
+                rds text DEFAULT NULL,
                 PRIMARY KEY (name))
             '''
             replays_command = '''
@@ -118,9 +119,12 @@ class ComManager:
                 PRIMARY KEY (replay,capture))
             '''
 
-            cursor = self.get_sql()
+            conn_dict = self.get_sql()
+            connection, cursor = conn_dict["conn"], conn_dict["cur"]
             cursor.execute(capture_command)
             cursor.execute(replays_command)
+            cursor.close()
+            connection.close()
 
     def list_databases(self):
       """Find all databases and create a mapping between the id and endpoints
