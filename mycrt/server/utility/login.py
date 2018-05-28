@@ -2,6 +2,15 @@ import boto3
 import botocore
 
 def verify_login(public_key, secret_key):
+  ''' Verifies login information.
+
+  Arguments:
+    public_key - String, AWS public key
+    secret_key - String, AWS secret key
+
+  Returns:
+    Boolean, True if valid, False if not
+  '''
   try:
     test_client = boto3.client(
       's3',

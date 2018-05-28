@@ -32,7 +32,7 @@ region = "us-east-2"
 def get_all_scheduled_capture_details(cm):
   """Get all scheduled capture details from utility database.
 
-  Args:
+  Arguments:
     cm: A ComManager object
 
   Returns: 
@@ -60,7 +60,7 @@ def get_all_scheduled_capture_details(cm):
 def get_all_completed_capture_details(cm):
   """Get all completed capture details from utility database.
 
-  Args:
+  Arguments:
     cm: A ComManager object
 
   Returns: 
@@ -87,6 +87,9 @@ def get_all_completed_capture_details(cm):
 
 def get_all_ongoing_capture_details(cm):
   """Get all ongoing capture details from utility database.
+
+  Arguments:
+    cm - A ComManager object
 
   Returns:
     A list containing details of captures that are ongoing.
@@ -149,13 +152,13 @@ def get_capture_details(capture_name, cm):
       "rds": endpoint #TODO Change "rds" to "endpoint"
     }  
 
-def func_to_call(x): 
+def _func_to_call(x): 
   requests.get(x)
 
 def _update_capture_count():
   address = "http://localhost:5000/update_capture_count"
   
-  proc = Process(target = func_to_call,
+  proc = Process(target = _func_to_call,
                  args = (address,))
   proc.start()
 
@@ -186,6 +189,14 @@ def _process_capture_details(record):
  
 
 def get_capture_number(cm):
+  ''' Returns the number of ongoing captures.
+
+  Arguments:
+    cm - A ComManager object
+
+  Returns:
+    Integer
+  '''
   query = '''
     SELECT COUNT(*) from Captures
     WHERE status = "ongoing"
@@ -194,7 +205,11 @@ def get_capture_number(cm):
   return results[0][0]
 
 def check_if_capture_name_is_unique(name, cm):
-  """Checks if a capture name is unique
+  """Checks if a capture name is unique.
+
+  Arguments:
+    name - A String representing the capture name
+    cm - A ComManager object
 
   Returns:
     A True if the name is unqiue, False otherwise
@@ -209,7 +224,7 @@ def _create_bucket(s3_client):
 
   TODO: buckets need to be unique and so we should parameterize this for future users 
 
-  Args:
+  Arguments:
     s3_client: An opened S3 client from Boto3
   """
 
@@ -259,6 +274,16 @@ def _process_time(time_str):
 def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, username, password, cm):
   """Schedules a capture to be logged into the database.
 
+  Arguments:
+    capture_name - String representing capture name
+    db_name - String representing database name
+    start_time - DateTime object containing starttime for capture 
+    end_time - DateTime object containing endtime for capture
+    endpoint - String representing database endpoint
+    username - String representing database username
+    password - String representing database password
+    cm - A ComManager object
+
   """
   start_time = _process_time(start_time)
   end_time = _process_time(end_time)
@@ -270,14 +295,17 @@ def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, user
 
 
 def start_capture(capture_name, endpoint, db_name, start_time, username, password, cm):
-  """Starts a capture.
-
-  No real work is done by this function for now other than marking 
+  """Starts a capture. No real work is done by this function for now other than marking 
   when a capture was started.
 
-  Args:
-    capture_name: Name to give a capture. Assumed to be unqiue
-    db_id: Database identifier
+  Arguments:
+    capture_name: String, Name to give a capture. Assumed to be unqiue
+    endpoint: String, represents the endpoint of database
+    db_name: String, Database identifier
+    start_time: DateTime, for when the capture starts
+    username: String, username for database
+    password: String, password for database
+    cm: A ComManager object
   """
 
   print('starting capture', file=sys.stderr)
@@ -292,10 +320,11 @@ def start_capture(capture_name, endpoint, db_name, start_time, username, passwor
 def end_capture(credentials, capture_name, db, cm):
   """Ends a specified capture.
 
-  Args:
+  Arguments:
     credentials: A dictionary resembling the structure at the top of the file
     capture_name: A preexisting capture name
-    db_id: Database identifier
+    db: Database identifier
+    cm: A ComManager object
   """
 
   print('ending capture', file=sys.stderr)
@@ -338,9 +367,10 @@ def delete_capture(credentials, capture_name, cm):
 
   Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
 
-  Args:
+  Arguments:
     credentials: A dictionary resembling the structure at the top of the file
     capture_name: A preexisting capture name
+    cm: A ComManager object
   '''
 
   s3_client = cm.get_boto('s3')
@@ -371,8 +401,9 @@ def cancel_capture(capture_name, cm):
     As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
     that need to be removed are in the utility db.
 
-    Args: 
+    Arguments: 
         capture_name: A preexisting capture name
+        cm: A ComManager object
     '''
 
     query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
