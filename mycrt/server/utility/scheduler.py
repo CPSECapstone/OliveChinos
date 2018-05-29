@@ -13,6 +13,9 @@ manager = None
 capture_scheduler_pids = None
 
 def init_scheduler():
+    ''' Initializes scheduler when server starts up.
+
+    '''
     global manager
     manager = multiprocessing.Manager()
 
@@ -72,7 +75,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
         '''
 
         #TODO test to make sure no delay from start time to actual run time
-        schedule_process = multiprocessing.Process(target=create_and_run_scheduler, 
+        schedule_process = multiprocessing.Process(target=_create_and_run_scheduler, 
             args=(credentials, capture_name, endpoint, db_name, start_time, end_time, username, password, ComManager()))
         schedule_process.start()
         
@@ -86,7 +89,7 @@ def new_capture_process(is_scheduled, credentials, capture_name,
 
         return SUCCESS
 
-def create_and_run_scheduler(credentials, capture_name, endpoint, db_name, start_time, end_time, username, password, cm):
+def _create_and_run_scheduler(credentials, capture_name, endpoint, db_name, start_time, end_time, username, password, cm):
     scheduler = sched.scheduler(time.time, time.sleep)
 
     _create_scheduled_event(scheduler, start_capture, 

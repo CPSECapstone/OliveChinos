@@ -1,0 +1,586 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mycrt.server package &#8212; MyCRT  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mycrt-server-package">
+<h1>mycrt.server package<a class="headerlink" href="#mycrt-server-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mycrt.server.utility.html">mycrt.server.utility package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.analytics">mycrt.server.utility.analytics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.capture">mycrt.server.utility.capture module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.communications">mycrt.server.utility.communications module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.login">mycrt.server.utility.login module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.replay">mycrt.server.utility.replay module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility.scheduler">mycrt.server.utility.scheduler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mycrt.server.utility.html#module-mycrt.server.utility">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mycrt.server.mycrt">
+<span id="mycrt-server-mycrt-module"></span><h2>mycrt.server.mycrt module<a class="headerlink" href="#module-mycrt.server.mycrt" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.mycrt.analytics">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">analytics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.analytics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all analytics. Issued by a GET call to ‘/analytics’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>capture_name_1 <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd><dl class="first docutils">
+<dt>“replays” <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd><dl class="first docutils">
+<dt>replay_name_1 <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd>‘CPUUtilization’ : [{‘timestamp’ : String, ‘average’ : Float}, …],
+‘FreeableMemory’ : […],
+‘ReadIOPS’ : […],
+‘WriteIOPS’ : […],
+‘start_time’ : String,
+‘end_time’ : String,
+‘period’ : String,
+‘db_id’ : String
+},</dd>
+</dl>
+<p class="last">replay_name_2 : {…},
+…
+},</p>
+</dd>
+</dl>
+<p class="last">“capture_analytics” : Boolean -OR- {capture_name : {&lt;similar to replay_name_1 above&gt;}}
+},</p>
+</dd>
+</dl>
+<p class="last">capture_name_2 : {…},
+…</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.cancel_capture_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">cancel_capture_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.cancel_capture_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancels a scheduled capture that has not started yet. Issued by a POST request to ‘/capture/cancel’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘captureName’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘status’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.captureListCompleted">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">captureListCompleted</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.captureListCompleted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all completed captures. Issued by a GET request to ‘/capture/list_completed’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first last docutils">
+<dt>“captures” <span class="classifier-delimiter">:</span> <span class="classifier">[{</span></dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : String,
+“rds” : String
+}, …]</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.captureListOngoing">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">captureListOngoing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.captureListOngoing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all ongoing captures. Issued by a GET request to ‘/capture/list_ongoing’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first last docutils">
+<dt>“captures” <span class="classifier-delimiter">:</span> <span class="classifier">[{</span></dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : String,
+“rds” : String
+}, …]</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.captureListScheduled">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">captureListScheduled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.captureListScheduled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all captures that are currently scheduled, but have not started yet. Issued by a GET request to ‘/capture/list_scheduled’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first last docutils">
+<dt>“captures” <span class="classifier-delimiter">:</span> <span class="classifier">[{</span></dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : String,
+“rds” : String
+}, …]</dd>
+</dl>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.capture_end">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">capture_end</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.capture_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ends an ongoing capture. Issued by a POST request to ‘/capture/end’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘db’ : String,
+‘captureName’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘status’ : ‘ended’,
+‘db’ : String,
+‘captureName’ : String,
+‘captureDetails’ : DateTime,
+‘startTime’ : DateTime,
+‘endTime’ : DateTime</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.capture_start">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">capture_start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.capture_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a capture. If a start and endtime are provided, then the capture will be scheduled. If not, it will run immediately. Issued by a POST request to ‘/capture/start’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘db’ : String,
+‘rds’ : String,
+‘customEndpoint’ : String,
+‘username’ : String,
+‘password’ : String,
+‘startTime’ : DateTime,
+‘endTime’ : DateTime</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="data">
+<dt id="mycrt.server.mycrt.cm">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">cm</code><em class="property"> = &lt;mycrt.server.utility.communications.ComManager object&gt;</em><a class="headerlink" href="#mycrt.server.mycrt.cm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functions to create unique capture and replay names if none provided</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.databaseInstances">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">databaseInstances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.databaseInstances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve all RDS instances that is available to the user’s credentials. Issued by a GET request to ‘/databaseInstances’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.delete_capture_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">delete_capture_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.delete_capture_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a completed capture. Issued by a DELETE request to ‘/capture/delete’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘capture’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘status’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.delete_replay_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">delete_replay_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.delete_replay_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a completed replay. Issued by a DELETE request to ‘/replay/delete’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘capture’ : String,
+‘replay’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘status’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.get_active_replays_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">get_active_replays_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.get_active_replays_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all ongoing replays. Issued by a GET request to ‘/replay/active_list’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>[</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“replay” : String, 
+“capture” : String, 
+“db” : String, 
+“mode” : String, 
+“rds”: String</dd>
+</dl>
+<p class="last">}, …</p>
+</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.get_all_captures">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">get_all_captures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.get_all_captures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all completed captures. Deprecated. Use captureListCompleted() instead. Issued by a GET call to ‘/capture/completed_list’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.get_all_replays">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">get_all_replays</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.get_all_replays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all completed replays. Issued by a GET request to ‘/replay/list’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>[</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“replay” : String, 
+“capture” : String, 
+“db” : String, 
+“mode” : String, 
+“rds”: String</dd>
+</dl>
+<p class="last">}, …</p>
+</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.get_capture_number_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">get_capture_number_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.get_capture_number_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of currently active captures. Issued by a GET request to ‘/capture/number’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘numberOfCaptures’ : Integer</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.get_replay_number_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">get_replay_number_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.get_replay_number_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of currently active replays. Issued by a GET request to ‘/replay/number’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Integer</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.handle_alert_event">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">handle_alert_event</code><span class="sig-paren">(</span><em>json</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.handle_alert_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the client needs the websocket to update the ongoing capture and replay count. Issued with a websocketio request to ‘get_capture_replay_number’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.index">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the home page. By default, this is the login page for the front-end. Issued by a generic REST call to ‘/’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.login">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks login of application with a username and password defined on startup. Issued by a POST request to ‘/login’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“username” : String,
+“password” : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.replay">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">replay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.replay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a new replay. Issued by a POST request to ‘/replay’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘db’ : String,
+‘rds’ : String,
+‘username’ : String,
+‘password’ : String,
+‘replayName’ : String,
+‘captureName’ : String,
+‘fastMode’ : Boolean,
+‘restoreDB’ : Boolean</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.replayListForSpecificCapture">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">replayListForSpecificCapture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.replayListForSpecificCapture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all names of replays associated with the specified capture. Issued by a GET request to ‘/capture/replayList’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“captureName” : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“captureName” : String,
+“replays” : [String, String, …]</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.sendIssueReport">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">sendIssueReport</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.sendIssueReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emails an issue the user may have with the tool to the authors. Issued by a POST call to ‘/issueReport’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“title” : String,
+“version” : String,
+“priority” : String,
+“type” : String,
+“description” : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.stop_active_replay_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">stop_active_replay_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.stop_active_replay_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops an active replay. Issued by a DELETE call to ‘/replay/active’</p>
+<dl class="docutils">
+<dt>Header:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘capture’ : String,
+‘replay’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘status’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.update_analytics_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">update_analytics_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.update_analytics_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the list of analytics objects to the client. Issued with a GET request to ‘/update_analytics’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.update_capture_count_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">update_capture_count_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.update_capture_count_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the ongoing capture count to the client. Issued with a GET request to ‘/update_capture_count’</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.mycrt.update_replay_count_http">
+<code class="descclassname">mycrt.server.mycrt.</code><code class="descname">update_replay_count_http</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.mycrt.update_replay_count_http" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the ongoing replay count to the client. Issued with a GET request to ‘/update_replay_count’</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mycrt-server-wsgi-module">
+<h2>mycrt.server.wsgi module<a class="headerlink" href="#mycrt-server-wsgi-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mycrt.server">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mycrt.server" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mycrt.server package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.mycrt">mycrt.server.mycrt module</a></li>
+<li><a class="reference internal" href="#mycrt-server-wsgi-module">mycrt.server.wsgi module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/mycrt.server.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Olive Chinos.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/source/mycrt.server.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
