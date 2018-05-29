@@ -210,7 +210,6 @@ class Replay extends React.Component {
       }
 
     }
-    console.log('**** HERE ***', data)
 
     if (data.length > 0) {
       return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data} options={options}>
@@ -218,7 +217,7 @@ class Replay extends React.Component {
         <TableHeaderColumn dataField='capture' columnTitle dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
         <TableHeaderColumn dataField='rds' columnTitle dataSort>RDS Instance</TableHeaderColumn>
-        {/* <TableHeaderColumn dataField='start_time'>Start Time</TableHeaderColumn> */}
+        <TableHeaderColumn dataField='start_time'>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='mode' columnTitle dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
