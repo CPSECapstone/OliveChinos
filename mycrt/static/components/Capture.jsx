@@ -184,18 +184,45 @@ class Capture extends React.Component {
   }
 
 
+  captureNameContainsSpacesOrSlashes() {
+    if (this.state.captureName.indexOf(' ') >= 0 || this.state.captureName.indexOf('/') >= 0
+      || this.state.captureName.indexOf('\t') >= 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  captureNameLengthGreaterThanZero() {
+    if (this.state.captureName.length > 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  captureNameLengthEqualToZero() {
+    if (this.state.captureName.length == 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
 
   // Changes the help text for the capture name form
   getValidationState() {
-    if (this.state.captureName.indexOf(' ') >= 0 || this.state.captureName.indexOf('/') >= 0) {
+    if (this.captureNameContainsSpacesOrSlashes()) {
       this.state.inputHelpBlock = 'No spaces or / allowed in name. Please try again';
       return 'error';
     }
-    else if (this.state.captureName.length > 0) {
+    else if (this.captureNameLengthGreaterThanZero()) {
       this.state.inputHelpBlock = 'Looks great!';
       return 'success';
     }
-    else if (this.state.captureName.length == 0) {
+    else if (this.captureNameLengthEqualToZero()) {
       this.state.inputHelpBlock = 'Optional. If not provided, name will be generated.';
       return null;
     }
