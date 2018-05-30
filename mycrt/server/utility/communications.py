@@ -5,6 +5,8 @@ import os
 
 # One instance of a ComManager object will be used per process
 class ComManager:
+    ''' A manager object that is in charge of handling multiple outgoing connections from the server. It is tasked with both Sqlite, MySql, and Boto3 connections. 
+    '''
 
     # Class level values
     # Will be set in the main mycrt.py upon runtime
@@ -16,6 +18,14 @@ class ComManager:
         self.sql_conns = {}
 
     def get_boto(self, service):
+        ''' Returns a Boto3 client.
+
+        Arguments:
+            service - String, representing the type of service requested
+
+        Returns:
+            A boto3 client in the liking of the requested service
+        '''
         if service not in self.boto_conns:
             self.boto_conns[service] = boto3.client(service, **(ComManager.credentials))
         return self.boto_conns[service]
@@ -32,13 +42,21 @@ class ComManager:
             return False
 
     def get_sql(self, db_info = None):
-        '''
-        db_info : {
-            hostname = String, 
-            username = String, 
-            password = String, 
-            database = String
-        }
+        ''' Creates and returns a sql connection.
+
+        Arguments:
+            db_info - {
+                hostname = String, 
+                username = String, 
+                password = String, 
+                database = String
+            }
+
+        Returns:
+            {
+                'conn' : A Sql connection object,
+                'cur' : A corresponding Sql cursor object
+            }
         '''
   
         if db_info is None:
@@ -57,6 +75,17 @@ class ComManager:
         return self.sql_conns[db_info["database"]]["cur"]
 
     def close_sql(self, db_info = None):
+        ''' Closes a sql connection.
+
+        Arguments:
+            db_info - {
+                hostname = String, 
+                username = String, 
+                password = String, 
+                database = String
+            }
+
+        '''
         if db_info is None:
             db_info = 'util.db'
         if isinstance(db_info, dict):
@@ -75,7 +104,6 @@ class ComManager:
 
         Args:
             query: A SQL query to commit
-            cursor: The cursor pointing to a database to execute on
 
         Returns:
             A list of tuples containing the results of the query. Each element
@@ -93,6 +121,8 @@ class ComManager:
         return results
 
     def setup_utility_database(self):
+        ''' Initial setup of utility database. Is called automatically on startup if no 'util.db' file is found.
+        '''
         if not os.path.exists("util.db"):
             capture_command = '''
                 CREATE TABLE Captures (
@@ -101,18 +131,19 @@ class ComManager:
                 start_time text DEFAULT NULL,
                 end_time text DEFAULT NULL,
                 status text DEFAULT NULL,
-                rds text DEFAULT NULL,
+                endpoint text DEFAULT NULL,
                 username text DEFAULT NULL,
                 password text DEFAULT NULL,
                 PRIMARY KEY (name))
             '''
             replays_command = '''
                 CREATE TABLE Replays (
-                replay varchar(255) NOT NULL DEFAULT '',
-                capture varchar(255) NOT NULL DEFAULT '',
-                db varchar(255) DEFAULT NULL,
-                mode varchar(16) DEFAULT NULL,
-                rds varchar(255) DEFAULT NULL,
+                replay text NOT NULL DEFAULT '',
+                capture text NOT NULL DEFAULT '',
+                db text DEFAULT NULL,
+                start_time text DEFAULT '',
+                mode text DEFAULT NULL,
+                rds text DEFAULT NULL,
                 PRIMARY KEY (replay,capture))
             '''
 
@@ -137,14 +168,38 @@ class ComManager:
       return {item['DBInstanceIdentifier'] : item['Endpoint']['Address'] for item in instances['DBInstances']}
   
 
-    def valid_database_credentials(self, db_name, rds_name, username, password):
-        databases = self.list_databases()
-        address = databases[rds_name]
+    def valid_database_credentials(self, db_name, endpoint, username, password):
+        ''' Validates given database credentials.
+
+        Arguments:
+            db_name - String, database name
+            endpoint - String, database endpoint
+            username - String, database username
+            password - String, database password
+
+        Returns:
+            Boolean, True if valid, False if not
+        '''
         db_info = {
-            "hostname" : address, 
+            "hostname" : endpoint, 
             "username" : username, 
             "password" : password, 
             "database" : db_name
         }
 
         return self._test_sql_connection(db_info)
+
+    def process_endpoint(self, rds_name, endpoint):
+        ''' Processes and formats a given endpoint corresponding to the given rds_name
+
+        Arguments:
+            rds_name - String, RDS instance identifier
+            endpoint - String, database endpoint
+
+        Returns:
+            A formatted string of the endpoint
+        '''
+        if endpoint != "":
+            return endpoint
+        else:
+            return self.list_databases()[rds_name]

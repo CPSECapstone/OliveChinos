@@ -32,7 +32,7 @@ region = "us-east-2"
 def get_all_scheduled_capture_details(cm):
   """Get all scheduled capture details from utility database.
 
-  Args:
+  Arguments:
     cm: A ComManager object
 
   Returns: 
@@ -50,7 +50,7 @@ def get_all_scheduled_capture_details(cm):
 
   # FIX LATER (is inefficient)
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "scheduled"
   '''
   results = cm.execute_query(query)
@@ -60,7 +60,7 @@ def get_all_scheduled_capture_details(cm):
 def get_all_completed_capture_details(cm):
   """Get all completed capture details from utility database.
 
-  Args:
+  Arguments:
     cm: A ComManager object
 
   Returns: 
@@ -78,7 +78,7 @@ def get_all_completed_capture_details(cm):
 
   # FIX LATER (is inefficient)
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "completed"
   '''
   results = cm.execute_query(query)
@@ -87,6 +87,9 @@ def get_all_completed_capture_details(cm):
 
 def get_all_ongoing_capture_details(cm):
   """Get all ongoing capture details from utility database.
+
+  Arguments:
+    cm - A ComManager object
 
   Returns:
     A list containing details of captures that are ongoing.
@@ -102,7 +105,7 @@ def get_all_ongoing_capture_details(cm):
   """
 
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE status = "ongoing"
   '''
   results = cm.execute_query(query)
@@ -126,7 +129,7 @@ def get_capture_details(capture_name, cm):
   """  
 
   query = '''
-    SELECT name, db, start_time, end_time, status, rds FROM Captures
+    SELECT name, db, start_time, end_time, status, endpoint FROM Captures
     WHERE name = '{0}'
   '''.format(capture_name)
 
@@ -138,6 +141,7 @@ def get_capture_details(capture_name, cm):
     status = "Unknown"
     start_time = "Unknown"
     end_time = "Unknown"
+    endpoint = "Unkown"
 
     return {
       "captureName" : capture_name,
@@ -145,16 +149,16 @@ def get_capture_details(capture_name, cm):
       "endTime" : end_time,
       "startTime" : start_time,
       "status" : status,
-      "rds": rds
+      "rds": endpoint #TODO Change "rds" to "endpoint"
     }  
 
-def func_to_call(x): 
+def _func_to_call(x): 
   requests.get(x)
 
 def _update_capture_count():
   address = "http://localhost:5000/update_capture_count"
   
-  proc = Process(target = func_to_call,
+  proc = Process(target = _func_to_call,
                  args = (address,))
   proc.start()
 
@@ -167,7 +171,7 @@ def _update_analytics():
   proc.start()
  
 def _process_capture_details(record):
-  (name, db, start_time, end_time, status, rds) = record
+  (name, db, start_time, end_time, status, endpoint) = record
 
   #start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
   #end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
@@ -180,11 +184,19 @@ def _process_capture_details(record):
     "endTime" : end_time,
     "startTime" : start_time,
     "status" : status,
-    "rds": rds
+    "rds": endpoint #TODO Change "rds" to "endpoint"
   }  
  
 
 def get_capture_number(cm):
+  ''' Returns the number of ongoing captures.
+
+  Arguments:
+    cm - A ComManager object
+
+  Returns:
+    Integer
+  '''
   query = '''
     SELECT COUNT(*) from Captures
     WHERE status = "ongoing"
@@ -193,7 +205,11 @@ def get_capture_number(cm):
   return results[0][0]
 
 def check_if_capture_name_is_unique(name, cm):
-  """Checks if a capture name is unique
+  """Checks if a capture name is unique.
+
+  Arguments:
+    name - A String representing the capture name
+    cm - A ComManager object
 
   Returns:
     A True if the name is unqiue, False otherwise
@@ -208,7 +224,7 @@ def _create_bucket(s3_client):
 
   TODO: buckets need to be unique and so we should parameterize this for future users 
 
-  Args:
+  Arguments:
     s3_client: An opened S3 client from Boto3
   """
 
@@ -255,59 +271,73 @@ def _process_time(time_str):
   else:
     return time_str
 
-def schedule_capture(capture_name, db_name, start_time, end_time, rds_name, username, password, cm):
+def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, username, password, cm):
   """Schedules a capture to be logged into the database.
+
+  Arguments:
+    capture_name - String representing capture name
+    db_name - String representing database name
+    start_time - DateTime object containing starttime for capture 
+    end_time - DateTime object containing endtime for capture
+    endpoint - String representing database endpoint
+    username - String representing database username
+    password - String representing database password
+    cm - A ComManager object
 
   """
   start_time = _process_time(start_time)
   end_time = _process_time(end_time)
   print('scheduling capture', file=sys.stderr)
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, rds_name, username, password)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, endpoint, username, password) 
+               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, end_time, endpoint, username, password)
 
   cm.execute_query(query)
 
 
-def start_capture(capture_name, rds_name, db_name, start_time, username, password, cm):
-  """Starts a capture.
-
-  No real work is done by this function for now other than marking 
+def start_capture(capture_name, endpoint, db_name, start_time, username, password, cm):
+  """Starts a capture. No real work is done by this function for now other than marking 
   when a capture was started.
 
-  Args:
-    capture_name: Name to give a capture. Assumed to be unqiue
-    db_id: Database identifier
+  Arguments:
+    capture_name: String, Name to give a capture. Assumed to be unqiue
+    endpoint: String, represents the endpoint of database
+    db_name: String, Database identifier
+    start_time: DateTime, for when the capture starts
+    username: String, username for database
+    password: String, password for database
+    cm: A ComManager object
   """
 
   print('starting capture', file=sys.stderr)
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''UPDATE OR IGNORE Captures SET status="ongoing" WHERE name="{0}"'''.format(capture_name)
   cm.execute_query(query)
-  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, rds, username, password) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, rds_name, username, password)
+  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, endpoint, username, password) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}')'''.format(db_name, capture_name, start_time, endpoint, username, password)
   cm.execute_query(query)
   _update_capture_count()
 
 def end_capture(credentials, capture_name, db, cm):
   """Ends a specified capture.
 
-  Args:
+  Arguments:
     credentials: A dictionary resembling the structure at the top of the file
     capture_name: A preexisting capture name
-    db_id: Database identifier
+    db: Database identifier
+    cm: A ComManager object
   """
 
   print('ending capture', file=sys.stderr)
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   cm.execute_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE name = '{1}' '''.format(end_time, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query = '''SELECT start_time, rds, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  query = '''SELECT start_time, endpoint, username, password FROM Captures WHERE name = '{0}' '''.format(capture_name)
   query_res = cm.execute_query(query) 
-  start_time, rds, username, password = query_res[0]
+  start_time, endpoint, username, password = query_res[0]
   s3_client = cm.get_boto('s3')
   
-  databases = cm.list_databases()
-  address = databases[rds]
+  #databases = cm.list_databases()
+  #address = databases[rds]
    
   query = '''
       SELECT event_time, argument 
@@ -317,7 +347,7 @@ def end_capture(credentials, capture_name, db, cm):
       AND command_type = 'Query'
   '''.format(start_time, end_time)
 
-  db_info = dict(hostname = address, username = username, password = password, database = db)
+  db_info = dict(hostname = endpoint, username = username, password = password, database = db)
   transactions = cm.execute_query(query, **db_info) # need to give username and password eventually
   cm.close_sql(db_info = db_info)
   
@@ -337,9 +367,10 @@ def delete_capture(credentials, capture_name, cm):
 
   Code referenced from here: https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted
 
-  Args:
+  Arguments:
     credentials: A dictionary resembling the structure at the top of the file
     capture_name: A preexisting capture name
+    cm: A ComManager object
   '''
 
   s3_client = cm.get_boto('s3')
@@ -370,8 +401,9 @@ def cancel_capture(capture_name, cm):
     As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
     that need to be removed are in the utility db.
 
-    Args: 
+    Arguments: 
         capture_name: A preexisting capture name
+        cm: A ComManager object
     '''
 
     query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)

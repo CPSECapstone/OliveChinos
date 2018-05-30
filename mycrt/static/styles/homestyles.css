@@ -1,7 +1,7 @@
 #headerLeft {
     display: inline;
     float: left;
-    width: 25%;
+    width: 35%;
 }
 
 /*#headerRight {
@@ -9,11 +9,7 @@
     float: right;
     width: 25%;
 }
-
-#headerCenter {
-    width: 50%;
-    display: inline;
-}*/
+*/
 
 .headerContainer {
     position:relative;
@@ -38,7 +34,7 @@
 #headerCenter{
     padding: 10px;
     height:100px;
-    
+    width: 30%;
     margin:0px auto;
     text-align: center;
     padding-top: 30px;
@@ -54,7 +50,7 @@
     top:0px;
     right:0px;
     height:100px;
-    width:25%;
+    width:35%;
 }
 
 .progressBarContainer {
@@ -63,8 +59,8 @@
 
 .progressButton {
     border-radius: 5px;
-    height: 40px;
-    width: 150px;
+    height: 100%;
+    width: 100%;
 }
 
 button:focus {outline:0;}
@@ -72,13 +68,15 @@ button:focus {outline:0;}
 #captureProgress {
     display: inline-block;
     float: left;
-    width: 100px;
+    width: 150px;
+    height: 50px
 }
       
 #replayProgress {
-    width: 100px;
+    width: 150px;
+    height: 50px;
     display: inline-block;
-    margin-left: 60px;
+    margin-left: 15px;
 }
 
 #userContainer {

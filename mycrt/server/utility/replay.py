@@ -9,7 +9,7 @@ import os, signal
 
 from .capture import *
 from .communications import ComManager
-from .analytics import get_capture_replay_list 
+from .analytics import _get_capture_replay_list 
 
 #db_id = "pi"
 #hostname = "pi.cwsp4gygmyca.us-east-2.rds.amazonaws.com"
@@ -25,6 +25,8 @@ lock = None
 
 
 def init_replay():
+  ''' Initializes global variables for replay.
+  '''
   global manager
   global replays_in_progress
   global db_in_use
@@ -74,9 +76,19 @@ def _get_transactions(s3_client, bucket_id = None, log_key = "test-log.txt"):
   return transactions
 
 def check_if_replay_name_is_unique(capture_name, replay_name, cm):
-   query = '''SELECT * FROM Replays WHERE capture='{0}' AND replay='{1}' '''.format(capture_name, replay_name)
-   #print(query)
-   return len(cm.execute_query(query)) == 0
+  ''' Checks if a replay name is unique.
+  
+  Arguments: 
+    capture_name - String, a capture name
+    replay_name - String, a potential replay name
+    cm - A ComManager object
+
+  Returns:
+    Boolean, True if unique, False if not
+  '''
+  query = '''SELECT * FROM Replays WHERE capture='{0}' AND replay='{1}' '''.format(capture_name, replay_name)
+  #print(query)
+  return len(cm.execute_query(query)) == 0
 
 def _get_metrics(cloudwatch_client, metric_name, start_time, end_time, rds_instance):
   return cloudwatch_client.get_metric_statistics(
@@ -114,6 +126,7 @@ def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_i
       "captureName" : capture_name,
       "db" : db_id,
       "rds": rds,
+      "start_time": datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S"),
       "mode" : fast_mode,
       "pid" : os.getpid()
     }
@@ -133,19 +146,44 @@ def _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_pr
       pass
 
 def get_active_db():
+  ''' Returns a list of databases that are currently in use by ongoing replays.
+
+  Returns:
+    List of database names
+  '''
   return [key for key, _ in db_in_use.items()]
 
 def get_replay_number():
+  ''' Returns the number of ongoing replays.
+
+  Returns:
+    Integer
+  '''
   return len(replays_in_progress)
 
 def get_active_replays():
-  fields = ["replayName", "captureName", "db", "rds", "mode"]
+  ''' Returns a list containing the ongoing replays.
+
+  Returns:
+    {
+      'replays' : [{
+        'replay' : String,
+        'capture' : String,
+        'rds' : String,
+        'db' : String,
+        'mode' : String},
+        ...
+      ]
+    }
+  '''
+  fields = ["replayName", "captureName", "db", "rds", "mode", "start_time"]
   field_conversion = {
     "replayName" : "replay",
     "captureName" : "capture",
     "rds" : "rds",
     "db" : "db",
-    "mode" : "mode"
+    "mode" : "mode",
+    "start_time" : "start_time"
   }
   rep_list = []
   for _, replay in replays_in_progress.items():
@@ -155,19 +193,34 @@ def get_active_replays():
   return { "replays" : rep_list }
 
 def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
+  ''' Executes a replay asynchronously.
+
+  Arguments:
+    credentials - A dictionary containing a region, public_key, and secret_key
+    db_id - String, database identifier
+    replay_name - String, unique replay name
+    capture_name - String, a capture name to base replay off of
+    fast_mode - Boolean, True if fast mode, False if time based mode
+    restore_db - Boolean, True if restore database after execution
+    rds_name - String, RDS identifier
+    username - String, database username
+    password - String, database password
+    cm - A ComManager object
+  '''
+  
   proc = Process(target = _manage_replay,
                  args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, ComManager()))
   proc.start()
   _update_replay_count()
 
 
-def func_to_call(x): 
+def _func_to_call(x): 
       requests.get(x)
 
 def _update_replay_count():
   address = "http://localhost:5000/update_replay_count"
   
-  proc = Process(target = func_to_call,
+  proc = Process(target = _func_to_call,
                  args = (address,))
   proc.start()
 
@@ -221,7 +274,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   #print(metrics, file = sys.stderr)
   _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
  
-  query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
+  query = """INSERT INTO Replays (replay, capture, db, mode, rds, start_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name, start_time.strftime("%Y/%m/%d %H:%M:%S"))
   cm.execute_query(query)
 
 def stop_replay(credentials, capture_name, replay_name, cm):
@@ -277,15 +330,28 @@ def delete_replay(credentials, capture_name, replay_name, cm):
     print("Replay to delete does not exist.", file=sys.stderr)
 
 def get_replays_from_table(cm):
-  query = "select replay, capture, db, mode, rds from Replays"
+  ''' Returns a list of all completed replays. Issued by a GET request to '/replay/list'
+
+    Returns:
+        [
+            {
+                "replay" : String, 
+                "capture" : String, 
+                "db" : String, 
+                "mode" : String, 
+                "rds": String
+            }, ...
+        ]
+  '''
+  query = "select replay, capture, db, mode, rds, start_time from Replays"
   results = cm.execute_query(query)
-  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds} for (replay, capture, db, mode, rds) in results]
+  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds, "start_time": start_time} for (replay, capture, db, mode, rds, start_time) in results]
   return {"replays" : replays}
 
 def _populate_replay_table(cm):
   table_replays = cm.execute_query("select replay, capture from Replays")
   table_replays = set((capture, replay) for (replay, capture) in table_replays)
-  s3_replays = get_capture_replay_list({"region_name":"us-east-2"}) 
+  s3_replays = _get_capture_replay_list({"region_name":"us-east-2"}) 
   replays_to_add = set()
   for capture, replays in s3_replays:
     for replay in replays:

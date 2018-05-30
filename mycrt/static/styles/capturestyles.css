@@ -1,3 +1,11 @@
+#toggleRdsCustomBtn {
+    margin-bottom: -22px;
+}
+
+#rdsNameInput{
+    margin-bottom: 15px;
+}
+
 #captureTitle {
     width: 70%;
     display: inline;

@@ -79,13 +79,13 @@ cm = ComManager()
 '''
 Functions to create unique capture and replay names if none provided
 '''
-def convertDatetimeToString(dTime):
+def _convertDatetimeToString(dTime):
     return dTime.strftime('%Y-%m-%d_%H:%M:%S')
 
-def createCaptureName(dbName, formattedTime):
+def _createCaptureName(dbName, formattedTime):
     return 'C_' + dbName + '_' + formattedTime
 
-def createReplayName(dbName, formattedTime):
+def _createReplayName(dbName, formattedTime):
     return 'R_' + dbName + '_' + formattedTime
 
 '''
@@ -97,19 +97,21 @@ from flask_socketio import SocketIO, send, emit
 socketio = SocketIO(application)
 
 @socketio.on('connect')
-def handle_client_connect_event():
+def _handle_client_connect_event():
     print('----------CLIENT CONNECTED ---------', file=sys.stderr)
 
     #print('received json: {0}'.format(str(json)), file=sys.stderr)
 
 @socketio.on('disconnect')
-def handle_client_disconnect_event():
+def _handle_client_disconnect_event():
     print('----------CLIENT DISCONNECTED ---------', file=sys.stderr)
 
 
 
 @socketio.on('get_capture_replay_number')
 def handle_alert_event(json):
+    ''' Called when the client needs the websocket to update the ongoing capture and replay count. Issued with a websocketio request to 'get_capture_replay_number'
+    '''
     global cm
     capture_count = get_capture_number(cm)
     replay_count = get_replay_number()
@@ -118,6 +120,8 @@ def handle_alert_event(json):
 
 @application.route('/update_capture_count', methods=["GET"])
 def update_capture_count_http():
+    ''' Updates the ongoing capture count to the client. Issued with a GET request to '/update_capture_count'
+    '''
     global cm
     capture_count = get_capture_number(cm)
     print("CAPTURE COUNT: ", capture_count, file=sys.stderr)
@@ -126,6 +130,8 @@ def update_capture_count_http():
 
 @application.route('/update_replay_count', methods=["GET"])
 def update_replay_count_http():
+    ''' Updates the ongoing replay count to the client. Issued with a GET request to '/update_replay_count'
+    '''
     replay_count = get_replay_number() 
     print("REPLAY COUNT: ", replay_count, file=sys.stderr)
     socketio.emit('replayNumber', replay_count)
@@ -133,6 +139,8 @@ def update_replay_count_http():
 
 @application.route('/update_analytics', methods=["GET"])
 def update_analytics_http():
+    ''' Updates the list of analytics objects to the client. Issued with a GET request to '/update_analytics'
+    '''
     socketio.emit('analytics', True)
     return ('', 200) 
 
@@ -157,10 +165,23 @@ Render the home page and React app
 '''
 @application.route("/")
 def index():
+    ''' Returns the home page. By default, this is the login page for the front-end. Issued by a generic REST call to '/'
+    '''
     return render_template("index.html")
 
 @application.route("/issueReport", methods=["POST"])
 def sendIssueReport():
+    ''' Emails an issue the user may have with the tool to the authors. Issued by a POST call to '/issueReport'
+
+    Header:
+        {
+            "title" : String,
+            "version" : String,
+            "priority" : String,
+            "type" : String,
+            "description" : String
+        }
+    '''
     data = request.get_json()
     msg = Message(data['title'],
                   sender="olivechinosmycrt@gmail.com",
@@ -173,14 +194,20 @@ def sendIssueReport():
     return "Success"
 
 @application.route("/test")
-def rest_test():
+def _rest_test():
     return "Test REST endpoint."
 
-'''
-Checks login of application
-'''
+
 @application.route("/login", methods=["POST"])
 def login():
+    ''' Checks login of application with a username and password defined on startup. Issued by a POST request to '/login'
+
+    Header:
+        {
+            "username" : String,
+            "password" : String
+        }
+    '''
     global global_username
     global global_password
     data = request.get_json()
@@ -194,11 +221,10 @@ def login():
     else: 
         abort(401) 
 
-'''
-Retrieves all database instances for a user 
-'''
 @application.route("/databaseInstances", methods=["GET"])
 def databaseInstances():
+    ''' Retrieve all RDS instances that is available to the user's credentials. Issued by a GET request to '/databaseInstances'
+    '''
     global cm
     db_instances = cm.list_databases()
     db_instances = list(db_instances.keys())
@@ -209,22 +235,44 @@ def databaseInstances():
 '''
 --------------CAPTURE ENDPOINTS--------------
 '''
-'''
-Returns list of ongoing captures for a user 
-'''
 @application.route("/capture/list_ongoing", methods=["GET"])
 def captureListOngoing():
+    ''' Returns a list of all ongoing captures. Issued by a GET request to '/capture/list_ongoing'
+
+    Returns:
+        {
+            "captures" : [{
+                "captureName" : String,
+                "db" : String,
+                "endTime" : None,
+                "startTime" : String,
+                "status" : String,
+                "rds" : String
+                }, ...]
+        }
+    '''
     global cm
     capture_list = get_all_ongoing_capture_details(cm)
     return jsonify({
         "captures" : capture_list
     })
     
-'''
-Returns a list of all completed captures for a user 
-'''
 @application.route("/capture/list_completed", methods=["GET"])
 def captureListCompleted():
+    ''' Returns a list of all completed captures. Issued by a GET request to '/capture/list_completed'
+
+    Returns:
+        {
+            "captures" : [{
+                "captureName" : String,
+                "db" : String,
+                "endTime" : None,
+                "startTime" : String,
+                "status" : String,
+                "rds" : String
+                }, ...]
+        }
+    '''    
     global cm
     capture_list = get_all_completed_capture_details(cm)
     return jsonify({
@@ -237,17 +285,41 @@ not run yet.
 '''
 @application.route("/capture/list_scheduled", methods=["GET"])
 def captureListScheduled():
+    ''' Returns a list of all captures that are currently scheduled, but have not started yet. Issued by a GET request to '/capture/list_scheduled'
+
+    Returns:
+        {
+            "captures" : [{
+                "captureName" : String,
+                "db" : String,
+                "endTime" : None,
+                "startTime" : String,
+                "status" : String,
+                "rds" : String
+                }, ...]
+        }
+    '''
     global cm
     capture_list = get_all_scheduled_capture_details(cm)
     return jsonify({
         "captures" : capture_list
     })
     
-'''
-Returns all replays associated with the specified capture 
-'''
 @application.route("/capture/replayList", methods=["GET"])
 def replayListForSpecificCapture():
+    ''' Returns all names of replays associated with the specified capture. Issued by a GET request to '/capture/replayList'
+
+    Header:
+        {
+            "captureName" : String            
+        } 
+
+    Returns:
+        {
+            "captureName" : String,
+            "replays" : [String, String, ...]
+        }
+    '''
     global cm
     capture_name = request.args.get("captureName")
     replay_list = get_replays_for_capture(credentials, capture_name, cm)
@@ -263,25 +335,41 @@ be scheduled to run at a certain time.
 '''
 @application.route("/capture/start", methods=["POST"])
 def capture_start():
+    ''' Starts a capture. If a start and endtime are provided, then the capture will be scheduled. If not, it will run immediately. Issued by a POST request to '/capture/start'
+
+    Header:
+        {
+            'db' : String,
+            'rds' : String,
+            'customEndpoint' : String,
+            'username' : String,
+            'password' : String,
+            'startTime' : DateTime,
+            'endTime' : DateTime
+        }
+    '''
     global cm
     data = request.get_json()
     db_name = data['db']
     rds_name = data['rds']
+    endpoint = data['customEndpoint']
     username = data['username']
     password = data['password']
 
-    now = [convertDatetimeToString(datetime.utcnow())]
+    endpoint = cm.process_endpoint(rds_name, endpoint)
+
+    now = [_convertDatetimeToString(datetime.utcnow())]
     start_time = data.get('startTime', now)
     start_time = start_time[0]
     
-    capture_name = data.get('captureName', createCaptureName(rds_name + "_" + db_name, start_time))
+    capture_name = data.get('captureName', _createCaptureName(endpoint.split(".")[0] + "_" + db_name, start_time))
     if capture_name == "":
-      capture_name = createCaptureName(rds_name + "_" + db_name, start_time)
+      capture_name = _createCaptureName(endpoint.split(".")[0] + "_" + db_name, start_time)
 
     if not check_if_capture_name_is_unique(capture_name, cm):
       abort(400)
 
-    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+    if not cm.valid_database_credentials(db_name, endpoint, username, password):
       abort(403)
 
     end_time = data.get('endTime', [None])
@@ -300,7 +388,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, rds_name, username, password, cm)
+                            db_name, start_time, end_time, endpoint, username, password, cm)
    
     return jsonify({
         "status": "started",
@@ -315,11 +403,29 @@ Ends a specified capture.
 '''
 @application.route("/capture/end", methods=["POST"])
 def capture_end():
+    ''' Ends an ongoing capture. Issued by a POST request to '/capture/end'
+
+    Header:
+        {
+            'db' : String,
+            'captureName' : String
+        }
+
+    Returns:
+        {
+            'status' : 'ended',
+            'db' : String,
+            'captureName' : String,
+            'captureDetails' : DateTime,
+            'startTime' : DateTime,
+            'endTime' : DateTime
+        }
+    '''
     global cm
     data = request.get_json()
     db_name = data['db'] 
     capture_name = data['captureName']
-    end_time = convertDatetimeToString(datetime.utcnow())
+    end_time = _convertDatetimeToString(datetime.utcnow())
     
     #if capture was scheduled, make sure to end process
     #start up a new process for end capture rather than just running function
@@ -339,6 +445,18 @@ Cancels a scheduled capture from ever running
 '''
 @application.route("/capture/cancel", methods=["POST"])
 def cancel_capture_http():
+    ''' Cancels a scheduled capture that has not started yet. Issued by a POST request to '/capture/cancel'
+
+    Header:
+        {
+            'captureName' : String
+        }
+
+    Returns:
+        {
+            'status' : String
+        }
+    '''
     global cm
     data = request.get_json()
     capture_name = data['captureName'] 
@@ -351,6 +469,18 @@ Deletes a completed capture from the utility database
 '''
 @application.route("/capture/delete", methods=["DELETE"])
 def delete_capture_http():
+    ''' Deletes a completed capture. Issued by a DELETE request to '/capture/delete'
+
+    Header:
+        {
+            'capture' : String
+        }
+
+    Returns:
+        {
+            'status' : String
+        }
+    '''
     global cm
     data = request.get_json()
     capture_name = data['capture'] 
@@ -358,22 +488,29 @@ def delete_capture_http():
     delete_capture(credentials, capture_name, cm)
     return jsonify({'status': 'complete'})
 
-'''
-Returns the number of currently active captures 
-'''
 @application.route("/capture/number", methods=["GET"])
 def get_capture_number_http():
+    ''' Returns the number of currently active captures. Issued by a GET request to '/capture/number'
+
+    Returns:
+        {
+            'numberOfCaptures' : Integer
+        } 
+    '''
     global cm
     capture_number = get_capture_number(cm)
     return jsonify({'numberOfCaptures': capture_number})
 
 @application.route("/capture/completed_list", methods=["GET"])
 def get_all_captures():
+    ''' Returns a list of all completed captures. Deprecated. Use captureListCompleted() instead. Issued by a GET call to '/capture/completed_list'
+
+    '''
     global cm
     captures = get_capture_list(credentials, cm)    
     return jsonify(captures)
 
-'''
+''' 
 ----------------REPLAY ENDPOINTS-------------------
 '''
 '''
@@ -382,18 +519,34 @@ Must specify the db, rds, username, and password to connect to the database
 '''
 @application.route("/replay", methods=["POST"])
 def replay():
+    ''' Starts a new replay. Issued by a POST request to '/replay'
+
+    Header:
+        {
+            'db' : String,
+            'rds' : String,
+            'username' : String,
+            'password' : String,
+            'replayName' : String,
+            'captureName' : String,
+            'fastMode' : Boolean,
+            'restoreDB' : Boolean
+        }
+
+    '''
     global cm
     data = request.get_json()
     db_name = data['db'] 
     rds_name = data['rds']
+    endpoint = cm.process_endpoint(rds_name, "")
     username = data['username']
     password = data['password']
 
-    start_time = data.get('startTime', convertDatetimeToString(datetime.utcnow()))
+    start_time = data.get('startTime', _convertDatetimeToString(datetime.utcnow()))
 
-    replay_name = data.get('replayName', createReplayName(db_name, start_time))
+    replay_name = data.get('replayName', _createReplayName(db_name, start_time))
     if replay_name == "":
-        replay_name = createReplayName(db_name, start_time)
+        replay_name = _createReplayName(db_name, start_time)
 
     capture_name = data['captureName'] # odd bug where capture_name sometimes is a list of length 1
     if isinstance(capture_name, list):
@@ -402,7 +555,7 @@ def replay():
     if not check_if_replay_name_is_unique(capture_name, replay_name, cm):
         abort(400)
 
-    if not cm.valid_database_credentials(db_name, rds_name, username, password):
+    if not cm.valid_database_credentials(db_name, endpoint, username, password):
         abort(403)
 
     fast_mode = data.get('fastMode', False)
@@ -423,6 +576,19 @@ Returns a list of all replays
 '''
 @application.route("/replay/list", methods=["GET"])
 def get_all_replays():
+    ''' Returns a list of all completed replays. Issued by a GET request to '/replay/list'
+
+    Returns:
+        [
+            {
+                "replay" : String, 
+                "capture" : String, 
+                "db" : String, 
+                "mode" : String, 
+                "rds": String
+            }, ...
+        ]
+    '''
     global cm
     #capture_replays = get_capture_replay_list(credentials)    
     capture_replays = get_replays_from_table(cm)
@@ -433,6 +599,19 @@ Returns a list of all currently active replays
 '''
 @application.route("/replay/active_list", methods=["GET"])
 def get_active_replays_http():
+    ''' Returns a list of all ongoing replays. Issued by a GET request to '/replay/active_list'
+
+    Returns:
+        [
+            {
+                "replay" : String, 
+                "capture" : String, 
+                "db" : String, 
+                "mode" : String, 
+                "rds": String
+            }, ...
+        ]
+    '''
     replays = get_active_replays()
     return jsonify(replays)
 
@@ -441,6 +620,11 @@ Returns the number of currently active replays
 '''
 @application.route("/replay/number", methods=["GET"])
 def get_replay_number_http():
+    ''' Returns the number of currently active replays. Issued by a GET request to '/replay/number'
+
+    Returns:
+        Integer
+    '''
     return get_replay_number()
 
 '''
@@ -448,6 +632,19 @@ Deletes a completed replay from the utility database
 '''
 @application.route("/replay/delete", methods=["DELETE"])
 def delete_replay_http():
+    ''' Delete a completed replay. Issued by a DELETE request to '/replay/delete'
+
+    Header:
+        {
+            'capture' : String,
+            'replay' : String
+        }
+
+    Returns:
+        {
+            'status' : String
+        }
+    '''
     global cm
     #Need a capture name and replay name in order to delete replay
     data = request.get_json()
@@ -461,6 +658,19 @@ Stops an active capture.
 '''
 @application.route("/replay/active", methods=["DELETE"])
 def stop_active_replay_http():
+    ''' Stops an active replay. Issued by a DELETE call to '/replay/active'
+
+    Header:
+        {
+            'capture' : String,
+            'replay' : String
+        }
+
+    Returns:
+        {
+            'status' : String
+        }
+    '''
     global cm
     #Need a capture name and replay name in order to stop replay
     data = request.get_json()
@@ -477,6 +687,32 @@ Returns all analytics for a user
 '''
 @application.route("/analytics", methods=["GET"])
 def analytics():
+    ''' Returns all analytics. Issued by a GET call to '/analytics'
+
+    Returns:
+        {
+            capture_name_1 : {
+                "replays" : {
+                    replay_name_1 : {
+                        'CPUUtilization' : [{'timestamp' : String, 'average' : Float}, ...],
+                        'FreeableMemory' : [...],
+                        'ReadIOPS' : [...],
+                        'WriteIOPS' : [...],
+                        'start_time' : String,
+                        'end_time' : String,
+                        'period' : String,
+                        'db_id' : String
+                        },
+                    replay_name_2 : {...},
+                    ...
+                    },
+                "capture_analytics" : Boolean -OR- {capture_name : {<similar to replay_name_1 above>}}
+                },
+            capture_name_2 : {...},
+            ...
+        }
+
+    '''
     global cm
     metrics = get_analytics(credentials, cm)
     return jsonify(metrics)

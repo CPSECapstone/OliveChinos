@@ -51,10 +51,12 @@ class Capture extends React.Component {
       activeCaptureList: [],
       completedCaptureList: [],
       scheduledCaptureList: [],
-      captureStartTime: new Date(),
-      captureEndTime: new Date(),
+      captureStartTime: [new Date()],
+      captureEndTime: [new Date()],
       captureMode: 'interactive',
-      captureInfoShow: false
+      captureInfoShow: false,
+      rdsMode: 'instance_name',
+      customEndpoint: ''
     }
 
     //binding required for callback
@@ -65,12 +67,14 @@ class Capture extends React.Component {
     this.startNewCapture = this.startNewCapture.bind(this)
 
     this.handleCaptureNameChange = this.handleCaptureNameChange.bind(this)
+    this.handleCustomEndpointChange = this.handleCustomEndpointChange.bind(this)
     this.updateCaptureRDS = this.updateCaptureRDS.bind(this)
     this.handleDBNameChange = this.handleDBNameChange.bind(this)
     this.handleDBUsernameChange = this.handleDBUsernameChange.bind(this)
     this.handleDBPasswordChange = this.handleDBPasswordChange.bind(this)
 
     this.handleModeChange = this.handleModeChange.bind(this)
+    this.handleRDSModeChange = this.handleRDSModeChange.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
@@ -132,9 +136,21 @@ class Capture extends React.Component {
       var timezoneOffset = now.getTimezoneOffset();
       console.log("Capture start time", this.state.captureStartTime);
 
+      if (this.state.captureStartTime[0] < new Date()) {
+        this.setAlertError("Scheduled capture start time must be in the future.");
+        this.handleShowAlert();
+        return;
+      }
+      else if (this.state.captureStartTime[0] >= this.state.captureEndTime[0]) {
+        this.setAlertError("Scheduled capture start time must come before the scheduled capture end time.")
+        this.handleShowAlert();
+        return;
+      }
+
       postData = {
         "db": this.state.captureDBName,
-        "rds": rdsInstance,
+        "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
+        "customEndpoint": this.state.rdsMode == 'given_endpoint' ? this.state.customEndpoint : '',
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -143,10 +159,10 @@ class Capture extends React.Component {
       }
     }
     else {
-      //this.props.dispatch(startCapture());
       postData = {
         "db": this.state.captureDBName,
-        "rds": rdsInstance,
+        "rds": this.state.rdsMode == 'instance_name' ? rdsInstance : '',
+        "customEndpoint": this.state.rdsMode == 'given_endpoint' ? this.state.customEndpoint : '',
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
@@ -162,34 +178,63 @@ class Capture extends React.Component {
     })
       .done(function (data) {
         that.props.dispatch(fetchCaptures());
+        that.handleCloseAlert();
       })
       .fail(function (data) {
         if (data.status === 400) {
           that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
         }
         else if (data.status === 403) {
-          that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+          that.setAlertError("Database name, username, password and/or custom endpoint are incorrect. Unable to connect to database: '" + postData.db + "'");
         }
         else {
           that.setAlertError("Unknown Error");
         }
         that.handleShowAlert()
       })
+      that.handleCloseAlert();      
   }
 
 
+  captureNameContainsSpacesOrSlashes() {
+    if (this.state.captureName.indexOf(' ') >= 0 || this.state.captureName.indexOf('/') >= 0
+      || this.state.captureName.indexOf('\t') >= 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  captureNameLengthGreaterThanZero() {
+    if (this.state.captureName.length > 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  captureNameLengthEqualToZero() {
+    if (this.state.captureName.length == 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
 
   // Changes the help text for the capture name form
   getValidationState() {
-    if (this.state.captureName.indexOf(' ') >= 0 || this.state.captureName.indexOf('/') >= 0) {
+    if (this.captureNameContainsSpacesOrSlashes()) {
       this.state.inputHelpBlock = 'No spaces or / allowed in name. Please try again';
       return 'error';
     }
-    else if (this.state.captureName.length > 0) {
+    else if (this.captureNameLengthGreaterThanZero()) {
       this.state.inputHelpBlock = 'Looks great!';
       return 'success';
     }
-    else if (this.state.captureName.length == 0) {
+    else if (this.captureNameLengthEqualToZero()) {
       this.state.inputHelpBlock = 'Optional. If not provided, name will be generated.';
       return null;
     }
@@ -199,6 +244,11 @@ class Capture extends React.Component {
   // Sets the state of the capture name to show changes in the capture name form
   handleCaptureNameChange(event) {
     this.setState({ captureName: event.target.value });
+  }
+
+  // Sets the state of the custom endpoint name to show changes in the custom endpoint form
+  handleCustomEndpointChange(event) {
+    this.setState({ customEndpoint: event.target.value });
   }
 
   // Sets the state of the Database name to show changes in the capture db name form
@@ -223,6 +273,13 @@ class Capture extends React.Component {
     console.log(this.state.captureMode)
   }
 
+  // Changes the rds mode between instance_name and given_endpoint
+  handleRDSModeChange(event) {
+    console.log(event)
+    this.setState({ rdsMode: event })
+    console.log(this.state.rdsMode)
+  }
+
   // Consumes a list of rds instances and produces a select menu of these instances
   createDBInstancesSelect(data) {
     let dbInstances = data["databases"] || [];
@@ -241,40 +298,6 @@ class Capture extends React.Component {
   // Changes the selected rds instance for capture
   updateCaptureRDS(e) {
     this.setState({ captureRDSInstance: e.target.value });
-  }
-
-
-  // Consumes a capture type and produces a table of captures retrieved from the server
-  displayCaptures(captureType) {
-    let captureRoute;
-    if (captureType === 'active') {
-      captureRoute = 'list_ongoing'
-    }
-    else if (captureType === 'scheduled') {
-      captureRoute = 'list_scheduled'
-    }
-    else {
-      captureRoute = 'list_completed'
-    }
-
-    let that = this;
-    jquery.ajax({
-      url: window.location.href + 'capture/' + captureRoute,
-      type: 'GET',
-      contentType: 'application/json',
-      dataType: 'json'
-    }).done(function (data) {
-      if (captureType === 'active') {
-        that.props.dispatch(setCaptureCount(data.captures.length))
-        that.props.dispatch(setCaptureActiveList(data.captures));
-      }
-      else if (captureType === 'scheduled') {
-        that.props.dispatch(setCaptureScheduledList(data.captures));
-      }
-      else {
-        that.props.dispatch(setCaptureCompletedList(data.captures));
-      }
-    })
   }
 
   render() {
@@ -301,6 +324,24 @@ class Capture extends React.Component {
           </tbody>
         </table>
       </FormGroup>
+    }
+
+    let rdsChanger = null;
+    if (this.state.rdsMode == 'instance_name') {
+      rdsChanger = <FormGroup controlId="formControlsSelect">
+        <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
+          {this.createDBInstancesSelect(this.props.databaseInstances)}
+        </FormControl>
+      </FormGroup>
+    }
+    else if (this.state.rdsMode == 'given_endpoint') {
+      rdsChanger = <FormControl
+        id='rdsNameInput'
+        type="text"
+        value={this.state.customEndpoint}
+        placeholder="Enter Custom Endpoint"
+        onChange={this.handleCustomEndpointChange}
+      />
     }
 
     let uniqueNameAlert = null;
@@ -368,12 +409,17 @@ class Capture extends React.Component {
                 <FormControl.Feedback />
                 <HelpBlock>{this.state.inputHelpBlock}</HelpBlock>
               </FormGroup>
-              <FormGroup controlId="formControlsSelect">
-                <ControlLabel>RDS Instance</ControlLabel>
-                <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
-                  {this.createDBInstancesSelect(this.props.databaseInstances)}
-                </FormControl>
+              <FormGroup>
+                <div className="modeButtonContainer">
+                  <ButtonToolbar>
+                    <ToggleButtonGroup id="toggleRdsCustomBtn" type="radio" name="options" value={this.state.rdsMode} onChange={this.handleRDSModeChange}>
+                      < ToggleButton id="toggle" value='instance_name'>RDS Instance</ToggleButton>
+                      <ToggleButton id="toggle" value='given_endpoint'>Custom Endpoint</ToggleButton>
+                    </ToggleButtonGroup>
+                  </ButtonToolbar>
+                </div>
               </FormGroup>
+              {rdsChanger}
               <FormGroup>
                 <ControlLabel>DB Name</ControlLabel>
                 <FormControl type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
