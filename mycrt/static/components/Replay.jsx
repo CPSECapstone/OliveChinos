@@ -105,9 +105,9 @@ class Replay extends React.Component {
 
   // Function to handle a "analyze" button click
   analyze(captureName, replayName) {
-    console.log('DEBUGGING: capture name', captureName)
-    console.log('DEBUGGING: replay name', replayName)
-    console.log('analytics at ', this.props.analyticsForGraph)
+    // console.log('DEBUGGING: capture name', captureName)
+    // console.log('DEBUGGING: replay name', replayName)
+    // console.log('analytics at ', this.props.analyticsForGraph)
     let bools = new Array(this.props.analyticsForGraph[captureName].length)
     let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
     for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
@@ -119,7 +119,7 @@ class Replay extends React.Component {
         bools[i] = false
       }
     }
-    console.log('***** OKAY WAIT!!!! ***** ', replayName)
+    // console.log('***** OKAY WAIT!!!! ***** ', replayName)
     this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]), new Array(replayName)));
   }
 
@@ -217,6 +217,7 @@ class Replay extends React.Component {
         <TableHeaderColumn dataField='capture' columnTitle dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
         <TableHeaderColumn dataField='rds' columnTitle dataSort>RDS Instance</TableHeaderColumn>
+        <TableHeaderColumn dataField='start_time'>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='mode' columnTitle dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>
@@ -227,6 +228,7 @@ class Replay extends React.Component {
         <TableHeaderColumn >Capture</TableHeaderColumn>
         <TableHeaderColumn >Database</TableHeaderColumn>
         <TableHeaderColumn >RDS Instance</TableHeaderColumn>
+        <TableHeaderColumn >Start Time</TableHeaderColumn>
         <TableHeaderColumn >Mode</TableHeaderColumn>
         <TableHeaderColumn >Action</TableHeaderColumn>
 
