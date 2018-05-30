@@ -1,0 +1,760 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mycrt.server.utility package &#8212; MyCRT  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="mycrt-server-utility-package">
+<h1>mycrt.server.utility package<a class="headerlink" href="#mycrt-server-utility-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mycrt.server.utility.analytics">
+<span id="mycrt-server-utility-analytics-module"></span><h2>mycrt.server.utility.analytics module<a class="headerlink" href="#module-mycrt.server.utility.analytics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.utility.analytics.get_analytics">
+<code class="descclassname">mycrt.server.utility.analytics.</code><code class="descname">get_analytics</code><span class="sig-paren">(</span><em>credentials</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.analytics.get_analytics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all analytics.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first docutils">
+<dt>credentials - {</dt>
+<dd>“aws_access_key” : String,
+“aws_secret_access_key” : String,
+“region_name” : String</dd>
+</dl>
+<p class="last">}
+cm - A ComManager object</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>capture_name_1 <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd><dl class="first docutils">
+<dt>“replays” <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd><dl class="first docutils">
+<dt>replay_name_1 <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd>‘CPUUtilization’ : [{‘timestamp’ : String, ‘average’ : Float}, …],
+‘FreeableMemory’ : […],
+‘ReadIOPS’ : […],
+‘WriteIOPS’ : […],
+‘start_time’ : String,
+‘end_time’ : String,
+‘period’ : String,
+‘db_id’ : String
+},</dd>
+</dl>
+<p class="last">replay_name_2 : {…},
+…
+},</p>
+</dd>
+</dl>
+<p class="last">“capture_analytics” : Boolean -OR- {capture_name : {&lt;similar to replay_name_1 above&gt;}}
+},</p>
+</dd>
+</dl>
+<p class="last">capture_name_2 : {…},
+…</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.analytics.get_capture_list">
+<code class="descclassname">mycrt.server.utility.analytics.</code><code class="descname">get_capture_list</code><span class="sig-paren">(</span><em>credentials</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.analytics.get_capture_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of completed capture names.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first docutils">
+<dt>credentials - {</dt>
+<dd>“aws_access_key” : String,
+“aws_secret_access_key” : String,
+“region_name” : String</dd>
+</dl>
+<p class="last">}
+cm - A ComManager object</p>
+</dd>
+<dt>Returns:</dt>
+<dd>A list of capture names.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.analytics.retrieve_analytics">
+<code class="descclassname">mycrt.server.utility.analytics.</code><code class="descname">retrieve_analytics</code><span class="sig-paren">(</span><em>s3_client</em>, <em>bucket_id=None</em>, <em>log_key='test-folder/test-metrics'</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.analytics.retrieve_analytics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the analytics object for a single replay.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>s3_client - An S3 Client object from Boto3
+bucket_id - An S3 bucket id to retrieve metrics from
+log_key - A path to extract metrics from within the S3 bucket</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘CPUUtilization’ : [{‘timestamp’ : String, ‘average’ : Float}, …],
+‘FreeableMemory’ : […],
+‘ReadIOPS’ : […],
+‘WriteIOPS’ : […],
+‘start_time’ : String,
+‘end_time’ : String,
+‘period’ : String,
+‘db_id’ : String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility.capture">
+<span id="mycrt-server-utility-capture-module"></span><h2>mycrt.server.utility.capture module<a class="headerlink" href="#module-mycrt.server.utility.capture" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.utility.capture.cancel_capture">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">cancel_capture</code><span class="sig-paren">(</span><em>capture_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.cancel_capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove scheduled or ongoing capture from database</p>
+<p>As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
+that need to be removed are in the utility db.</p>
+<dl class="docutils">
+<dt>Arguments: </dt>
+<dd>capture_name: A preexisting capture name
+cm: A ComManager object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.check_if_capture_name_is_unique">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">check_if_capture_name_is_unique</code><span class="sig-paren">(</span><em>name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.check_if_capture_name_is_unique" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a capture name is unique.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>name - A String representing the capture name
+cm - A ComManager object</dd>
+<dt>Returns:</dt>
+<dd>A True if the name is unqiue, False otherwise</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.delete_capture">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">delete_capture</code><span class="sig-paren">(</span><em>credentials</em>, <em>capture_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.delete_capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all traces of a capture in both S3 and the utility db.</p>
+<p>Code referenced from here: <a class="reference external" href="https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted">https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted</a></p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>credentials: A dictionary resembling the structure at the top of the file
+capture_name: A preexisting capture name
+cm: A ComManager object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.end_capture">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">end_capture</code><span class="sig-paren">(</span><em>credentials</em>, <em>capture_name</em>, <em>db</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.end_capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ends a specified capture.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>credentials: A dictionary resembling the structure at the top of the file
+capture_name: A preexisting capture name
+db: Database identifier
+cm: A ComManager object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.get_all_completed_capture_details">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">get_all_completed_capture_details</code><span class="sig-paren">(</span><em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.get_all_completed_capture_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all completed capture details from utility database.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>cm: A ComManager object</dd>
+<dt>Returns: </dt>
+<dd><p class="first">A list containing details of captures that are ongoing.
+These details are represented by a dictionary. The dictionary
+will have the following format:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : Boolean</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.get_all_ongoing_capture_details">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">get_all_ongoing_capture_details</code><span class="sig-paren">(</span><em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.get_all_ongoing_capture_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all ongoing capture details from utility database.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>cm - A ComManager object</dd>
+<dt>Returns:</dt>
+<dd><p class="first">A list containing details of captures that are ongoing.
+These details are represented by a dictionary. The dictionary
+will have the following format:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : Boolean</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.get_all_scheduled_capture_details">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">get_all_scheduled_capture_details</code><span class="sig-paren">(</span><em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.get_all_scheduled_capture_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all scheduled capture details from utility database.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>cm: A ComManager object</dd>
+<dt>Returns: </dt>
+<dd><p class="first">A list containing details of captures that are ongoing.
+These details are represented by a dictionary. The dictionary
+will have the following format:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : Boolean</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.get_capture_details">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">get_capture_details</code><span class="sig-paren">(</span><em>capture_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.get_capture_details" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the details of a single capture.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><p class="first">A dictionary containing the details of a capture with the 
+following format:</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>“captureName” : String,
+“db” : String,
+“endTime” : None,
+“startTime” : String,
+“status” : Boolean</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.get_capture_number">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">get_capture_number</code><span class="sig-paren">(</span><em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.get_capture_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of ongoing captures.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>cm - A ComManager object</dd>
+<dt>Returns:</dt>
+<dd>Integer</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.schedule_capture">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">schedule_capture</code><span class="sig-paren">(</span><em>capture_name</em>, <em>db_name</em>, <em>start_time</em>, <em>end_time</em>, <em>endpoint</em>, <em>username</em>, <em>password</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.schedule_capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedules a capture to be logged into the database.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>capture_name - String representing capture name
+db_name - String representing database name
+start_time - DateTime object containing starttime for capture 
+end_time - DateTime object containing endtime for capture
+endpoint - String representing database endpoint
+username - String representing database username
+password - String representing database password
+cm - A ComManager object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.capture.start_capture">
+<code class="descclassname">mycrt.server.utility.capture.</code><code class="descname">start_capture</code><span class="sig-paren">(</span><em>capture_name</em>, <em>endpoint</em>, <em>db_name</em>, <em>start_time</em>, <em>username</em>, <em>password</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.capture.start_capture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts a capture. No real work is done by this function for now other than marking 
+when a capture was started.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>capture_name: String, Name to give a capture. Assumed to be unqiue
+endpoint: String, represents the endpoint of database
+db_name: String, Database identifier
+start_time: DateTime, for when the capture starts
+username: String, username for database
+password: String, password for database
+cm: A ComManager object</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility.communications">
+<span id="mycrt-server-utility-communications-module"></span><h2>mycrt.server.utility.communications module<a class="headerlink" href="#module-mycrt.server.utility.communications" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mycrt.server.utility.communications.ComManager">
+<em class="property">class </em><code class="descclassname">mycrt.server.utility.communications.</code><code class="descname">ComManager</code><a class="headerlink" href="#mycrt.server.utility.communications.ComManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A manager object that is in charge of handling multiple outgoing connections from the server. It is tasked with both Sqlite, MySql, and Boto3 connections.</p>
+<dl class="attribute">
+<dt id="mycrt.server.utility.communications.ComManager.S3name">
+<code class="descname">S3name</code><em class="property"> = 'my-crt-test-bucket-olive-chinos'</em><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.S3name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.close_sql">
+<code class="descname">close_sql</code><span class="sig-paren">(</span><em>db_info=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.close_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes a sql connection.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first docutils">
+<dt>db_info - {</dt>
+<dd>hostname = String, 
+username = String, 
+password = String, 
+database = String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mycrt.server.utility.communications.ComManager.credentials">
+<code class="descname">credentials</code><em class="property"> = {'aws_access_key_id': 'AKIAJR34D2NQFEJIP3GA', 'aws_secret_access_key': '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', 'region_name': 'us-east-2'}</em><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.credentials" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.execute_query">
+<code class="descname">execute_query</code><span class="sig-paren">(</span><em>query</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.execute_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a query on a cursor.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>query: A SQL query to commit</dd>
+<dt>Returns:</dt>
+<dd>A list of tuples containing the results of the query. Each element
+in the list is a tuple representing one row and each element of the
+tuple is a value for one column.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.get_boto">
+<code class="descname">get_boto</code><span class="sig-paren">(</span><em>service</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.get_boto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Boto3 client.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>service - String, representing the type of service requested</dd>
+<dt>Returns:</dt>
+<dd>A boto3 client in the liking of the requested service</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.get_sql">
+<code class="descname">get_sql</code><span class="sig-paren">(</span><em>db_info=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.get_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a sql connection.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><dl class="first docutils">
+<dt>db_info - {</dt>
+<dd>hostname = String, 
+username = String, 
+password = String, 
+database = String</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>‘conn’ : A Sql connection object,
+‘cur’ : A corresponding Sql cursor object</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.list_databases">
+<code class="descname">list_databases</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.list_databases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all databases and create a mapping between the id and endpoints</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>cm: A ComManager object to handle connections</dd>
+<dt>Returns:</dt>
+<dd>A dictionary whe vff vfre the keys are the database instance ids available to the user 
+and the values are the associated endpoints.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.process_endpoint">
+<code class="descname">process_endpoint</code><span class="sig-paren">(</span><em>rds_name</em>, <em>endpoint</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.process_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes and formats a given endpoint corresponding to the given rds_name</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>rds_name - String, RDS instance identifier
+endpoint - String, database endpoint</dd>
+<dt>Returns:</dt>
+<dd>A formatted string of the endpoint</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.setup_utility_database">
+<code class="descname">setup_utility_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.setup_utility_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial setup of utility database. Is called automatically on startup if no ‘util.db’ file is found.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mycrt.server.utility.communications.ComManager.util_db">
+<code class="descname">util_db</code><em class="property"> = 'util.db'</em><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.util_db" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="mycrt.server.utility.communications.ComManager.valid_database_credentials">
+<code class="descname">valid_database_credentials</code><span class="sig-paren">(</span><em>db_name</em>, <em>endpoint</em>, <em>username</em>, <em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.communications.ComManager.valid_database_credentials" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates given database credentials.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>db_name - String, database name
+endpoint - String, database endpoint
+username - String, database username
+password - String, database password</dd>
+<dt>Returns:</dt>
+<dd>Boolean, True if valid, False if not</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility.login">
+<span id="mycrt-server-utility-login-module"></span><h2>mycrt.server.utility.login module<a class="headerlink" href="#module-mycrt.server.utility.login" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.utility.login.verify_login">
+<code class="descclassname">mycrt.server.utility.login.</code><code class="descname">verify_login</code><span class="sig-paren">(</span><em>public_key</em>, <em>secret_key</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.login.verify_login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies login information.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>public_key - String, AWS public key
+secret_key - String, AWS secret key</dd>
+<dt>Returns:</dt>
+<dd>Boolean, True if valid, False if not</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility.replay">
+<span id="mycrt-server-utility-replay-module"></span><h2>mycrt.server.utility.replay module<a class="headerlink" href="#module-mycrt.server.utility.replay" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.utility.replay.check_if_replay_name_is_unique">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">check_if_replay_name_is_unique</code><span class="sig-paren">(</span><em>capture_name</em>, <em>replay_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.check_if_replay_name_is_unique" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a replay name is unique.</p>
+<dl class="docutils">
+<dt>Arguments: </dt>
+<dd>capture_name - String, a capture name
+replay_name - String, a potential replay name
+cm - A ComManager object</dd>
+<dt>Returns:</dt>
+<dd>Boolean, True if unique, False if not</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.delete_replay">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">delete_replay</code><span class="sig-paren">(</span><em>credentials</em>, <em>capture_name</em>, <em>replay_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.delete_replay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all traces of a replay in S3.</p>
+<p>Code referenced from here: <a class="reference external" href="https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted">https://stackoverflow.com/questions/33104579/boto3-s3-folder-not-getting-deleted</a></p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>credentials: A dictionary resembling the structure at the top of the file
+capture_name: A preexisting capture name
+replay_name: A preexisting replay name</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.execute_replay">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">execute_replay</code><span class="sig-paren">(</span><em>credentials</em>, <em>db_id</em>, <em>replay_name</em>, <em>capture_name</em>, <em>fast_mode</em>, <em>restore_db</em>, <em>rds_name</em>, <em>username</em>, <em>password</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.execute_replay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a replay asynchronously.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd>credentials - A dictionary containing a region, public_key, and secret_key
+db_id - String, database identifier
+replay_name - String, unique replay name
+capture_name - String, a capture name to base replay off of
+fast_mode - Boolean, True if fast mode, False if time based mode
+restore_db - Boolean, True if restore database after execution
+rds_name - String, RDS identifier
+username - String, database username
+password - String, database password
+cm - A ComManager object</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.get_active_db">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">get_active_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.get_active_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of databases that are currently in use by ongoing replays.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>List of database names</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.get_active_replays">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">get_active_replays</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.get_active_replays" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list containing the ongoing replays.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>‘replays’ <span class="classifier-delimiter">:</span> <span class="classifier">[{</span></dt>
+<dd>‘replay’ : String,
+‘capture’ : String,
+‘rds’ : String,
+‘db’ : String,
+‘mode’ : String},
+…</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.get_replay_number">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">get_replay_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.get_replay_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of ongoing replays.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Integer</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.get_replays_from_table">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">get_replays_from_table</code><span class="sig-paren">(</span><em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.get_replays_from_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all completed replays. Issued by a GET request to ‘/replay/list’</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first docutils">
+<dt>[</dt>
+<dd><dl class="first docutils">
+<dt>{</dt>
+<dd>“replay” : String, 
+“capture” : String, 
+“db” : String, 
+“mode” : String, 
+“rds”: String</dd>
+</dl>
+<p class="last">}, …</p>
+</dd>
+</dl>
+<p class="last">]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.init_replay">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">init_replay</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.init_replay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes global variables for replay.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.replay.stop_replay">
+<code class="descclassname">mycrt.server.utility.replay.</code><code class="descname">stop_replay</code><span class="sig-paren">(</span><em>credentials</em>, <em>capture_name</em>, <em>replay_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.replay.stop_replay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop an active replay.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>credentials: A dictionary resembling the structure at the top of the file
+capture_name: A preexisting capture name
+replay_name: A preexisting replay name
+cm: A communications manager object</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility.scheduler">
+<span id="mycrt-server-utility-scheduler-module"></span><h2>mycrt.server.utility.scheduler module<a class="headerlink" href="#module-mycrt.server.utility.scheduler" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="mycrt.server.utility.scheduler.cancel_capture_process">
+<code class="descclassname">mycrt.server.utility.scheduler.</code><code class="descname">cancel_capture_process</code><span class="sig-paren">(</span><em>capture_name</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.scheduler.cancel_capture_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unschedule or terminate a capture process.</p>
+<p>Since no work happens for the capture until end_capture, all we have to 
+do is kill the scheduler process which is responsible for calling start-
+and end-capture.</p>
+<blockquote>
+<div>Args: 
+capture_name: unique name of the capture to be cancelled</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.scheduler.init_scheduler">
+<code class="descclassname">mycrt.server.utility.scheduler.</code><code class="descname">init_scheduler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.scheduler.init_scheduler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes scheduler when server starts up.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.scheduler.new_capture_process">
+<code class="descclassname">mycrt.server.utility.scheduler.</code><code class="descname">new_capture_process</code><span class="sig-paren">(</span><em>is_scheduled</em>, <em>credentials</em>, <em>capture_name</em>, <em>db_name</em>, <em>start_time</em>, <em>end_time</em>, <em>endpoint</em>, <em>username</em>, <em>password</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.scheduler.new_capture_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a capture event. 
+If capture is interactive, a start-capture process will be started immediately.
+If capture is scheduled, an event will be scheduled to run at the specified 
+time. This event will create a start- and end-capture process.</p>
+<p>All process and schedule identifiers are stored for use in case the user wants 
+to terminate a capture before the specified end time.</p>
+<dl class="docutils">
+<dt>Args: </dt>
+<dd>is_scheduled: a flag representing the capture mode: scheduled/interactive
+credentials: aws login credentials
+capture_name: unique name of the capture 
+db_name: Amazon RDS instance name 
+start_time: specified time to start the capture
+end_time: specified time to end the capture</dd>
+<dt>Returns: </dt>
+<dd>SUCCESS (0) upon completion.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mycrt.server.utility.scheduler.start_orphaned_captures">
+<code class="descclassname">mycrt.server.utility.scheduler.</code><code class="descname">start_orphaned_captures</code><span class="sig-paren">(</span><em>credentials</em>, <em>cm</em><span class="sig-paren">)</span><a class="headerlink" href="#mycrt.server.utility.scheduler.start_orphaned_captures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ran at start of program to start previously scheduled captures from last runtime.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>credentials: A credentials dictionary #not used anymore, kept around until we refactor
+cm: A ComManager object</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-mycrt.server.utility">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mycrt.server.utility" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">mycrt.server.utility package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.analytics">mycrt.server.utility.analytics module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.capture">mycrt.server.utility.capture module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.communications">mycrt.server.utility.communications module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.login">mycrt.server.utility.login module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.replay">mycrt.server.utility.replay module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility.scheduler">mycrt.server.utility.scheduler module</a></li>
+<li><a class="reference internal" href="#module-mycrt.server.utility">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/mycrt.server.utility.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Olive Chinos.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/source/mycrt.server.utility.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

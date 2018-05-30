@@ -126,6 +126,7 @@ def _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_i
       "captureName" : capture_name,
       "db" : db_id,
       "rds": rds,
+      "start_time": datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S"),
       "mode" : fast_mode,
       "pid" : os.getpid()
     }
@@ -175,13 +176,14 @@ def get_active_replays():
       ]
     }
   '''
-  fields = ["replayName", "captureName", "db", "rds", "mode"]
+  fields = ["replayName", "captureName", "db", "rds", "mode", "start_time"]
   field_conversion = {
     "replayName" : "replay",
     "captureName" : "capture",
     "rds" : "rds",
     "db" : "db",
-    "mode" : "mode"
+    "mode" : "mode",
+    "start_time" : "start_time"
   }
   rep_list = []
   for _, replay in replays_in_progress.items():
@@ -272,7 +274,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   #print(metrics, file = sys.stderr)
   _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
  
-  query = """INSERT INTO Replays (replay, capture, db, mode, rds) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name)
+  query = """INSERT INTO Replays (replay, capture, db, mode, rds, start_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name, start_time.strftime("%Y/%m/%d %H:%M:%S"))
   cm.execute_query(query)
 
 def stop_replay(credentials, capture_name, replay_name, cm):
@@ -341,9 +343,9 @@ def get_replays_from_table(cm):
             }, ...
         ]
   '''
-  query = "select replay, capture, db, mode, rds from Replays"
+  query = "select replay, capture, db, mode, rds, start_time from Replays"
   results = cm.execute_query(query)
-  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds} for (replay, capture, db, mode, rds) in results]
+  replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds, "start_time": start_time} for (replay, capture, db, mode, rds, start_time) in results]
   return {"replays" : replays}
 
 def _populate_replay_table(cm):
