@@ -13,6 +13,9 @@ manager = None
 capture_scheduler_pids = None
 
 def init_scheduler():
+    ''' Initializes scheduler when server starts up.
+
+    '''
     global manager
     manager = multiprocessing.Manager()
 
