@@ -7,7 +7,7 @@ import { Button, Glyphicon, ToggleButtonGroup, ToggleButton} from 'react-bootstr
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
-import { setCaptureNameForGraph } from '../actions/index';
+import { setCaptureNameForGraph, setBooleansForGraph} from '../actions/index';
 import CaptureOptions from './CaptureOptions';
 
 var selectedColor = "#ADD8E6";
@@ -15,8 +15,21 @@ var selectedColor = "#ADD8E6";
 class GraphContainer extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            graphingCapture: false
+        }
+        this.handleChange = this.handleChange.bind(this);
         
     }
+
+    handleChange(e) {
+        if(e[0] == this.props.currentCaptureForGraph) {
+            this.graphCapture(true)
+        } else {
+            this.graphCapture(false)
+        }
+      }
 
     //reRenders the capture options by dispatching this action when back button is clicked
     rerenderCapturesOnBackButton()
@@ -42,19 +55,23 @@ class GraphContainer extends React.Component {
         );
     }
 
-    graphCapture() {
-        console.log('THIS WILL BE THE GRAPH CAPTURE STUFF')
-        console.log(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['capture_analytics'])
-
+    graphCapture(graphOrNot) {
+        let newBools = this.props.booleansForGraph.slice()
+        for(let i = 0; i < this.props.booleansForGraph.length; i++) {
+            if(this.props.totalNames[i] == this.props.currentCaptureForGraph) {
+                newBools[i] = graphOrNot
+            }
+        }
+        this.props.dispatch(setBooleansForGraph(newBools))
     }
 
     renderCaptureAnalytics() {
         if(this.props.currentCaptureForGraph != 'Capture Options') {
-            if(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['capture_analytics'] !== false) {
+            if(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][this.props.currentCaptureForGraph] !== false && this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][this.props.currentCaptureForGraph] !== undefined ) {
                 return(
                     <div style={{textAlign:'center'}}>
-                        <ToggleButtonGroup type="radio" name="options" >
-                        <ToggleButton id="toggle" value={'Graph Capture'} onClick={this.graphCapture.bind(this)}>
+                        <ToggleButtonGroup onChange={this.handleChange} type="checkbox" name="graph capture">
+                        <ToggleButton id="toggle" value={this.props.currentCaptureForGraph} >
                         <Glyphicon glyph="signal" style={{paddingRight:'8px'}}/>
                             Graph {this.props.currentCaptureForGraph}
                         </ToggleButton>
@@ -134,7 +151,8 @@ const mapStateToProps = state => ({
     analyticsForGraph: state.analyticsForGraph,
     booleansForGraph: state.booleansForGraph,
     totalNames: state.totalNames,
-    metricForGraph: state.metricForGraph
+    metricForGraph: state.metricForGraph,
+    captureIsGraphed: state.captureIsGraphed
   })
   
   export default connect(mapStateToProps)(GraphContainer)
