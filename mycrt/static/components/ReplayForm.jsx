@@ -27,6 +27,8 @@ export default class ReplayForm extends React.Component {
             replayDBUsername: '',
             replayDBPassword: '',
             fastMode: true,
+            filterMode: false,
+            filterInput: '',
         }
 
         this.handleShow = this.handleShow.bind(this);
@@ -41,6 +43,9 @@ export default class ReplayForm extends React.Component {
         this.handleCloseAndAddReplay = this.handleCloseAndAddReplay.bind(this);
         this.setAlertError = this.setAlertError.bind(this);
         this.handleCloseAlert = this.handleCloseAlert.bind(this);
+
+        this.handleFilterInputChange = this.handleFilterInputChange.bind(this)
+        this.handleFilterModeChange = this.handleFilterModeChange.bind(this)
     }
 
     // Function to show "New Replay" popup-form
@@ -119,6 +124,17 @@ export default class ReplayForm extends React.Component {
         this.addReplay(this.state.replayName, this.state.captureToReplay, this.state.replayRDSInstance);
     }
 
+    handleFilterModeChange() {
+        if (this.state.filterMode) {
+            this.setState({ filterInput: '' })
+        }
+        this.setState({ filterMode: !this.state.filterMode })
+    }
+
+    handleFilterInputChange(event) {
+        this.setState({ filterInput: event.target.value });
+    }
+
     // Function to display the list of available captures to replay on
     createCapturesSelect(data) {
         console.log("CREATE Captures SELECT: ", data);
@@ -157,17 +173,17 @@ export default class ReplayForm extends React.Component {
 
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
-        if(this.props.fromAnalytics) {
+        if (this.props.fromAnalytics) {
             this.props.store.dispatch(setTotalNamesForGraph([replayName]))
             this.props.store.dispatch(setBooleansForGraph([false]))
         }
         this.setState({ replay: 'Replay Active' })
         let rdsInstance;
         if (this.state.replayRDSInstance === '') {
-          rdsInstance = this.props.store.databaseInstances.databases[0];
+            rdsInstance = this.props.store.databaseInstances.databases[0];
         }
         else {
-          rdsInstance = this.state.replayRDSInstance;
+            rdsInstance = this.state.replayRDSInstance;
         }
 
         let postData = {
@@ -178,7 +194,8 @@ export default class ReplayForm extends React.Component {
             "username": this.state.replayDBUsername,
             "password": this.state.replayDBPassword,
             "fastMode": this.state.fastMode,
-            "restoreDb": false
+            "restoreDb": false,
+            "filters": this.state.filterInput
         }
         let that = this;
         jquery.ajax({
@@ -188,20 +205,20 @@ export default class ReplayForm extends React.Component {
             contentType: 'application/json',
             dataType: 'json'
         })
-        .done(function(data) {
-            console.log("closing modal");
-            that.setAlertError(null);
-            that.props.store.dispatch(closeReplayModal());
-        })
+            .done(function (data) {
+                console.log("closing modal");
+                that.setAlertError(null);
+                that.props.store.dispatch(closeReplayModal());
+            })
             .fail(function (data) {
                 if (data.status === 400) {
-                  that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
+                    that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
                 }
                 else if (data.status === 403) {
-                  that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+                    that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
                 }
                 else {
-                  that.setAlertError("Unknown Error");
+                    that.setAlertError("Unknown Error");
                 }
                 console.log("Failed from ReplayForm.jsx");
             })
@@ -224,14 +241,23 @@ export default class ReplayForm extends React.Component {
         //this.setState({ captureToReplay: captureToReplay });
         let uniqueNameAlert = null;
         if (this.state.alertError !== null) {
-          uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
-            <h4>Oh snap! You got an error!</h4>
-            <p>{this.state.alertError}</p>
-            <p>
-              <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
-            </p>
-          </Alert>
+            uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
+                <h4>Oh snap! You got an error!</h4>
+                <p>{this.state.alertError}</p>
+                <p>
+                    <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+                </p>
+            </Alert>
         }
+
+        let filterField = null;
+        if (this.state.filterMode) {
+            filterField = (<div>
+                <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
+                <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
+            </div>)
+        }
+
 
         return (
             <Modal show={this.props.show} onHide={this.handleClose} >
@@ -280,6 +306,16 @@ export default class ReplayForm extends React.Component {
                                 <ControlLabel>DB Password</ControlLabel>
                                 <FormControl type="password" placeholder="Enter password" value={this.state.replayDBPassword} onChange={this.handleDBPasswordChange} />
                             </Col>
+                        </FormGroup>
+                        <FormGroup>
+                            <ControlLabel>Query Filtering</ControlLabel>
+                            <ButtonToolbar>
+                                <ToggleButtonGroup type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
+                                    <ToggleButton id="toggle" value={true}>On</ToggleButton>
+                                    <ToggleButton id="toggle" value={false}>Off</ToggleButton>
+                                </ToggleButtonGroup>
+                            </ButtonToolbar>
+                            {filterField}
                         </FormGroup>
                         <FormGroup>
                             <div>

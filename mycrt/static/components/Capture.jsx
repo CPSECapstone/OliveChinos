@@ -56,7 +56,9 @@ class Capture extends React.Component {
       captureMode: 'interactive',
       captureInfoShow: false,
       rdsMode: 'instance_name',
-      customEndpoint: ''
+      customEndpoint: '',
+      filterMode: false,
+      filterInput: '',
     }
 
     //binding required for callback
@@ -79,6 +81,9 @@ class Capture extends React.Component {
     this.handleRefreshButton = this.handleRefreshButton.bind(this)
     this.handleCloseAndStartCapture = this.handleCloseAndStartCapture.bind(this)
     this.setAlertError = this.setAlertError.bind(this)
+
+    this.handleFilterInputChange = this.handleFilterInputChange.bind(this)
+    this.handleFilterModeChange = this.handleFilterModeChange.bind(this)
   }
 
   // Sets state of error alert to close
@@ -115,6 +120,17 @@ class Capture extends React.Component {
     this.props.dispatch(fetchCaptures());
   }
 
+  handleFilterModeChange() {
+    if (this.state.filterMode) {
+      this.setState({ filterInput: '' })
+    }
+    this.setState({ filterMode: !this.state.filterMode })
+  }
+
+  handleFilterInputChange(event) {
+    this.setState({ filterInput: event.target.value });
+  }
+
 
   // Starts a new capture by calling a get request to the server
   startNewCapture() {
@@ -144,7 +160,8 @@ class Capture extends React.Component {
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
         "startTime": this.state.captureStartTime,
-        "endTime": this.state.captureEndTime
+        "endTime": this.state.captureEndTime,
+        "filters": this.state.filterInput
       }
     }
     else {
@@ -156,6 +173,7 @@ class Capture extends React.Component {
         "captureName": this.state.captureName.length > 0 ? this.state.captureName : '',
         "username": this.state.captureDBUsername,
         "password": this.state.captureDBPassword,
+        "filters": this.state.filterInput
       }
     }
     let that = this
@@ -287,6 +305,14 @@ class Capture extends React.Component {
       </FormGroup>
     }
 
+    let filterField = null;
+    if (this.state.filterMode) {
+      filterField = (<div>
+        <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
+        <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
+      </div>)
+    }
+
     let rdsChanger = null;
     if (this.state.rdsMode == 'instance_name') {
       rdsChanger = <FormGroup controlId="formControlsSelect">
@@ -394,6 +420,16 @@ class Capture extends React.Component {
                   <ControlLabel>DB Password</ControlLabel>
                   <FormControl type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
                 </Col>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>Query Filtering</ControlLabel>
+                <ButtonToolbar>
+                  <ToggleButtonGroup type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
+                    <ToggleButton id="toggle" value={true}>On</ToggleButton>
+                    <ToggleButton id="toggle" value={false}>Off</ToggleButton>
+                  </ToggleButtonGroup>
+                </ButtonToolbar>
+                {filterField}
               </FormGroup>
               <FormGroup>
                 <div className="modeButtonContainer">
