@@ -3,7 +3,7 @@ import Graph from './Graph';
 import alasql from 'alasql';
 require('../styles/graphstyles.css');
 require('../styles/loader.css');
-import { Button, Glyphicon} from 'react-bootstrap';
+import { Button, Glyphicon, ToggleButtonGroup, ToggleButton} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
 import CaptureReplaySelector from './CaptureReplaySelector'
@@ -31,6 +31,7 @@ class GraphContainer extends React.Component {
             <div className='row'>
                 <div>
                     <MetricSelector />
+                    {this.renderCaptureAnalytics()}
                 </div>
             </div>
 
@@ -39,6 +40,40 @@ class GraphContainer extends React.Component {
             </div>
         </div>
         );
+    }
+
+    graphCapture() {
+        console.log('THIS WILL BE THE GRAPH CAPTURE STUFF')
+        console.log(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['capture_analytics'])
+
+    }
+
+    renderCaptureAnalytics() {
+        if(this.props.currentCaptureForGraph != 'Capture Options') {
+            if(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['capture_analytics'] !== false) {
+                return(
+                    <div style={{textAlign:'center'}}>
+                        <ToggleButtonGroup type="radio" name="options" >
+                        <ToggleButton id="toggle" value={'Graph Capture'} onClick={this.graphCapture.bind(this)}>
+                        <Glyphicon glyph="signal" style={{paddingRight:'8px'}}/>
+                            Graph {this.props.currentCaptureForGraph}
+                        </ToggleButton>
+                        </ToggleButtonGroup>
+                    </div>
+                )
+            } else {
+                return(
+                    <div style={{textAlign:'center'}}>
+                        <ToggleButtonGroup type="radio" name="options" title='Sorry, we do not support graphing captures with custom endpoints yet!'>
+                            <ToggleButton id="toggle" value={'Graph Capture'} disabled>
+                            <Glyphicon glyph="signal" style={{paddingRight:'8px'}}/>
+                                Graph {this.props.currentCaptureForGraph}
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </div>
+                )
+            }
+        }
     }
 
     //This will either render the metric table below the graph with data
@@ -96,7 +131,10 @@ class GraphContainer extends React.Component {
 
 const mapStateToProps = state => ({
     currentCaptureForGraph: state.currentCaptureForGraph,
-    analyticsForGraph: state.analyticsForGraph
+    analyticsForGraph: state.analyticsForGraph,
+    booleansForGraph: state.booleansForGraph,
+    totalNames: state.totalNames,
+    metricForGraph: state.metricForGraph
   })
   
   export default connect(mapStateToProps)(GraphContainer)
