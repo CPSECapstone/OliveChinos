@@ -166,7 +166,7 @@ def _update_analytics():
   print("In update_analytics", file=sys.stderr)
   address = "http://localhost:5000/update_analytics"
   
-  proc = Process(target = func_to_call,
+  proc = Process(target = _func_to_call,
                  args = (address,))
   proc.start()
  
