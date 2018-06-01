@@ -92,6 +92,9 @@ def get_analytics(credentials, cm):
   top_folder = "mycrt/"
   for (replay_name, capture_name) in rep_cap_names:
     key = top_folder + capture_name + "/" + replay_name + ".replay"
+    #if replay_name == capture_name:
+    #  metrics[capture_name]["capture_analytics"] = {capture_name : retrieve_analytics(s3_client, log_key = key)}
+    #else:
     metrics[capture_name]["replays"][replay_name] = retrieve_analytics(s3_client, log_key = key)
   #for capture in capture_list:
   #  replay_list = get_replays_for_capture(credentials, capture, cm)

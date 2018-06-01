@@ -180,10 +180,37 @@ export function getAnalyticsForGraph() {
   }
 }
 
+export function performGetRequest(route, returnFunction) {
+  return function (dispatch) {
+    jquery.ajax({
+      url: window.location.href + route,
+      type: 'GET',
+      contentType: 'application/json',
+      dataType: 'json'
+    }).done(returnFunction)
+  }
+}
+
 export function fetchCaptures() {
   console.log("fetching all captures");
   return function (dispatch) {
-    jquery.ajax({
+    dispatch(performGetRequest('capture/list_ongoing', function (data) {
+      console.log("RESPONSE DATA jquery active ", data);
+      dispatch(setCaptureActiveList(data.captures));
+      dispatch(setLoaderDisplay(false));
+    }))
+
+    dispatch(performGetRequest('capture/list_scheduled', function (data) {
+      console.log("RESPONSE DATA jquery scheduled ", data);
+      dispatch(setCaptureScheduledList(data.captures));
+    }))
+
+    dispatch(performGetRequest('capture/list_completed', function (data) {
+      console.log("RESPONSE DATA jquery completed ", data);
+      dispatch(setCaptureCompletedList(data.captures));
+    }))
+
+    /*jquery.ajax({
       url: window.location.href + 'capture/list_ongoing',
       type: 'GET',
       contentType: 'application/json',
@@ -212,7 +239,7 @@ export function fetchCaptures() {
     }).done(function (data) {
       console.log("RESPONSE DATA jquery completed ", data);
       dispatch(setCaptureCompletedList(data.captures));
-    })
+    })*/
 
 
     return null

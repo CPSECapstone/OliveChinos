@@ -151,11 +151,13 @@ class CaptureReplaySelector extends React.Component {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
             for(let i = 0; i < replayOptions.length; i++) {
-                let replayInfo = {
-                    Name : replayOptions[i],
-                    Date : this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][replayOptions[i]]['end_time']
+                if(replayOptions[i] !== this.props.currentCaptureForGraph) {
+                    let replayInfo = {
+                        Name : replayOptions[i],
+                        Date : this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][replayOptions[i]]['end_time']
+                    }
+                    replayData.push(replayInfo)
                 }
-                replayData.push(replayInfo)
             }
             return(
                 <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
