@@ -464,7 +464,7 @@ class Graph extends Component {
    }
 
    render() {
-
+    console.log('THE GRAPH PROPS', this.props)
       return (<div>
          {this.renderGraph()}
       </div>)

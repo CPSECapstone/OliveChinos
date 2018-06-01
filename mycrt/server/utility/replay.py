@@ -254,8 +254,12 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
   start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
-  #print(start_time, end_time, file = sys.stderr)
-  #time.sleep(10)
+  store_all_metrics(start_time, end_time, rds_name, capture_name, replay_name, db_id, fast_mode, cm)
+
+def store_all_metrics(start_time, end_time, rds_name, capture_name, replay_name, db_id, fast_mode, cm):
+  s3_client = cm.get_boto('s3')
+  cloudwatch_client = cm.get_boto('cloudwatch')
+
   CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time, rds_name)
   FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time, rds_name)
   ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time, rds_name)
@@ -272,7 +276,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "db_id": db_id
   }
   #print(metrics, file = sys.stderr)
-  _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
+  _store_metrics(s3_client, metrics, log_key = "mycrt/" + capture_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds, start_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name, start_time.strftime("%Y/%m/%d %H:%M:%S"))
   cm.execute_query(query)
