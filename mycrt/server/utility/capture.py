@@ -7,7 +7,7 @@ import re
 import sys
 import requests
 from .communications import ComManager
-from .replay import store_all_metrics, _update_replay_count
+from .replay import store_all_metrics, _update_replay_count, _get_transactions
 from multiprocessing import Process
 
 
@@ -417,20 +417,36 @@ def delete_capture(credentials, capture_name, cm):
   cm.execute_query(query)
 
 def cancel_capture(capture_name, cm): 
-    '''Remove scheduled or ongoing capture from database
-    
-    As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
-    that need to be removed are in the utility db.
+  '''Remove scheduled or ongoing capture from database
+  
+  As long as the capture has not completed, there should be no S3 bucket for it so the only artifacts 
+  that need to be removed are in the utility db.
 
-    Arguments: 
-        capture_name: A preexisting capture name
-        cm: A ComManager object
-    '''
+  Arguments: 
+      capture_name: A preexisting capture name
+      cm: A ComManager object
+  '''
 
-    query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
-    cm.execute_query(query)
-    _update_capture_count()
-    
+  query = '''DELETE FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  cm.execute_query(query)
+  _update_capture_count()
 
+def get_capture_transactions(capture_name, cm):
+  ''' Get a timestamped list of transactions executed from a capture.
 
+  Arguments: 
+    capture_name: A preexisting capture name
+    cm: A ComManager object    
+
+  Returns:
+    [String, ...], A list of strings each in the format of "<TIMESTAMP> <TRANSACTION>"
+  '''
+
+  capture_path = "mycrt/" + capture_name + "/" + capture_name + ".cap"
+  transactions = _get_transactions(s3_client, log_key = capture_path)
+  transactions.sort(key = lambda x: x[0])
+  if isinstance(transactions[0][0], str):
+    return [c_time + " " + trans for c_time, trans in transactions]
+  else:
+    return [c_time.strftime("%Y-%m-%d  %H:%M:%S") + " " + trans for c_time, trans in transactions]
 

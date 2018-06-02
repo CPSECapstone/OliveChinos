@@ -511,6 +511,30 @@ def get_all_captures():
     captures = get_capture_list(credentials, cm)    
     return jsonify(captures)
 
+@application.route("/capture/view", methods = ["GET"])
+def get_capture_transactions_to_view():
+    ''' Returns a list of timestamped transactions captured on a workload.
+
+    Header:
+        {
+            'capture' : String
+        }
+
+    Returns:
+        {
+            "transactions" : [
+                String - "<TIMESTAMP> <TRANSACTION>",
+                ...
+            ]
+        }
+    '''
+
+    global cm
+    data = request.get_json()
+    capture_name = data['capture'] 
+    capture_transactions = get_capture_transactions(capture_name, cm)
+    return jsonify({"transactions" : capture_transactions})
+
 ''' 
 ----------------REPLAY ENDPOINTS-------------------
 '''
