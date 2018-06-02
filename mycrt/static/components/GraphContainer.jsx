@@ -66,7 +66,7 @@ class GraphContainer extends React.Component {
     }
 
     renderCaptureAnalytics() {
-        if(this.props.currentCaptureForGraph != 'Capture Options') {
+        if(this.props.currentCaptureForGraph !== 'Capture Options') {
             if(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][this.props.currentCaptureForGraph] !== false && this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][this.props.currentCaptureForGraph] !== undefined ) {
                 return(
                     <div style={{textAlign:'center'}}>

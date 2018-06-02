@@ -42,7 +42,6 @@ class MetricSelector extends React.Component {
 
 
     render() {
-        console.log('HERE IS THE METRIC', this.props.metricForGraph)
         let defaultSelect;
         if(this.props.metricForGraph != false) {
             // if(this.props.metricForGraph == 'CPU')
@@ -52,7 +51,7 @@ class MetricSelector extends React.Component {
         }
         return(
         <div className='row' style={{textAlign: 'center'}}>
-            <ToggleButtonGroup type="radio" name="options" value={this.state.metric} onChange={this.handleMetricChange} defaultValue={defaultSelect}>
+            <ToggleButtonGroup type="radio" name="options" value={defaultSelect} onChange={this.handleMetricChange} defaultValue={defaultSelect}>
                 {/* <ToggleButton id="toggle" value={'cpuUtilization'} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}> */}
                 <ToggleButton id="toggle" value={'CPUUtilization'} onClick={this.selectMetricForGraph.bind(this, "CPUUtilization")}>
                 <img src="https://cdn4.iconfinder.com/data/icons/computer-hardware-line-icons-1/48/08-512.png" id='icon' />
