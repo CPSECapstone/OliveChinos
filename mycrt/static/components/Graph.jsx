@@ -77,7 +77,7 @@ class Graph extends Component {
       let newLinesToGraph = []
       let arrayOfDataJSONS = dataPoints;
       for (let i = 0; i < booleanArray.length; i++) {
-         if (booleanArray[i]) {
+         if (booleanArray[i] && totalNames[i] != 'end_time') {
             newLinesToGraph.push(totalNames[i])
          }
       }
@@ -86,11 +86,15 @@ class Graph extends Component {
       if (analytics != false) {
          let totalNumberOfOptionsToChooseFrom = totalNames.length
          if ((numberOfSelectedReplays <= totalNumberOfOptionsToChooseFrom) && (numberOfSelectedReplays > 0)) {
+           console.log('hey hey hey hey : ', newLinesToGraph)
             let uniqueName = newLinesToGraph[0]
+            console.log("uniqueName Outside Loop: ", uniqueName);
+            // if() 
             let firstJSON = this.getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, dataPoints, uniqueName, captureName)
             arrayOfDataJSONS = [numberOfSelectedReplays]
             arrayOfDataJSONS[0] = firstJSON
             for (let i = 1; i < numberOfSelectedReplays; i++) {
+               console.log("uniqueName in loop at index: ", i, "newLinesToGraph", newLinesToGraph[i]);
                uniqueName = newLinesToGraph[i]
                arrayOfDataJSONS[i] = this.getSpecifiedMetricData(booleanArray, totalNames, metric, newLinesToGraph.length, analytics, arrayOfDataJSONS[i - 1], uniqueName, captureName)
             }
@@ -109,13 +113,18 @@ class Graph extends Component {
    }
 
    getSpecifiedMetricData(booleanArray, totalNames, metric, numLines, analytics, dataPoints, uniqueName, captureName) {
+     console.log("Start of function");
       let currMetric = metric;
       let listOfAnalytics = analytics[captureName]['replays'];
       if (booleanArray !== false && currMetric !== false) {
+        console.log("inside if statement");
          for (let outer = 0; outer < booleanArray.length; outer++) {
             let pointsValues = []
             if (booleanArray[outer]) {
                let currIndex = `${uniqueName}`
+               console.log("currIndex: ", currIndex);
+               console.log("currMetric: " , currMetric);
+               console.log("listOfAnalytics: ", listOfAnalytics);
                for (let i = 0; i < listOfAnalytics[currIndex][currMetric].length; i++) {
                   let currPoint = {
                      seconds: `${i}`

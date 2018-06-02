@@ -57,7 +57,6 @@ export default class IssueModal extends Component {
   }
 
   submit(event) {
-    console.log('SUBMIT BUTTON WAS PRESSED!!!');
     var issueJSON = {
       "version": this.state.version,
       "type": this.state.issueType,

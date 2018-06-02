@@ -108,9 +108,11 @@ class Replay extends React.Component {
     // console.log('DEBUGGING: capture name', captureName)
     // console.log('DEBUGGING: replay name', replayName)
     // console.log('analytics at ', this.props.analyticsForGraph)
-    let bools = new Array(this.props.analyticsForGraph[captureName].length)
-    let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName])
-    for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]).length; i++) {
+    console.log('HERE IS THE BUG: analytics', this.props.analyticsForGraph)
+    console.log('HERE IS THE BUG: captureName', captureName)
+    let bools = new Array(this.props.analyticsForGraph[captureName]['replays'].length)
+    let currentReplayNames = Object.keys(this.props.analyticsForGraph[captureName]['replays'])
+    for (let i = 0; i < Object.keys(this.props.analyticsForGraph[captureName]['replays']).length; i++) {
       let currReplay = currentReplayNames[i];
       if (currReplay == replayName) {
         bools[i] = true
@@ -120,7 +122,7 @@ class Replay extends React.Component {
       }
     }
     // console.log('***** OKAY WAIT!!!! ***** ', replayName)
-    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]), new Array(replayName)));
+    this.props.dispatch(setGraphDataFromReplay(bools, captureName, "CPUUtilization", "onAnalyze", Object.keys(this.props.analyticsForGraph[captureName]['replays']), new Array(replayName)));
   }
 
   deleteReplay(captureName, replayName) {

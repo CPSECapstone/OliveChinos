@@ -94,8 +94,15 @@ class CaptureReplaySelector extends React.Component {
         var None = [{
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
-
-        if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']).length == 0) {
+        var totalReplays = Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']);
+        var totalReplayLen = Object.keys(totalReplays).length;
+        for(let i = 0; i < totalReplays.length; i++) {
+            if(totalReplays[i] == refProps.currentCaptureForGraph) {
+                console.log('found the capture')
+                totalReplayLen--;
+            }
+        }
+        if(totalReplayLen == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
