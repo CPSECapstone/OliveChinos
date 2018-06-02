@@ -370,7 +370,7 @@ def get_replays_from_table(cm):
             }, ...
         ]
   '''
-  query = "select replay, capture, db, mode, rds, start_time from Replays"
+  query = "select replay, capture, db, mode, rds, start_time from Replays where capture <> replay"
   results = cm.execute_query(query)
   replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds, "start_time": start_time} for (replay, capture, db, mode, rds, start_time) in results]
   return {"replays" : replays}
