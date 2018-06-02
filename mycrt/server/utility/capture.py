@@ -296,7 +296,6 @@ def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_
   cm.execute_query(query)
 
 
-<<<<<<< HEAD
 def start_capture(capture_name, endpoint, rds_name, db_name, start_time, username, password, filters, cm):
   """Starts a capture.
 
