@@ -226,10 +226,11 @@ export default class ReplayForm extends React.Component {
 
 
     render() {
+        console.log("CapturesToReplay in store: ", this.props.store.capturesToReplay);
         var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
         var capToReplay = this.props.store.captureToReplay;
         if (this.props.onReplayPage) {
-            var capOpt = captureOptions[0] && captureOptions[0].props.value;
+            var capOpt = captureOptions[0].props.value;
             if (capToReplay === false) {
                 this.props.store.dispatch(setCaptureToReplay(capOpt));
             }
@@ -256,6 +257,7 @@ export default class ReplayForm extends React.Component {
                 <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
                 <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
             </div>)
+
         }
 
 

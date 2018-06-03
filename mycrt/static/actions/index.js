@@ -34,7 +34,8 @@ import {
   SET_IS_REPLAYS_LOADED,
   SET_CAPTURES_TO_REPLAY,
   SET_CAPTURE_TO_REPLAY,
-  SET_LOADER_DISPLAY
+  SET_LOADER_DISPLAY,
+  RESET_GRAPH_TO_EMPTY
 } from './constants'
 
 export function setBooleansForGraph(key) {
@@ -110,6 +111,10 @@ export function setTotalNamesForGraph(key) {
 
 export function setCaptureNameForGraph(key) {
   return { type: SET_CAPTURE_NAME_FOR_GRAPH, key }
+}
+
+export function resetGraphToEmpty() {
+  return { type: RESET_GRAPH_TO_EMPTY}
 }
 
 export function setGraphDataFromReplay(bools, capture, metric, state, names, selReplay) {
