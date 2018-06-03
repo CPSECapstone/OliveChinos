@@ -157,17 +157,17 @@ export default class ReplayForm extends React.Component {
 
     // Function to start a new replay
     addReplay(replayName, captureName, replayDB) {
-        if(this.props.fromAnalytics) {
+        if (this.props.fromAnalytics) {
             this.props.store.dispatch(setTotalNamesForGraph([replayName]))
             this.props.store.dispatch(setBooleansForGraph([false]))
         }
         this.setState({ replay: 'Replay Active' })
         let rdsInstance;
         if (this.state.replayRDSInstance === '') {
-          rdsInstance = this.props.store.databaseInstances.databases[0];
+            rdsInstance = this.props.store.databaseInstances.databases[0];
         }
         else {
-          rdsInstance = this.state.replayRDSInstance;
+            rdsInstance = this.state.replayRDSInstance;
         }
 
         let postData = {
@@ -188,20 +188,20 @@ export default class ReplayForm extends React.Component {
             contentType: 'application/json',
             dataType: 'json'
         })
-        .done(function(data) {
-            console.log("closing modal");
-            that.setAlertError(null);
-            that.props.store.dispatch(closeReplayModal());
-        })
+            .done(function (data) {
+                console.log("closing modal");
+                that.setAlertError(null);
+                that.props.store.dispatch(closeReplayModal());
+            })
             .fail(function (data) {
                 if (data.status === 400) {
-                  that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
+                    that.setAlertError("Looks like the capture name you provided '" + postData.captureName + "' is not unique. Please provide a unique capture name.");
                 }
                 else if (data.status === 403) {
-                  that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
+                    that.setAlertError("Database name and/or username/password incorrect. Unable to connect to database: '" + postData.db + "'");
                 }
                 else {
-                  that.setAlertError("Unknown Error");
+                    that.setAlertError("Unknown Error");
                 }
                 console.log("Failed from ReplayForm.jsx");
             })
@@ -213,7 +213,7 @@ export default class ReplayForm extends React.Component {
         var captureOptions = this.createCapturesSelect(this.props.store.capturesToReplay)
         var capToReplay = this.props.store.captureToReplay;
         if (this.props.onReplayPage) {
-            var capOpt = captureOptions[0] && captureOptions[0].props.value;
+            var capOpt = captureOptions[0].props.value;
             if (capToReplay === false) {
                 this.props.store.dispatch(setCaptureToReplay(capOpt));
             }
@@ -225,13 +225,13 @@ export default class ReplayForm extends React.Component {
         //this.setState({ captureToReplay: captureToReplay });
         let uniqueNameAlert = null;
         if (this.state.alertError !== null) {
-          uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
-            <h4>Oh snap! You got an error!</h4>
-            <p>{this.state.alertError}</p>
-            <p>
-              <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
-            </p>
-          </Alert>
+            uniqueNameAlert = <Alert bsStyle="danger" onDismiss={this.handleCloseAlert}>
+                <h4>Oh snap! You got an error!</h4>
+                <p>{this.state.alertError}</p>
+                <p>
+                    <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+                </p>
+            </Alert>
         }
 
         return (
