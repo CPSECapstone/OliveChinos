@@ -12,6 +12,7 @@ from multiprocessing import Process
 
 
 
+
 # Example of credentials dictionary
 '''
 credentials = {
@@ -272,7 +273,7 @@ def _process_time(time_str):
   else:
     return time_str
 
-def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_name, username, password, cm):
+def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_name, username, password, filters, cm):
   """Schedules a capture to be logged into the database.
 
   Arguments:
@@ -289,14 +290,13 @@ def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_
   start_time = _process_time(start_time)
   end_time = _process_time(end_time)
   print('scheduling capture', file=sys.stderr)
-  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, endpoint, username, password, rds) 
-               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}', '{7}')'''.format(db_name, capture_name, start_time, end_time, endpoint, username, password, rds_name)
+  query = '''INSERT INTO Captures (db, name, start_time, end_time, status, endpoint, username, password, rds, filters) 
+               VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}', '{7}', '{8}')'''.format(db_name, capture_name, start_time, end_time, endpoint, username, password, rds_name, filters)
 
   cm.execute_query(query)
 
 
-
-def start_capture(capture_name, endpoint, rds_name, db_name, start_time, username, password, cm):
+def start_capture(capture_name, endpoint, rds_name, db_name, start_time, username, password, filters, cm):
   """Starts a capture.
 
   No real work is done by this function for now other than marking 
@@ -309,6 +309,7 @@ def start_capture(capture_name, endpoint, rds_name, db_name, start_time, usernam
     start_time: DateTime, for when the capture starts
     username: String, username for database
     password: String, password for database
+    filters: String, a newline delineated list of regex patterns where transactions that match any of them are not allowed through
     cm: A ComManager object
   """
 
@@ -316,8 +317,8 @@ def start_capture(capture_name, endpoint, rds_name, db_name, start_time, usernam
   start_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   query = '''UPDATE OR IGNORE Captures SET status="ongoing" WHERE name="{0}"'''.format(capture_name)
   cm.execute_query(query)
-  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, endpoint, username, password, rds) 
-               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}', '{6}')'''.format(db_name, capture_name, start_time, endpoint, username, password, rds_name)
+  query = '''INSERT OR IGNORE INTO Captures (db, name, start_time, end_time, status, endpoint, username, password, rds, filters) 
+               VALUES ('{0}', '{1}', '{2}', NULL, "ongoing", '{3}', '{4}', '{5}', '{6}', '{7}')'''.format(db_name, capture_name, start_time, endpoint, username, password, rds_name, filters)
   cm.execute_query(query)
   _update_capture_count()
 
@@ -335,9 +336,9 @@ def end_capture(credentials, capture_name, db, cm):
   end_time = datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
   cm.execute_query('''UPDATE Captures SET end_time = '{0}', status = "completed" WHERE name = '{1}' '''.format(end_time, capture_name))
   # Unpack results to get start and end time from the capture we are finishing
-  query = '''SELECT start_time, endpoint, username, password, rds FROM Captures WHERE name = '{0}' '''.format(capture_name)
+  query = '''SELECT start_time, endpoint, username, password, rds, filters FROM Captures WHERE name = '{0}' '''.format(capture_name)
   query_res = cm.execute_query(query) 
-  start_time, endpoint, username, password, rds_name = query_res[0]
+  start_time, endpoint, username, password, rds_name, filters = query_res[0]
   s3_client = cm.get_boto('s3')
   
   #databases = cm.list_databases()
@@ -350,6 +351,11 @@ def end_capture(credentials, capture_name, db, cm):
       AND event_time >= '{0}' AND event_time <= '{1}'
       AND command_type = 'Query'
   '''.format(start_time, end_time)
+
+  # process filters
+  if filters != "" and filters is not None:
+    filters_to_add = " AND ".join(["argument NOT REGEXP '{}'".format(f) for f in filters.split("\n")])
+    query += " AND " + filters_to_add
 
   db_info = dict(hostname = endpoint, username = username, password = password, database = db)
   transactions = cm.execute_query(query, **db_info) # need to give username and password eventually

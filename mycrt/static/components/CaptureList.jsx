@@ -77,7 +77,7 @@ class CaptureList extends React.Component {
         return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data}>
           <TableHeaderColumn dataField='captureName' columnTitle isKey dataSort>Capture Name</TableHeaderColumn>
           <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
-          <TableHeaderColumn dataField='rds' columnTitle dataSort>RDS Instance</TableHeaderColumn>
+          <TableHeaderColumn dataField='rds' columnTitle dataSort>Endpoint</TableHeaderColumn>
           <TableHeaderColumn dataField='startTime' columnTitle dataSort>Start Time</TableHeaderColumn>
           <TableHeaderColumn dataField='endTime' columnTitle dataSort>End Time</TableHeaderColumn>
           <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
@@ -87,7 +87,7 @@ class CaptureList extends React.Component {
         return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
           <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
           <TableHeaderColumn >Database</TableHeaderColumn>
-          <TableHeaderColumn >RDS Instance</TableHeaderColumn>
+          <TableHeaderColumn >Endpoint</TableHeaderColumn>
           <TableHeaderColumn >Start Time</TableHeaderColumn>
           <TableHeaderColumn >End Time</TableHeaderColumn>
           <TableHeaderColumn >Action</TableHeaderColumn>
