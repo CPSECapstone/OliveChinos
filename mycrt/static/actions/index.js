@@ -35,6 +35,8 @@ import {
   SET_CAPTURES_TO_REPLAY,
   SET_CAPTURE_TO_REPLAY,
   SET_LOADER_DISPLAY,
+  SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL,
+  SET_CAPTURE_TRANSACTIONS,
   RESET_GRAPH_TO_EMPTY
 } from './constants'
 
@@ -175,6 +177,35 @@ export function setCaptureToReplay(key) {
 
 export function setLoaderDisplay(key) {
   return { type: SET_LOADER_DISPLAY, key }
+}
+
+export function setCaptureTransactions(key) {
+  return { type: SET_CAPTURE_TRANSACTIONS, key }
+}
+
+export function setCaptureTransactionsModalOpen(key) {
+  return {type: SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL, key}
+}
+
+export function setDisplayCaptureTransactionsModal(key, postData) {
+  if (key === true) {
+    return function (dispatch) {
+      jquery.ajax({
+        url: window.location.href + 'capture/view',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(postData)
+      }).done((data) => {
+        dispatch(setCaptureTransactions(data))
+        dispatch(setCaptureTransactionsModalOpen(true))
+      })
+    }
+  }
+  else {
+    return { type: SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL, key }
+  }
+   
 }
 
 export function getAnalyticsForGraph() {
