@@ -34,7 +34,9 @@ import {
   SET_IS_REPLAYS_LOADED,
   SET_CAPTURES_TO_REPLAY,
   SET_CAPTURE_TO_REPLAY,
-  SET_LOADER_DISPLAY
+  SET_LOADER_DISPLAY,
+  SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL,
+  SET_CAPTURE_TRANSACTIONS
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -73,7 +75,9 @@ let initialState = {
   isCapturesLoaded: false,
   isReplaysLoaded: false,
   captureToReplay: false,
-  displayLoader: false
+  displayLoader: false,
+  showCaptureTransactions: false,
+  captureTransactions: {transactions: []}
 }
 
 function apiRequest(url, action = "list_scheduled") {
@@ -290,12 +294,15 @@ function reducer(state = initialState, action) {
         displayLoader: action.key
       })
 
-    // case FETCH_CAPTURES_ACTIVE:
-    //   obj = makeCall()
-    //   //TODO Use a promise
-    //   //TODO Use a callback?
+    case SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL:
+      return Object.assign({}, state, {
+        showCaptureTransactions: action.key
+      })
 
-    //   return obj.capturesActive
+    case SET_CAPTURE_TRANSACTIONS:
+      return Object.assign({}, state, {
+        captureTransactions: action.key
+      })
 
     default:
       return state

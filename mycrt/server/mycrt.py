@@ -511,7 +511,7 @@ def get_all_captures():
     captures = get_capture_list(credentials, cm)    
     return jsonify(captures)
 
-@application.route("/capture/view", methods = ["GET"])
+@application.route("/capture/view", methods = ["POST"])
 def get_capture_transactions_to_view():
     ''' Returns a list of timestamped transactions captured on a workload.
 

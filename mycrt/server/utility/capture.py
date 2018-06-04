@@ -441,12 +441,13 @@ def get_capture_transactions(capture_name, cm):
   Returns:
     [String, ...], A list of strings each in the format of "<TIMESTAMP> <TRANSACTION>"
   '''
-
+  s3_client = cm.get_boto('s3')
   capture_path = "mycrt/" + capture_name + "/" + capture_name + ".cap"
   transactions = _get_transactions(s3_client, log_key = capture_path)
+  transactions = list(transactions)
   transactions.sort(key = lambda x: x[0])
   if isinstance(transactions[0][0], str):
-    return [c_time + " " + trans for c_time, trans in transactions]
+    return [c_time + " " + re.sub( '\s+', ' ', trans).strip() for c_time, trans in transactions]
   else:
-    return [c_time.strftime("%Y-%m-%d  %H:%M:%S") + " " + trans for c_time, trans in transactions]
+    return [c_time.strftime("%Y-%m-%d %H:%M:%S") + " " + re.sub( '\s+', ' ', trans).strip() for c_time, trans in transactions]
 
