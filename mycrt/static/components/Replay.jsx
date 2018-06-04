@@ -196,14 +196,14 @@ class Replay extends React.Component {
               className='btn-info'
               onClick={() => that.analyze(row["capture"], row["replay"])}
             >
-              ANALYZE
-          </Button>
+              <span className="glyphicon glyphicon-stats"></span>
+            </Button>
             <Button
               className='btn-danger' style={{ marginLeft: '10px' }}
               onClick={() => that.deleteReplay(row["capture"], row["replay"])}
             >
-              DELETE
-          </Button>
+              <span className="glyphicon glyphicon-trash"></span>
+            </Button>
           </div>
         );
       }
