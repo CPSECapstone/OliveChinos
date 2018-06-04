@@ -34,7 +34,7 @@ export default class IssueModal extends Component {
 
         <Modal.Body>
           <div className="settingOptionsContainer">
-            <div id="timeZoneContainer">
+            {/*<div id="timeZoneContainer">
               <div id="timeZoneTitle">
                 <span>Change Time Zone</span>
               </div>
@@ -49,7 +49,7 @@ export default class IssueModal extends Component {
                   <option value="HST">Hawaii-Aleutian Standard Time</option>
                 </FormControl>
               </div>
-            </div>
+    </div>*/}
             <div id="logoutContainer">
               <div>
                 <Button bsStyle="danger" onClick={this.submit} type="submit" block>Logout</Button>
