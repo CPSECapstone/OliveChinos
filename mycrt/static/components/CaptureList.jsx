@@ -4,8 +4,9 @@ import { Button, ListGroup, ListGroupItem } from 'react-bootstrap'
 import '../styles/captureliststyles.css'
 import '../styles/capturestyles.css'
 import '../styles/loader.css'
+import CaptureTransactionsModal from './CaptureTransactionsModal'
 import { connect } from 'react-redux'
-import { editCapture } from '../actions'
+import { editCapture, setDisplayCaptureTransactionsModal } from '../actions'
 import { ButtonToolbar, ToggleButtonGroup, ToggleButton } from 'react-bootstrap'
 
 
@@ -15,8 +16,13 @@ class CaptureList extends React.Component {
         this.state = {
             captureType: 'Active'
         }
-        
-        this.handleCaptureTypeChange = this.handleCaptureTypeChange.bind(this)
+        this.handleCaptureTypeChange = this.handleCaptureTypeChange.bind(this);
+        this.handleShowCaptureTransactionsModal = this.handleShowCaptureTransactionsModal.bind(this);
+    }
+
+    handleShowCaptureTransactionsModal(data) {
+       let captureName = data['captureName'];
+       this.props.dispatch(setDisplayCaptureTransactionsModal(true, {capture: captureName}));
     }
 
     handleCaptureTypeChange(event) {
@@ -33,16 +39,21 @@ class CaptureList extends React.Component {
         if (captureState === 'completed') {
           return (
             <div className='row'>
-              <Button className='btn-warning'
-                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
-              >
-                REPLAY
-            </Button>
-              <Button className='btn-danger' style={{ marginLeft: '10px' }}
-                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
-              >
-                DELETE
-            </Button>
+               <Button className='btn-warning' title='Replay this Capture'
+                  onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
+               >
+                  <span className="glyphicon glyphicon-repeat"></span>
+               </Button>
+               <Button className='btn-danger' title='Delete this Capture' style={{ marginLeft: '10px' }}
+                  onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
+               >
+                  <span className="glyphicon glyphicon-trash"></span>
+               </Button>
+               <Button className='btn-info' title='View Captured Transactions' style={{ marginLeft: '10px' }}
+                  onClick={() => that.handleShowCaptureTransactionsModal(row)}
+               >
+                  <span className="glyphicon glyphicon-eye-open"></span>
+               </Button>
             </div>
           );
         }
@@ -176,6 +187,7 @@ class CaptureList extends React.Component {
         return (
             <div>
                 {this.renderRadioButtons()}
+                <CaptureTransactionsModal/>
                 {loader}
                 {this.renderTable()}
             </div>
