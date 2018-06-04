@@ -223,7 +223,7 @@ class Home extends Component {
           </div>
           {this.renderPage()}
           <IssueModal show={this.state.issueShow} onHide={issueClose} />
-          <LogoutModal show={this.state.logoutShow} onHide={logoutClose} />
+          <LogoutModal show={this.state.logoutShow} onHide={logoutClose} store={this.props.data} />
           <InfoAnalytics show={this.state.analyticsInfoShow} onHide={analyticsInfoClose} />
 
         </div>

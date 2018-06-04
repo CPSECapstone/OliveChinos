@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { FieldGroup, Col, Button, ButtonToolbar, ToggleButtonGroup, ToggleButton, FormGroup, FormControl, ControlLabel, HelpBlock, ListGroup, ListGroupItem, Modal, Alert } from 'react-bootstrap'
 import jquery from 'jquery'
+import '../styles/logoutstyles.css'
+
 
 export default class IssueModal extends Component {
   constructor(props) {
@@ -23,7 +25,7 @@ export default class IssueModal extends Component {
     return (
       <Modal
         {...this.props}
-        bsSize="lg"
+        bsSize="sm"
         aria-labelledby="contained-modal-title-lg"
       >
         <Modal.Header closeButton>
@@ -31,35 +33,35 @@ export default class IssueModal extends Component {
         </Modal.Header>
 
         <Modal.Body>
-          <div className="row">
-            <div className="col-xs-6">
-              <span>Change Time Zone</span>
+          <div className="settingOptionsContainer">
+            <div id="timeZoneContainer">
+              <div id="timeZoneTitle">
+                <span>Change Time Zone</span>
+              </div>
+              <div>
+                <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
+                  <option value="select">select</option>
+                  <option value="AST">Alaska Standard Time</option>
+                  <option value="CST">Central Standard Time</option>
+                  <option value="EST">Eastern Standard Time</option>
+                  <option value="MST">Mountain Standard Time</option>
+                  <option value="PST">Pacific Standard Time</option>
+                  <option value="HST">Hawaii-Aleutian Standard Time</option>
+                </FormControl>
+              </div>
             </div>
-            <div className="col-xs-6 float-right">
-              <Button bsStyle="info" onClick={this.submit} type="submit">Change Time </Button>
+            <div id="logoutContainer">
+              <div>
+                <Button bsStyle="danger" onClick={this.submit} type="submit" block>Logout</Button>
+              </div>
             </div>
           </div>
-          <div className="row">
-            <div className="col-xs-6">
-              <span id="contained-modal-title-sm">Would you like to logout?</span>
-            </div>
-            <div className="col-xs-6 float-right">
-              <Button bsStyle="info" onClick={this.submit} type="submit">Yes</Button>
-            </div>
-          </div>
-          {/*<div>
-            <h2>Change Time Zone</h2>
-            <Button bsStyle="info" onClick={this.submit} type="submit">Change Time </Button>
-          </div>
-          <div>
-            <Button bsStyle="info" onClick={this.submit} type="submit">Yes</Button>
-          </div>*/}
-        </Modal.Body>
+        </Modal.Body >
 
         <Modal.Footer>
           <Button onClick={this.props.onHide}>Close</Button>
         </Modal.Footer>
-      </Modal>
+      </Modal >
 
 
     );
