@@ -36,7 +36,8 @@ import {
   SET_CAPTURE_TO_REPLAY,
   SET_LOADER_DISPLAY,
   SET_DISPLAY_CAPTURE_TRANSACTIONS_MODAL,
-  SET_CAPTURE_TRANSACTIONS
+  SET_CAPTURE_TRANSACTIONS,
+  RESET_GRAPH_TO_EMPTY
 } from '../actions/constants'
 
 import alasql from 'alasql';
@@ -211,6 +212,14 @@ function reducer(state = initialState, action) {
     case SET_CAPTURE_NAME_FOR_GRAPH:
       return Object.assign({}, state, {
         currentCaptureForGraph: action.key
+      })
+
+    case RESET_GRAPH_TO_EMPTY:
+      return Object.assign({}, state, {
+        currentCaptureForGraph: "Capture Options",
+        totalNames: false,
+        booleansForGraph: false,
+        metricForGraph: false
       })
 
     case SET_GRAPH_DATA_FROM_REPLAY:

@@ -1,0 +1,302 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "instancei096bf770e6ef5a9d1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "IamInstanceProfile": "arn:aws:iam::064279687181:instance-profile/MyCRT_EC2",
+        "ImageId": "ami-916f59f4",
+        "InstanceType": "t2.micro",
+        "KeyName": "key_pair_for_aws",
+        "Monitoring": "false",
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "DeviceIndex": 0,
+            "SubnetId": "subnet-d360689e",
+            "PrivateIpAddresses": [
+              {
+                "PrivateIpAddress": "172.31.34.127",
+                "Primary": "true"
+              }
+            ],
+            "GroupSet": [
+              {
+                "Ref": "sglaunchwizard3"
+              }
+            ],
+            "AssociatePublicIpAddress": "true"
+          }
+        ]
+      }
+    },
+    "rdsdemoinstance1": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "AllocatedStorage": "20",
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "true",
+        "DBInstanceClass": "db.t2.micro",
+        "Port": "3306",
+        "PubliclyAccessible": "true",
+        "StorageType": "gp2",
+        "BackupRetentionPeriod": "7",
+        "MasterUsername": "username",
+        "MasterUserPassword": "MyPassword",
+        "PreferredBackupWindow": "05:02-05:32",
+        "PreferredMaintenanceWindow": "fri:07:55-fri:08:25",
+        "DBName": "MyDatabase",
+        "Engine": "mysql",
+        "EngineVersion": "5.6.39",
+        "LicenseModel": "general-public-license",
+        "DBSubnetGroupName": {
+          "Ref": "dbsubnetdefault"
+        },
+        "DBParameterGroupName": {
+          "Ref": "dbpglogparams"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Ref": "sgdefault"
+          },
+          {
+            "Ref": "sgletusin"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "workload-type",
+            "Value": "other"
+          }
+        ]
+      }
+    },
+    "rdsdemoinstance2": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "AllocatedStorage": "20",
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "true",
+        "DBInstanceClass": "db.t2.micro",
+        "Port": "3306",
+        "PubliclyAccessible": "true",
+        "StorageType": "gp2",
+        "BackupRetentionPeriod": "7",
+        "MasterUsername": "username",
+        "MasterUserPassword": "MyPassword",
+        "PreferredBackupWindow": "06:48-07:18",
+        "PreferredMaintenanceWindow": "thu:05:33-thu:06:03",
+        "DBName": "MyDatabase",
+        "Engine": "mysql",
+        "EngineVersion": "5.6.39",
+        "LicenseModel": "general-public-license",
+        "DBSubnetGroupName": {
+          "Ref": "dbsubnetdefault"
+        },
+        "DBParameterGroupName": {
+          "Ref": "dbpglogparams"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Ref": "sgdefault"
+          },
+          {
+            "Ref": "sgletusin"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "workload-type",
+            "Value": "other"
+          }
+        ]
+      }
+    },
+    "s3mycrtdemositeolivechinos": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "Private",
+        "VersioningConfiguration": {
+          "Status": "Suspended"
+        }
+      }
+    },
+    "dbsubnetdefault": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "default",
+        "SubnetIds": [
+          "subnet-1d61b967",
+          "subnet-40eb8828",
+          "subnet-d360689e"
+        ]
+      }
+    },
+    "dbpglogparams": {
+      "Type": "AWS::RDS::DBParameterGroup",
+      "Properties": {
+        "Description": "log-params",
+        "Family": "mysql5.6",
+        "Parameters": {
+          "binlog_cache_size": "32768",
+          "binlog_format": "MIXED",
+          "explicit_defaults_for_timestamp": "1",
+          "general_log": "1",
+          "innodb_buffer_pool_size": "{DBInstanceClassMemory*3/4}",
+          "innodb_file_per_table": "1",
+          "innodb_flush_method": "O_DIRECT"
+        }
+      }
+    },
+    "dbpgloggingparams": {
+      "Type": "AWS::RDS::DBParameterGroup",
+      "Properties": {
+        "Description": "logging-params",
+        "Family": "aurora-mysql5.7",
+        "Parameters": {
+          "aurora_lab_mode": "0",
+          "binlog_cache_size": "32768",
+          "default_tmp_storage_engine": "InnoDB",
+          "explicit_defaults_for_timestamp": "1",
+          "general_log": "1",
+          "innodb_adaptive_hash_index": "0",
+          "innodb_buffer_pool_size": "{DBInstanceClassMemory*3/4}",
+          "innodb_flush_method": "O_DIRECT"
+        }
+      }
+    },
+    "sglaunchwizard3": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "launch-wizard-3 created 2018-05-02T23:35:43.780-07:00",
+        "VpcId": "vpc-cd3246a5"
+      }
+    },
+    "sgletusin": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "letusin",
+        "VpcId": "vpc-cd3246a5"
+      }
+    },
+    "sgdefault": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "default VPC security group",
+        "VpcId": "vpc-cd3246a5"
+      }
+    },
+    "dbsgdefault": {
+      "Type": "AWS::RDS::DBSecurityGroup",
+      "Properties": {
+        "GroupDescription": "default"
+      }
+    },
+    "ingress1": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sglaunchwizard3"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "80",
+        "ToPort": "80",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress2": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sglaunchwizard3"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress3": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sglaunchwizard3"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "5000",
+        "ToPort": "5000",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress4": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sglaunchwizard3"
+        },
+        "IpProtocol": "udp",
+        "FromPort": "5000",
+        "ToPort": "5000",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress5": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgletusin"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "3306",
+        "ToPort": "3306",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress6": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdefault"
+        },
+        "IpProtocol": "-1",
+        "SourceSecurityGroupId": {
+          "Ref": "sgdefault"
+        },
+        "SourceSecurityGroupOwnerId": "064279687181"
+      }
+    },
+    "egress1": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sglaunchwizard3"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "egress2": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgletusin"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "egress3": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdefault"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    }
+  },
+  "Description": "MyCRT Application CloudFormation template. Provides automatic instructions for CloudFormation to create all needed resources and parameters for MyCRT."
+}
