@@ -175,6 +175,15 @@ class Replay extends React.Component {
       defaultSortOrder: 'desc'  // default sort order
     };
 
+    function changeTimezone(cell, row) {
+      let d = new Date(cell)
+      d.setHours(d.getHours() - 7);
+      let datestring = d.getFullYear() + "-" + (d.getMonth()+1) 
+                     + "-" + d.getDate()  + " " + ("0" + d.getHours()).slice(-2) + ":" 
+                     + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2);
+      return datestring
+   }
+
     function buttonFormatter(cell, row) {
       //TODO Implement STOP active replay functionality
       if (rType === 'Active') {
@@ -219,7 +228,7 @@ class Replay extends React.Component {
         <TableHeaderColumn dataField='capture' columnTitle dataSort>Capture</TableHeaderColumn>
         <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
         <TableHeaderColumn dataField='rds' columnTitle dataSort>RDS Instance</TableHeaderColumn>
-        <TableHeaderColumn dataField='start_time'>Start Time</TableHeaderColumn>
+        <TableHeaderColumn dataField='start_time' dataFormat={changeTimezone} columnTitle dataSort>Start Time</TableHeaderColumn>
         <TableHeaderColumn dataField='mode' columnTitle dataSort>Mode</TableHeaderColumn>
         <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
       </BootstrapTable>

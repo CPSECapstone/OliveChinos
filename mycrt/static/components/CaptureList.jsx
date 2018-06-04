@@ -35,6 +35,18 @@ class CaptureList extends React.Component {
       let current;
       let captureEditAction;
       let that = this;
+      function changeTimezone(cell, row) {
+         if (cell === 'No end time.') {
+            return cell;
+         }
+         let d = new Date(cell)
+         d.setHours(d.getHours() - 7);
+         let datestring = d.getFullYear() + "-" + (d.getMonth()+1) 
+                        + "-" + d.getDate()  + " " + ("0" + d.getHours()).slice(-2) + ":" 
+                        + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2);
+         return datestring
+      }
+
       function buttonFormatter(cell, row) {
         if (captureState === 'completed') {
           return (
@@ -89,8 +101,8 @@ class CaptureList extends React.Component {
           <TableHeaderColumn dataField='captureName' columnTitle isKey dataSort>Capture Name</TableHeaderColumn>
           <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
           <TableHeaderColumn dataField='rds' columnTitle dataSort>Endpoint</TableHeaderColumn>
-          <TableHeaderColumn dataField='startTime' columnTitle dataSort>Start Time</TableHeaderColumn>
-          <TableHeaderColumn dataField='endTime' columnTitle dataSort>End Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='startTime' dataFormat={changeTimezone} columnTitle dataSort>Start Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='endTime' dataFormat={changeTimezone} columnTitle dataSort>End Time</TableHeaderColumn>
           <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
         </BootstrapTable>
       }
