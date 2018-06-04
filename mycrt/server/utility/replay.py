@@ -6,6 +6,7 @@ import sys
 import time
 from multiprocessing import Manager, Process, Lock
 import os, signal
+import re
 
 from .capture import *
 from .communications import ComManager
@@ -43,18 +44,39 @@ def _get_hostname(rds_client, db_id):
   rds_host = instances.get('DBInstances')[0].get('Endpoint').get('Address')
   return rds_host
 
-def _execute_transactions(hostname, transactions, fast_mode, database, username, password):
+def _is_in_filters(command, filters):
+  return any(re.match(f, command) for f in filters)
+
+def _execute_transactions(hostname, transactions, fast_mode, database, username, password, filters):
   connection = sql.connect(host = hostname, user = username, passwd = password, db = database)
   cur = connection.cursor()
-  start_time = datetime.utcnow()
-  start_test = datetime.now()
 
-  for _, command in transactions:
-    try:
-      #print(command, file=sys.stderr)
+  if filters != "" and filters is not None:
+    filters = filters.split("\n")
+    transactions = [(c_time, command) for c_time, command in transactions if not _is_in_filters(command, filters)]
+  else:
+    transactions = list(transactions)
+  transactions.sort(key = lambda x: x[0]) # ensure proper ordering by time 
+  if not fast_mode:
+    first_time = transactions[0][0]
+    transactions = [((c_time - first_time).total_seconds(), command) for c_time, command in transactions]
+  start_time = datetime.utcnow()
+
+  if fast_mode:
+    for _, command in transactions:
+      try:
+        print("fast: ", command, file=sys.stderr)
+        cur.execute(command)
+      except:
+        pass
+  else:
+    for seconds_to_elapse, command in transactions:
+      seconds_elapsed = (datetime.utcnow() - start_time).total_seconds()
+      if seconds_elapsed < seconds_to_elapse:
+        time.sleep(seconds_to_elapse - seconds_elapsed)
       cur.execute(command)
-    except:
-      pass
+      print("time: ", command, file=sys.stderr)
+
   end_time = datetime.utcnow()
   
   connection.close()
@@ -192,7 +214,7 @@ def get_active_replays():
     rep_list.append(dict_to_add)
   return { "replays" : rep_list }
 
-def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
+def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, cm):
   ''' Executes a replay asynchronously.
 
   Arguments:
@@ -205,11 +227,12 @@ def execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, res
     rds_name - String, RDS identifier
     username - String, database username
     password - String, database password
+    filters - String, a newline delineated list of regex patterns where transactions that match any of them are not allowed through
     cm - A ComManager object
   '''
   
   proc = Process(target = _manage_replay,
-                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, ComManager()))
+                 args = (credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, db_in_use, replays_in_progress, lock, ComManager()))
   proc.start()
   _update_replay_count()
 
@@ -228,22 +251,22 @@ def _update_analytics():
   #print("In update_analytics replay", file=sys.stderr)
   address = "http://localhost:5000/update_analytics"
   
-  proc = Process(target = func_to_call,
+  proc = Process(target = _func_to_call,
                  args = (address,))
   proc.start()
 
-def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, db_in_use, replays_in_progress, lock, cm):
+def _manage_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, db_in_use, replays_in_progress, lock, cm):
   _place_in_dict(db_id, replay_name, capture_name, fast_mode, restore_db, db_in_use, rds_name, replays_in_progress, lock)
   pid = os.getpid()
   #while (db_id in db_in_use) and (pid != db_in_use[db_id][0]):
   #  time.sleep(3) # sleep three seconds and try again later
   _update_replay_count()
-  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
+  _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, cm)
   _remove_from_dict(replay_name, capture_name, db_id, db_in_use, replays_in_progress, lock)
   _update_replay_count()
   _update_analytics() 
  
-def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm):
+def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, cm):
   rds_client = cm.get_boto('rds')
   s3_client = cm.get_boto('s3')
   cloudwatch_client = cm.get_boto('cloudwatch')
@@ -253,9 +276,13 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
   capture_path = "mycrt/" + path_name + "/" + path_name + ".cap"
   transactions = _get_transactions(s3_client, log_key = capture_path)
 
-  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password)
-  #print(start_time, end_time, file = sys.stderr)
-  #time.sleep(10)
+  start_time, end_time = _execute_transactions(hostname, transactions, fast_mode, db_id, username, password, filters)
+  store_all_metrics(start_time, end_time, rds_name, capture_name, replay_name, db_id, fast_mode, cm)
+
+def store_all_metrics(start_time, end_time, rds_name, capture_name, replay_name, db_id, fast_mode, cm):
+  s3_client = cm.get_boto('s3')
+  cloudwatch_client = cm.get_boto('cloudwatch')
+
   CPUUtilizationMetric =  _get_metrics(cloudwatch_client, "CPUUtilization", start_time, end_time, rds_name)
   FreeableMemoryMetric = _get_metrics(cloudwatch_client, "FreeableMemory", start_time, end_time, rds_name)
   ReadIOPSMetric = _get_metrics(cloudwatch_client, "ReadIOPS", start_time, end_time, rds_name)
@@ -272,7 +299,7 @@ def _execute_replay(credentials, db_id, replay_name, capture_name, fast_mode, re
     "db_id": db_id
   }
   #print(metrics, file = sys.stderr)
-  _store_metrics(s3_client, metrics, log_key = "mycrt/" + path_name + "/" + replay_name + ".replay")
+  _store_metrics(s3_client, metrics, log_key = "mycrt/" + capture_name + "/" + replay_name + ".replay")
  
   query = """INSERT INTO Replays (replay, capture, db, mode, rds, start_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')""".format(replay_name, capture_name, db_id, "fast" if fast_mode else "time", rds_name, start_time.strftime("%Y/%m/%d %H:%M:%S"))
   cm.execute_query(query)
@@ -343,7 +370,7 @@ def get_replays_from_table(cm):
             }, ...
         ]
   '''
-  query = "select replay, capture, db, mode, rds, start_time from Replays"
+  query = "select replay, capture, db, mode, rds, start_time from Replays where capture <> replay"
   results = cm.execute_query(query)
   replays = [{"replay" : replay, "capture" : capture, "db" : db, "mode" : mode, "rds": rds, "start_time": start_time} for (replay, capture, db, mode, rds, start_time) in results]
   return {"replays" : replays}

@@ -6,7 +6,7 @@ require('../styles/graphstyles.css');
 import ReplayForm from './ReplayForm'
 import { connect } from 'react-redux';
 import MetricSelector from './MetricSelector'
-import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay, startReplayFromCapture } from '../actions'
+import { setBooleansForGraph, setCaptureNameForGraph, changeStateForComponents, setSelectedReplay, startReplayFromCapture, resetGraphToEmpty } from '../actions'
 
 var selectedColor = "#ADD8E6";
 
@@ -94,8 +94,15 @@ class CaptureReplaySelector extends React.Component {
         var None = [{
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
         }]
-
-        if(Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']).length == 0) {
+        var totalReplays = Object.keys(this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays']);
+        var totalReplayLen = Object.keys(totalReplays).length;
+        for(let i = 0; i < totalReplays.length; i++) {
+            if(totalReplays[i] == refProps.currentCaptureForGraph) {
+                console.log('found the capture')
+                totalReplayLen--;
+            }
+        }
+        if(totalReplayLen == 0) {
             var options = {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
@@ -151,11 +158,13 @@ class CaptureReplaySelector extends React.Component {
                 deleteBtn: this.createCustomDeleteButton.bind(this)
             }
             for(let i = 0; i < replayOptions.length; i++) {
-                let replayInfo = {
-                    Name : replayOptions[i],
-                    Date : this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][replayOptions[i]]['end_time']
+                if(replayOptions[i] !== this.props.currentCaptureForGraph) {
+                    let replayInfo = {
+                        Name : replayOptions[i],
+                        Date : this.props.analyticsForGraph[this.props.currentCaptureForGraph]['replays'][replayOptions[i]]['end_time']
+                    }
+                    replayData.push(replayInfo)
                 }
-                replayData.push(replayInfo)
             }
             return(
                 <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
@@ -171,7 +180,8 @@ class CaptureReplaySelector extends React.Component {
     createCustomDeleteButton (onClick) {
         function rerenderCapturesOnBackButton()
         {
-            this.props.dispatch(setCaptureNameForGraph("Capture Options"));
+            // this.props.dispatch(setCaptureNameForGraph("Capture Options"));
+            this.props.dispatch(resetGraphToEmpty())
         }
         return (
             <Button bsSize="small" onClick={rerenderCapturesOnBackButton.bind(this)}>
