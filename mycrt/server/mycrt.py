@@ -355,6 +355,7 @@ def capture_start():
     endpoint = data['customEndpoint']
     username = data['username']
     password = data['password']
+    filters = data.get("filters", "")
 
     endpoint = cm.process_endpoint(rds_name, endpoint)
 
@@ -388,7 +389,7 @@ def capture_start():
 
 
     new_capture_process(is_scheduled, credentials, capture_name, 
-                            db_name, start_time, end_time, endpoint, rds_name, username, password, cm)
+                            db_name, start_time, end_time, endpoint, rds_name, username, password, filters, cm)
    
     return jsonify({
         "status": "started",
@@ -510,6 +511,30 @@ def get_all_captures():
     captures = get_capture_list(credentials, cm)    
     return jsonify(captures)
 
+@application.route("/capture/view", methods = ["POST"])
+def get_capture_transactions_to_view():
+    ''' Returns a list of timestamped transactions captured on a workload.
+
+    Header:
+        {
+            'capture' : String
+        }
+
+    Returns:
+        {
+            "transactions" : [
+                String - "<TIMESTAMP> <TRANSACTION>",
+                ...
+            ]
+        }
+    '''
+
+    global cm
+    data = request.get_json()
+    capture_name = data['capture'] 
+    capture_transactions = get_capture_transactions(capture_name, cm)
+    return jsonify({"transactions" : capture_transactions})
+
 ''' 
 ----------------REPLAY ENDPOINTS-------------------
 '''
@@ -541,6 +566,7 @@ def replay():
     endpoint = cm.process_endpoint(rds_name, "")
     username = data['username']
     password = data['password']
+    filters = data.get("filters", "")
 
     start_time = data.get('startTime', _convertDatetimeToString(datetime.utcnow()))
 
@@ -561,7 +587,7 @@ def replay():
     fast_mode = data.get('fastMode', False)
     restore_db = data.get('restoreDb', False)
     
-    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, cm)
+    execute_replay(credentials, db_name, replay_name, capture_name, fast_mode, restore_db, rds_name, username, password, filters, cm)
     return jsonify({
         "status": "started",
         "db": db_name,

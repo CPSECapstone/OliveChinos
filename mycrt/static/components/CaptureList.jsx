@@ -4,8 +4,9 @@ import { Button, ListGroup, ListGroupItem } from 'react-bootstrap'
 import '../styles/captureliststyles.css'
 import '../styles/capturestyles.css'
 import '../styles/loader.css'
+import CaptureTransactionsModal from './CaptureTransactionsModal'
 import { connect } from 'react-redux'
-import { editCapture } from '../actions'
+import { editCapture, setDisplayCaptureTransactionsModal } from '../actions'
 import { ButtonToolbar, ToggleButtonGroup, ToggleButton } from 'react-bootstrap'
 
 
@@ -15,9 +16,15 @@ class CaptureList extends React.Component {
     this.state = {
       captureType: 'Active'
     }
-
-    this.handleCaptureTypeChange = this.handleCaptureTypeChange.bind(this)
+    this.handleCaptureTypeChange = this.handleCaptureTypeChange.bind(this);
+    this.handleShowCaptureTransactionsModal = this.handleShowCaptureTransactionsModal.bind(this);
   }
+
+  handleShowCaptureTransactionsModal(data) {
+    let captureName = data['captureName'];
+    this.props.dispatch(setDisplayCaptureTransactionsModal(true, { capture: captureName }));
+  }
+
 
   handleCaptureTypeChange(event) {
     this.setState({ captureType: event })
@@ -41,15 +48,20 @@ class CaptureList extends React.Component {
       if (captureState === 'completed') {
         return (
           <div className='row'>
-            <Button className='btn-warning'
+            <Button className='btn-warning' title='Replay this Capture'
               onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
             >
-              REPLAY
+              <span className="glyphicon glyphicon-repeat"></span>
             </Button>
-            <Button className='btn-danger' style={{ marginLeft: '10px' }}
+            <Button className='btn-danger' title='Delete this Capture' style={{ marginLeft: '10px' }}
               onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
             >
-              DELETE
+              <span className="glyphicon glyphicon-trash"></span>
+            </Button>
+            <Button className='btn-info' title='View Captured Transactions' style={{ marginLeft: '10px' }}
+              onClick={() => that.handleShowCaptureTransactionsModal(row)}
+            >
+              <span className="glyphicon glyphicon-eye-open"></span>
             </Button>
           </div>
         );
@@ -65,19 +77,38 @@ class CaptureList extends React.Component {
           </div>
         );
       }
-      else if (captureState === 'scheduled') {
+      else if (captureState === 'active') {
         return (
           <div className='row'>
             <Button className='btn-danger'
-              onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'cancel'))}
+              onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'end'))}
             >
-              CANCEL
+              STOP
             </Button>
           </div>
         );
       }
+
+      if (data.length > 0) {
+        return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} search={true} multiColumnSearch={true} data={data}>
+          <TableHeaderColumn dataField='captureName' columnTitle isKey dataSort>Capture Name</TableHeaderColumn>
+          <TableHeaderColumn dataField='db' columnTitle dataSort>Database</TableHeaderColumn>
+          <TableHeaderColumn dataField='rds' columnTitle dataSort>Endpoint</TableHeaderColumn>
+          <TableHeaderColumn dataField='startTime' columnTitle dataSort>Start Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='endTime' columnTitle dataSort>End Time</TableHeaderColumn>
+          <TableHeaderColumn dataField='status' dataFormat={buttonFormatter}>Action</TableHeaderColumn>
+        </BootstrapTable>
+      }
       else {
-        <div></div>
+        return <BootstrapTable containerStyle={{ position: 'absolute', padding: '0px 20px 20px 0px' }} bodyStyle={{ overflow: 'auto' }} data={[]} search={true} multiColumnSearch={true} >
+          <TableHeaderColumn isKey={true} dataField='something'>Capture Name</TableHeaderColumn>
+          <TableHeaderColumn >Database</TableHeaderColumn>
+          <TableHeaderColumn >Endpoint</TableHeaderColumn>
+          <TableHeaderColumn >Start Time</TableHeaderColumn>
+          <TableHeaderColumn >End Time</TableHeaderColumn>
+          <TableHeaderColumn >Action</TableHeaderColumn>
+
+        </BootstrapTable>
       }
     }
     // NOTE: How do you access the time in the 'data' object to change the time zone??
@@ -172,7 +203,10 @@ class CaptureList extends React.Component {
       else {
         return (
           <div>
-            {this.renderCapturesTable(this.props.capturesCompleted, 'completed')}
+            {this.renderRadioButtons()}
+            <CaptureTransactionsModal />
+            {loader}
+            {this.renderTable()}
           </div>
         )
       }
