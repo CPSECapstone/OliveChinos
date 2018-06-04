@@ -191,7 +191,6 @@ def _process_capture_details(record):
   }  
  
 def _convert_time(time, time_zone): 
-  print('CONVERTING TIME')
   time = datetime.strptime(time, "%Y-%m-%d  %H:%M:%S")
   tz_offset = timedelta(hours=7)
   time = time - tz_offset
