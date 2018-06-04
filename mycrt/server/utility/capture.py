@@ -179,7 +179,7 @@ def _process_capture_details(record):
   #end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
   start_time = start_time.replace("/", "-")#start_time.strftime("%Y-%m-%d  %H:%M:%S")
   start_time = _convert_time(start_time, 'PST')
-  end_time = "No end time." if end_time is None else end_time.replace("/", "-")#end_time.strftime("%Y-%m-%d  %H:%M:%S")
+  end_time = "No end time." if end_time is None else _convert_time(end_time.replace("/", "-"), 'PST')#end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
   return {
     "captureName" : name,
