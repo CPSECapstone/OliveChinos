@@ -294,6 +294,9 @@ def schedule_capture(capture_name, db_name, start_time, end_time, endpoint, rds_
                VALUES ('{0}', '{1}', '{2}', '{3}', "scheduled", '{4}', '{5}', '{6}', '{7}', '{8}')'''.format(db_name, capture_name, start_time, end_time, endpoint, username, password, rds_name, filters)
 
   cm.execute_query(query)
+  _update_capture_count()
+  _update_analytics()
+  
 
 
 def start_capture(capture_name, endpoint, rds_name, db_name, start_time, username, password, filters, cm):
