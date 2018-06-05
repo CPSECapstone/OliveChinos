@@ -7,7 +7,7 @@ import json
 import re
 import os.path
 
-web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
+web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com/'
 
 @click.group()
 def cli(): 
@@ -122,7 +122,8 @@ def start(capture_name, start_time, end_time, credentials_file):
             'password': credential_dict['password'],
             'captureName': capture_name,
             'startTime': [start_time], 
-            'endTime': [end_time]
+            'endTime': [end_time],
+            'customEndpoint': ''
     }
 
     resp = requests.post(web_address + 'capture/start', json=task)
@@ -132,6 +133,7 @@ def start(capture_name, start_time, end_time, credentials_file):
             click.echo('The name \'' + capture_name + '\' has already been used.')
             return
 
+        print(resp.status_code)
         click.echo('''There was an error. Please make sure all parameters were given.''')
         return
 
@@ -235,7 +237,6 @@ def replay():
     pass
 
 @replay.command()
-@click.argument('credentials-file', type=click.File('rb'))
 @click.argument('capture-name')
 @click.option('-n', '--replay-name', 
         help='-name for the replay; default name will be given if not specified')
@@ -243,20 +244,23 @@ def replay():
         help='-skip over time periods with low activity while replaying')
 @click.option('-r', '--restore', is_flag=True,
         help='-restore initial database state upon replay completion')
-def start(credentials_file, capture_name, replay_name, fast_mode, restore): 
+@click.option('-c', '--credentials-file', type=click.File('rb'),
+        help='-name of the credentials file; if none given, \'credentials\' will  be used')
+def start(capture_name, replay_name, fast_mode, restore, credentials_file): 
     '''-start a new replay immediately
     
     Scheduled replays are not currently supported.
     '''
-
     credential_dict = None
     try: 
+        if not credentials_file: 
+            credentials_file = open('credentials', 'rb')
         credential_dict = json.load(credentials_file)
 
     except JSONDecodeError: 
-        click.echo('''There was an error. Please check the format of the given credentials file.''')
+        click.echo("Please check the format of the given credentials file.")
         return
-
+ 
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
@@ -273,7 +277,11 @@ def start(credentials_file, capture_name, replay_name, fast_mode, restore):
 
     resp = requests.post(web_address + 'replay', json=task)
 
-    if resp.status_code != 200: #TODO will this error out if replay name not unique?
+    if resp.status_code != 200:         
+        if resp.status_code == 400: #replay name must be unique
+            click.echo('The name \'' + capture_name + '\' has already been used.')
+            return
+
         click.echo('''There was an error. Please make sure the specified capture name exists and check the database credentials.''')
         return
 
@@ -427,7 +435,7 @@ def _print_metric_averages(replay_name, metric_data_points, metric_names, start_
     if path: 
         #write to specified file
         try: 
-            with open(path,'w') as f: 
+            with open(path,'w+') as f: 
                 f.write(output_string)
         except: 
             click.echo('The given path is invalid.')
@@ -455,7 +463,7 @@ def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, star
     if path: 
         #write to specified file
         try: 
-            with open(path,'w') as f: 
+            with open(path,'w+') as f: 
                 f.write(output_string)
         except: 
             click.echo('The given path is invalid.')
