@@ -22,6 +22,17 @@ class CaptureOptions extends React.Component {
             let totalReplayNames = Object.keys(refProps.analyticsForGraph[uniqueName]['replays']);
             refProps.dispatch(setTotalNamesForGraph(totalReplayNames))
         }
+        function changeTimezone(cell, row) {
+            if (cell === 'No end time.') {
+               return cell;
+            }
+            let d = new Date(cell)
+            d.setHours(d.getHours() - 7);
+            let datestring = d.getFullYear() + "-" + (d.getMonth()+1) 
+                           + "-" + d.getDate()  + " " + ("0" + d.getHours()).slice(-2) + ":" 
+                           + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2);
+            return datestring
+         }
 
         var options = {
             onRowClick: function(row) {
@@ -42,7 +53,7 @@ class CaptureOptions extends React.Component {
             return (
             <BootstrapTable bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } options={options} hover data={ CaptureData } search={ true } multiColumnSearch={ true }>
                 <TableHeaderColumn dataField='Name' isKey>Select a Capture</TableHeaderColumn>
-                <TableHeaderColumn dataField='Date'></TableHeaderColumn>
+                <TableHeaderColumn dataField='Date' dataFormat={changeTimezone}></TableHeaderColumn>
             </BootstrapTable>
             );
         }

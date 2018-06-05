@@ -90,6 +90,18 @@ class CaptureReplaySelector extends React.Component {
             refProps.dispatch(setBooleansForGraph(newBooleans));
         }
 
+        function changeTimezone(cell, row) {
+            if (cell === 'No end time.') {
+               return cell;
+            }
+            let d = new Date(cell)
+            d.setHours(d.getHours() - 7);
+            let datestring = d.getFullYear() + "-" + (d.getMonth()+1) 
+                           + "-" + d.getDate()  + " " + ("0" + d.getHours()).slice(-2) + ":" 
+                           + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2);
+            return datestring
+         }
+
 
         var None = [{
             none: `No Replays Recorded For ${refProps.currentCaptureForGraph} Yet.`
@@ -169,7 +181,7 @@ class CaptureReplaySelector extends React.Component {
             return(
                 <BootstrapTable selectRow={selectRowProp} bodyStyle={ {height: '180px'}} containerStyle={ {position: 'absolute', paddingRight: '20px'} } deleteRow selectRow={ selectRowProp } options={options} hover data={ replayData } search={ true } multiColumnSearch={ true }>
                     <TableHeaderColumn dataField='Name' isKey>Select Replay(s) From {this.props.currentCaptureForGraph}</TableHeaderColumn>
-                    <TableHeaderColumn dataField='Date'></TableHeaderColumn>
+                    <TableHeaderColumn dataField='Date' dataFormat={changeTimezone}></TableHeaderColumn>
                 </BootstrapTable>
             )
         }
