@@ -74,7 +74,10 @@ def _execute_transactions(hostname, transactions, fast_mode, database, username,
       seconds_elapsed = (datetime.utcnow() - start_time).total_seconds()
       if seconds_elapsed < seconds_to_elapse:
         time.sleep(seconds_to_elapse - seconds_elapsed)
-      cur.execute(command)
+      try:
+        cur.execute(command)
+      except:
+        pass
       print("time: ", command, file=sys.stderr)
 
   end_time = datetime.utcnow()
