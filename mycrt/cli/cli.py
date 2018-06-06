@@ -99,6 +99,9 @@ def start(capture_name, start_time, end_time, credentials_file):
     
     if not capture_name: 
         capture_name = ''
+    elif '/' in capture_name: 
+            click.echo('Error: No spaces or / allowed in name. Please try again.')
+            return
 
     if not start_time: #interactive capture
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
@@ -219,7 +222,7 @@ def delete(capture_name):
     
     This will remove any record of the capture. 
     '''
-    #NOTE did we decide that deleting a capture will also remove all replays associated with it? 
+
     task={'capture': capture_name}
 
     resp = requests.delete(web_address + 'capture/delete', json=task)
@@ -260,6 +263,10 @@ def start(capture_name, replay_name, fast_mode, restore, credentials_file):
     except JSONDecodeError: 
         click.echo("Please check the format of the given credentials file.")
         return
+
+    if '/' in replay_name: 
+            click.echo('Error: No spaces or / allowed in name. Please try again.')
+            return
  
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
