@@ -136,7 +136,6 @@ def start(capture_name, start_time, end_time, credentials_file):
             click.echo('The name \'' + capture_name + '\' has already been used.')
             return
 
-        print(resp.status_code)
         click.echo('''There was an error. Please make sure all parameters were given.''')
         return
 
