@@ -7,7 +7,7 @@ import json
 import re
 import os.path
 
-web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com/'
+web_address = 'http://ec2-34-201-122-75.compute-1.amazonaws.com/'
 
 @click.group()
 def cli(): 
@@ -381,11 +381,11 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw, pat
     if end_time: 
         end_time = _convert_to_datetime(end_time)
 
-    if raw: #print metrics in json format
-        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time, path)
+    try: 
+        if raw: #print metrics in json format
+            _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time, path)
 
-    else : #compute metric averages for each replay
-        try:
+        else : #compute metric averages for each replay
             '''Current bucket structure:
                capture
                |--> replay
@@ -400,9 +400,9 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw, pat
                 replay_data_points = capture_folder['replays'][replay]
                 _print_metric_averages(replay, replay_data_points, metric_names, start_time, end_time, path)
 
-        except (ValueError, KeyError, TypeError): 
-            click.echo('''One or more of the specified replay names do not exist. Please try again.''')
-            return
+    except (ValueError, KeyError, TypeError): 
+        click.echo('''The capture name or one or more of the specified replay names do not exist. Please try again.''')
+        return
 
 def _print_metric_averages(replay_name, metric_data_points, metric_names, start_time, end_time, path): 
     '''Dict containing tuple with string for printing and aggregate average of 
