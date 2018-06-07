@@ -1,0 +1,20 @@
+.settingOptionsContainer {
+    text-align: center;
+    max-width: 400;
+    margin: '0 auto 10px';
+}
+
+#timeZoneTitle {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#timeZoneContainer {
+    margin-bottom: 40px;
+}
+
+#logoutContainer {
+    margin-top: 8px;
+}
+
+

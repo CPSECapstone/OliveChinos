@@ -190,7 +190,7 @@ class Replay extends React.Component {
         return (
           <div className='row'>
             <Button
-              className='btn-danger' style={{ marginLeft: '10px' }}
+              className='stopReplayButton btn-danger' style={{ marginLeft: '10px' }}
               onClick={() => that.stopActiveReplay(row["capture"], row["replay"])}
             >
               STOP
@@ -202,13 +202,13 @@ class Replay extends React.Component {
         return (
           <div className='row'>
             <Button
-              className='btn-info'
+              className='analyzeReplayButton btn-info'
               onClick={() => that.analyze(row["capture"], row["replay"])}
             >
               <span className="glyphicon glyphicon-stats"></span>
             </Button>
             <Button
-              className='btn-danger' style={{ marginLeft: '10px' }}
+              className='deleteReplayButton btn-danger' style={{ marginLeft: '10px' }}
               onClick={() => that.deleteReplay(row["capture"], row["replay"])}
             >
               <span className="glyphicon glyphicon-trash"></span>
@@ -284,7 +284,7 @@ class Replay extends React.Component {
   renderRadioButtons() {
     return (
       <ButtonToolbar className="buttonToolbar">
-        <ToggleButtonGroup type="radio" name="options" value={this.state.replayType} onChange={this.handleReplayTypeChange}>
+        <ToggleButtonGroup id="replayTypeToggle" type="radio" name="options" value={this.state.replayType} onChange={this.handleReplayTypeChange}>
           <ToggleButton className="toggleButton" id="toggle" value='Active' >
             Active
             </ToggleButton>

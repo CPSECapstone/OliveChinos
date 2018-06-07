@@ -1,0 +1,24 @@
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 618-700-179
+(34648) wsgi starting up on http://0.0.0.0:5000
+ * Detected change in '/Users/cbrown/git/AlexsJawline/mycrt/server/mycrt.py', reloading
+<configparser.ConfigParser object at 0x1039578d0>
+{'aws_access_key_id': 'AKIAJR34D2NQFEJIP3GA', 'aws_secret_access_key': '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', 'region_name': 'us-east-2'}
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 618-700-179
+(35746) wsgi starting up on http://0.0.0.0:5000
+ * Detected change in '/Users/cbrown/git/AlexsJawline/mycrt/server/utility/capture.py', reloading
+<configparser.ConfigParser object at 0x107f928d0>
+{'aws_access_key_id': 'AKIAJR34D2NQFEJIP3GA', 'aws_secret_access_key': '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', 'region_name': 'us-east-2'}
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 618-700-179
+(35824) wsgi starting up on http://0.0.0.0:5000
+ * Detected change in '/Users/cbrown/git/AlexsJawline/mycrt/server/mycrt.py', reloading
+<configparser.ConfigParser object at 0x10406c8d0>
+{'aws_access_key_id': 'AKIAJR34D2NQFEJIP3GA', 'aws_secret_access_key': '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', 'region_name': 'us-east-2'}
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 618-700-179

@@ -18,7 +18,7 @@ import {
   fetchCapturesToReplay
 } from '../actions/index';
 import { connect } from 'react-redux'
-import IssueModal  from  './issueModal'
+import IssueModal from './issueModal'
 import LogoutModal from './logoutModal'
 import InfoAnalytics from './infoAnalytics'
 import io from 'socket.io-client';
@@ -121,8 +121,8 @@ class Home extends Component {
       return (
         <div className="tabcontent">
           <h3 style={{ marginLeft: '20px' }}>Analytics
-          <Glyphicon style={{paddingLeft:'20px', cursor:'pointer'}} glyph="info-sign"
-          onClick={() => this.setState({ analyticsInfoShow: true })}/>
+          <Glyphicon style={{ paddingLeft: '20px', cursor: 'pointer' }} glyph="info-sign"
+              onClick={() => this.setState({ analyticsInfoShow: true })} />
           </h3>
           <Analytics />
         </div>
@@ -161,7 +161,7 @@ class Home extends Component {
     var classNames = require('classnames');
     let issueClose = () => this.setState({ issueShow: false });
     let logoutClose = () => this.setState({ logoutShow: false });
-    let analyticsInfoClose = () => this.setState({ analyticsInfoShow: false})
+    let analyticsInfoClose = () => this.setState({ analyticsInfoShow: false })
 
     return (
       <div>
@@ -190,7 +190,7 @@ class Home extends Component {
 
             <div id="userContainer">
               <div id="userLogoContainer">
-                <span id="userLogo" className="glyphicon glyphicon-user" onClick={() => this.setState({ logoutShow: true })}></span>
+                <span id="userLogo" className="glyphicon glyphicon-cog" onClick={() => this.setState({ logoutShow: true })}></span>
               </div>
             </div>
             <div id="issueContainer">
@@ -206,25 +206,26 @@ class Home extends Component {
         <div>
           <div className="tab" >
             <button
+              id="captureTabBtn"
               className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onCapture' })}
               onClick={() => { console.log(this.props.stateType); this.props.dispatch(changeStateForComponents("onCapture")) }}
               type="button"
             >
               Capture
             </button>
-            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onReplay' })}
+            <button id="replayTabBtn" className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onReplay' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
               Replay
             </button>
-            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze' })}
+            <button id="analyzeTabBtn" className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
               Analyze
             </button>
           </div>
           {this.renderPage()}
-          <IssueModal show={this.state.issueShow} onHide={issueClose}/>
-          <LogoutModal show={this.state.logoutShow} onHide={logoutClose}/>
-          <InfoAnalytics show={this.state.analyticsInfoShow} onHide={analyticsInfoClose}/>
+          <IssueModal show={this.state.issueShow} onHide={issueClose} />
+          <LogoutModal show={this.state.logoutShow} onHide={logoutClose} store={this.props.data} />
+          <InfoAnalytics show={this.state.analyticsInfoShow} onHide={analyticsInfoClose} />
 
         </div>
       </div >
