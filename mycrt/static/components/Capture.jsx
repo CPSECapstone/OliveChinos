@@ -329,12 +329,14 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
+                id="startTimeInput"
                 value={this.state.captureStartTime}
                 onChange={date => {
                   this.setState({ captureStartTime: date })
                 }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
+                  id="endTimeInput"
                   value={this.state.captureEndTime}
                   onChange={date => {
                     this.setState({ captureEndTime: date })
@@ -347,7 +349,7 @@ class Capture extends React.Component {
     let filterField = null;
     if (this.state.filterMode) {
       filterField = (<div>
-        <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
+        <FormControl id="queryFilterInput" componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
         <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
       </div>)
     }
@@ -355,7 +357,7 @@ class Capture extends React.Component {
     let rdsChanger = null;
     if (this.state.rdsMode == 'instance_name') {
       rdsChanger = <FormGroup controlId="formControlsSelect">
-        <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
+        <FormControl id="rdsSelector" componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
           {this.createDBInstancesSelect(this.props.databaseInstances)}
         </FormControl>
       </FormGroup>
@@ -376,7 +378,7 @@ class Capture extends React.Component {
         <h4>Oh snap! You got an error!</h4>
         <p>{this.state.alertError}</p>
         <p>
-          <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+          <Button id="hideAlertBtn" onClick={this.handleCloseAlert}>Hide Alert</Button>
         </p>
       </Alert>
     }
@@ -484,8 +486,8 @@ class Capture extends React.Component {
             </form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.handleClose}>Close</Button>
-            <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
+            <Button id="closeNewCaptureBtn" onClick={this.handleClose}>Close</Button>
+            <Button id="submitNewCaptureBtn" bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
 
