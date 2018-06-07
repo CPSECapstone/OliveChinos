@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# start an interactive capture 
+mycrt-cli capture start -n 'cli-capture'
+echo
+echo Sleeping for 20s...
+sleep 20
+mycrt-cli capture end 'cli-capture'
+
+echo
+echo Listing completed captures...
+mycrt-cli capture view -c | grep cli-capture
+sleep 15
+
+# replay on 2 different rds instances
+echo
+echo Starting sample replays in time-based mode... 
+sleep 3
+mycrt-cli replay start 'cli-capture' -n 'cli-replay-1'
+mycrt-cli replay start -c 'big_db' 'cli-capture' -n 'cli-replay-2'
+
+sleep 15
+
+echo
+echo Viewing ongoing replays...
+mycrt-cli replay view -o
+
+sleep 10
+
+#retrieve metric data points for specified time period
+echo
+echo Viewing analytics for previous capture... 
+mycrt-cli analyze view -r 'Unique-Capture-Name' 'replay-from-Unique-Capture-Name' -s 2018-06-04T17:40:00 -e 2018-06-04T17:45:00 -p metrics 
+
+sleep 10
+cat metrics
+
+sleep 20
+# delete capture
+echo
+echo Deleting capture...
+mycrt-cli capture delete 'cli-capture' 
+
+echo Deleting replays...
+mycrt-cli replay delete 'cli-capture' 'cli-replay-1'
+mycrt-cli replay delete 'cli-capture' 'cli-replay-2'
+
