@@ -7,7 +7,7 @@ import json
 import re
 import os.path
 
-web_address = 'http://ec2-52-206-116-140.compute-1.amazonaws.com:5000/'
+web_address = 'http://ec2-34-201-122-75.compute-1.amazonaws.com/'
 
 @click.group()
 def cli(): 
@@ -46,7 +46,7 @@ def view(completed, ongoing, scheduled):
 
 def _get_capture_list(status): 
     endpoint='list_' + status
-    captures = requests.get(web_address + 'capture/'+endpoint)
+    captures = get_endpoint('capture/', endpoint)
 
     if captures.status_code != 200: #there was an error
         click.echo('''There was an error connecting to your database.''')
@@ -99,6 +99,9 @@ def start(capture_name, start_time, end_time, credentials_file):
     
     if not capture_name: 
         capture_name = ''
+    elif '/' in capture_name: 
+            click.echo('Error: No spaces or / allowed in name. Please try again.')
+            return
 
     if not start_time: #interactive capture
         date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
@@ -122,7 +125,8 @@ def start(capture_name, start_time, end_time, credentials_file):
             'password': credential_dict['password'],
             'captureName': capture_name,
             'startTime': [start_time], 
-            'endTime': [end_time]
+            'endTime': [end_time],
+            'customEndpoint': ''
     }
 
     resp = requests.post(web_address + 'capture/start', json=task)
@@ -217,7 +221,7 @@ def delete(capture_name):
     
     This will remove any record of the capture. 
     '''
-    #NOTE did we decide that deleting a capture will also remove all replays associated with it? 
+
     task={'capture': capture_name}
 
     resp = requests.delete(web_address + 'capture/delete', json=task)
@@ -235,7 +239,6 @@ def replay():
     pass
 
 @replay.command()
-@click.argument('credentials-file', type=click.File('rb'))
 @click.argument('capture-name')
 @click.option('-n', '--replay-name', 
         help='-name for the replay; default name will be given if not specified')
@@ -243,20 +246,27 @@ def replay():
         help='-skip over time periods with low activity while replaying')
 @click.option('-r', '--restore', is_flag=True,
         help='-restore initial database state upon replay completion')
-def start(credentials_file, capture_name, replay_name, fast_mode, restore): 
+@click.option('-c', '--credentials-file', type=click.File('rb'),
+        help='-name of the credentials file; if none given, \'credentials\' will  be used')
+def start(capture_name, replay_name, fast_mode, restore, credentials_file): 
     '''-start a new replay immediately
     
     Scheduled replays are not currently supported.
     '''
-
     credential_dict = None
     try: 
+        if not credentials_file: 
+            credentials_file = open('credentials', 'rb')
         credential_dict = json.load(credentials_file)
 
     except JSONDecodeError: 
-        click.echo('''There was an error. Please check the format of the given credentials file.''')
+        click.echo("Please check the format of the given credentials file.")
         return
 
+    if '/' in replay_name: 
+            click.echo('Error: No spaces or / allowed in name. Please try again.')
+            return
+ 
     date_time=datetime.utcnow().strftime('%b/%d/%Y_%H:%M:%S')
     start_time=date_time.split('_')[1]
 
@@ -273,7 +283,11 @@ def start(credentials_file, capture_name, replay_name, fast_mode, restore):
 
     resp = requests.post(web_address + 'replay', json=task)
 
-    if resp.status_code != 200: #TODO will this error out if replay name not unique?
+    if resp.status_code != 200:         
+        if resp.status_code == 400: #replay name must be unique
+            click.echo('The name \'' + capture_name + '\' has already been used.')
+            return
+
         click.echo('''There was an error. Please make sure the specified capture name exists and check the database credentials.''')
         return
 
@@ -327,7 +341,7 @@ def _echo_replay_list(is_ongoing):
     path = 'list'
     if is_ongoing: 
         path = 'active_' + path
-    replay_list = requests.get(web_address + 'replay/' + path)
+    replay_list = get_endpoint('replay/', path)
     if replay_list.status_code != 200: 
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -361,7 +375,7 @@ def list_metrics():
 def view(capture_name, replay_names, metric_name, start_time, end_time, raw, path):
     '''-view metrics for any number of replays'''
 
-    analytics = requests.get(web_address + 'analytics')
+    analytics = get_endpoint('analytics', '')
     if analytics.status_code != 200: #there was an error
         click.echo('''There was an error connecting to the server. Check your credentials.''')
         return
@@ -373,11 +387,11 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw, pat
     if end_time: 
         end_time = _convert_to_datetime(end_time)
 
-    if raw: #print metrics in json format
-        _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time, path)
+    try: 
+        if raw: #print metrics in json format
+            _print_json_metrics(json_input, capture_name, replay_names, metric_name, start_time, end_time, path)
 
-    else : #compute metric averages for each replay
-        try:
+        else : #compute metric averages for each replay
             '''Current bucket structure:
                capture
                |--> replay
@@ -392,9 +406,9 @@ def view(capture_name, replay_names, metric_name, start_time, end_time, raw, pat
                 replay_data_points = capture_folder['replays'][replay]
                 _print_metric_averages(replay, replay_data_points, metric_names, start_time, end_time, path)
 
-        except (ValueError, KeyError, TypeError): 
-            click.echo('''One or more of the specified replay names do not exist. Please try again.''')
-            return
+    except (ValueError, KeyError, TypeError): 
+        click.echo('''The capture name or one or more of the specified replay names do not exist. Please try again.''')
+        return
 
 def _print_metric_averages(replay_name, metric_data_points, metric_names, start_time, end_time, path): 
     '''Dict containing tuple with string for printing and aggregate average of 
@@ -427,7 +441,7 @@ def _print_metric_averages(replay_name, metric_data_points, metric_names, start_
     if path: 
         #write to specified file
         try: 
-            with open(path,'w') as f: 
+            with open(path,'w+') as f: 
                 f.write(output_string)
         except: 
             click.echo('The given path is invalid.')
@@ -455,7 +469,7 @@ def _print_json_metrics(raw_json, capture_name, replay_names, metric_names, star
     if path: 
         #write to specified file
         try: 
-            with open(path,'w') as f: 
+            with open(path,'w+') as f: 
                 f.write(output_string)
         except: 
             click.echo('The given path is invalid.')
@@ -517,3 +531,6 @@ def get_average(metric_list):
 
 def format_json(json_input): 
     return json.dumps(json_input, indent=4, sort_keys=True)
+
+def get_endpoint(feature, path): 
+    return requests.get(web_address + feature + path)
