@@ -246,7 +246,7 @@ export default class ReplayForm extends React.Component {
                 <h4>Oh snap! You got an error!</h4>
                 <p>{this.state.alertError}</p>
                 <p>
-                    <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+                    <Button id="replayModalHideAlertBtn" onClick={this.handleCloseAlert}>Hide Alert</Button>
                 </p>
             </Alert>
         }
@@ -254,7 +254,7 @@ export default class ReplayForm extends React.Component {
         let filterField = null;
         if (this.state.filterMode) {
             filterField = (<div>
-                <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
+                <FormControl id="replayFilterInput" componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
                 <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
             </div>)
 
@@ -285,34 +285,34 @@ export default class ReplayForm extends React.Component {
                         </FormGroup>
                         <FormGroup controlId="formControlsSelectCapture">
                             <ControlLabel>Capture To Replay</ControlLabel>
-                            <FormControl componentClass="select" placeholder="select" value={capToReplay} onChange={this.updateCaptureToReplay}>
+                            <FormControl id="captureToReplaySelect" componentClass="select" placeholder="select" value={capToReplay} onChange={this.updateCaptureToReplay}>
                                 {captureOptions}
                             </FormControl>
                         </FormGroup>
                         <FormGroup controlId="formControlsSelectRDS">
                             <ControlLabel>RDS Instance</ControlLabel>
-                            <FormControl componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
+                            <FormControl id="replayRdsSelect" componentClass="select" placeholder="select" value={this.state.replayRDSInstance} onChange={this.updateReplayRDS}>
                                 {this.createDBInstancesSelect(this.props.store.databaseInstances)}
                             </FormControl>
                         </FormGroup>
                         <FormGroup>
                             <ControlLabel>DB Name</ControlLabel>
-                            <FormControl type="text" placeholder="Enter name" value={this.state.replayDBName} onChange={this.handleDBNameChange} />
+                            <FormControl id="replayDbNameInput" type="text" placeholder="Enter name" value={this.state.replayDBName} onChange={this.handleDBNameChange} />
                         </FormGroup>
                         <FormGroup id="dbInfoForm">
                             <Col className="dbInfoFormCol" sm={6}>
                                 <ControlLabel>DB Username</ControlLabel>
-                                <FormControl type="text" placeholder="Enter username" value={this.state.replayDBUsername} onChange={this.handleDBUsernameChange} />
+                                <FormControl id="replayUsernameInput" type="text" placeholder="Enter username" value={this.state.replayDBUsername} onChange={this.handleDBUsernameChange} />
                             </Col>
                             <Col className="dbInfoFormCol" sm={6}>
                                 <ControlLabel>DB Password</ControlLabel>
-                                <FormControl type="password" placeholder="Enter password" value={this.state.replayDBPassword} onChange={this.handleDBPasswordChange} />
+                                <FormControl id="replayPasswordInput" type="password" placeholder="Enter password" value={this.state.replayDBPassword} onChange={this.handleDBPasswordChange} />
                             </Col>
                         </FormGroup>
                         <FormGroup>
                             <ControlLabel>Query Filtering</ControlLabel>
                             <ButtonToolbar>
-                                <ToggleButtonGroup type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
+                                <ToggleButtonGroup id="replayQueryFilterToggle" type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
                                     <ToggleButton id="toggle" value={true}>On</ToggleButton>
                                     <ToggleButton id="toggle" value={false}>Off</ToggleButton>
                                 </ToggleButtonGroup>
@@ -322,7 +322,7 @@ export default class ReplayForm extends React.Component {
                         <FormGroup>
                             <div>
                                 <ButtonToolbar>
-                                    <ToggleButtonGroup type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
+                                    <ToggleButtonGroup id="replayModeToggle" type="radio" name="options" value={this.state.fastMode} onChange={this.handleModeChange}>
                                         <ToggleButton value={true}>Fast Mode</ToggleButton>
                                         <ToggleButton value={false}>Time-Based Mode</ToggleButton>
                                     </ToggleButtonGroup>
@@ -332,8 +332,8 @@ export default class ReplayForm extends React.Component {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.handleClose}>Close</Button>
-                    <Button bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
+                    <Button id="closeNewReplayModalBtn" onClick={this.handleClose}>Close</Button>
+                    <Button id="startReplayButton" bsStyle="primary" onClick={this.handleCloseAndAddReplay}>Start Replay</Button>
                 </Modal.Footer>
             </Modal >
         )
