@@ -52,7 +52,7 @@ export default class IssueModal extends Component {
     </div>*/}
             <div id="logoutContainer">
               <div>
-                <Button bsStyle="danger" onClick={this.submit} type="submit" block>Logout</Button>
+                <Button id="logoutButton" bsStyle="danger" onClick={this.submit} type="submit" block>Logout</Button>
               </div>
             </div>
           </div>
