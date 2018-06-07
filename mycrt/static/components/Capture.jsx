@@ -210,7 +210,7 @@ class Capture extends React.Component {
         }
         that.handleShowAlert()
       })
-      that.handleCloseAlert();      
+    that.handleCloseAlert();
   }
 
 
@@ -426,7 +426,7 @@ class Capture extends React.Component {
               >
                 <ControlLabel>Capture Name</ControlLabel>
                 <FormControl
-                  //id='captureNameInput'
+                  id='captureNameInput'
                   type="text"
                   value={this.state.captureName}
                   placeholder="Enter name"
@@ -448,22 +448,22 @@ class Capture extends React.Component {
               {rdsChanger}
               <FormGroup>
                 <ControlLabel>DB Name</ControlLabel>
-                <FormControl type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
+                <FormControl id="dbNameInput" type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
               </FormGroup>
               <FormGroup id="dbInfoForm">
                 <Col className="dbInfoFormCol" sm={6}>
                   <ControlLabel>DB Username</ControlLabel>
-                  <FormControl type="text" placeholder="Enter username" value={this.state.captureDBUsername} onChange={this.handleDBUsernameChange} />
+                  <FormControl id="dbUsernameInput" type="text" placeholder="Enter username" value={this.state.captureDBUsername} onChange={this.handleDBUsernameChange} />
                 </Col>
                 <Col className="dbInfoFormCol" sm={6}>
                   <ControlLabel>DB Password</ControlLabel>
-                  <FormControl type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
+                  <FormControl id="dbpasswordInput" type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
                 </Col>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>Query Filtering</ControlLabel>
                 <ButtonToolbar>
-                  <ToggleButtonGroup type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
+                  <ToggleButtonGroup id="toggleFilterBtn" type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
                     <ToggleButton id="toggle" value={true}>On</ToggleButton>
                     <ToggleButton id="toggle" value={false}>Off</ToggleButton>
                   </ToggleButtonGroup>
@@ -473,7 +473,7 @@ class Capture extends React.Component {
               <FormGroup>
                 <div className="modeButtonContainer">
                   <ButtonToolbar>
-                    <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
+                    <ToggleButtonGroup id="toggleCaptureModeBtn" type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
                       <ToggleButton id="toggle" value='interactive'>Interactive Mode</ToggleButton>
                       <ToggleButton id="toggle" value='schedule'>Schedule Mode</ToggleButton>
                     </ToggleButtonGroup>
