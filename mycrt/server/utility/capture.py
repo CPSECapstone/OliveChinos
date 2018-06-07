@@ -1,7 +1,7 @@
 import pickle
 import pymysql as sql
 import boto3
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import re
 import sys
@@ -178,7 +178,8 @@ def _process_capture_details(record):
   #start_time = 'No start time.' if not hasattr(start_time, 'strftime') else start_time.strftime("%Y-%m-%d  %H:%M:%S")
   #end_time = "No end time." if ((end_time is None) or (not hasattr(end_time, 'strftime'))) else end_time.strftime("%Y-%m-%d  %H:%M:%S")
   start_time = start_time.replace("/", "-")#start_time.strftime("%Y-%m-%d  %H:%M:%S")
-  end_time = "No end time." if end_time is None else end_time.replace("/", "-")#end_time.strftime("%Y-%m-%d  %H:%M:%S")
+  start_time = _convert_time(start_time, 'PST')
+  end_time = "No end time." if end_time is None else _convert_time(end_time.replace("/", "-"), 'PST')#end_time.strftime("%Y-%m-%d  %H:%M:%S")
 
   return {
     "captureName" : name,
@@ -189,6 +190,12 @@ def _process_capture_details(record):
     "rds": endpoint #TODO Change "rds" to "endpoint"
   }  
  
+def _convert_time(time, time_zone): 
+  time = datetime.strptime(time, "%Y-%m-%d  %H:%M:%S")
+  tz_offset = timedelta(hours=7)
+  time = time - tz_offset
+  return time.strftime("%Y-%m-%d  %H:%M:%S")
+
 
 def get_capture_number(cm):
   ''' Returns the number of ongoing captures.

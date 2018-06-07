@@ -210,7 +210,7 @@ class Capture extends React.Component {
         }
         that.handleShowAlert()
       })
-      that.handleCloseAlert();      
+    that.handleCloseAlert();
   }
 
 
@@ -329,12 +329,14 @@ class Capture extends React.Component {
           <tbody>
             <tr><td id='captureStartTimeContainer'><div>Start Time</div>
               <Flatpickr data-enable-time
+                id="startTimeInput"
                 value={this.state.captureStartTime}
                 onChange={date => {
                   this.setState({ captureStartTime: date })
                 }} /></td>
               <td><div>End Time</div>
                 <Flatpickr data-enable-time
+                  id="endTimeInput"
                   value={this.state.captureEndTime}
                   onChange={date => {
                     this.setState({ captureEndTime: date })
@@ -347,7 +349,7 @@ class Capture extends React.Component {
     let filterField = null;
     if (this.state.filterMode) {
       filterField = (<div>
-        <FormControl componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
+        <FormControl id="queryFilterInput" componentClass="textarea" placeholder="Enter filter" value={this.state.filterInput} onChange={this.handleFilterInputChange} />
         <HelpBlock>Filter queries by entering a regular expression. Separate each filter by a newline.</HelpBlock>
       </div>)
     }
@@ -355,7 +357,7 @@ class Capture extends React.Component {
     let rdsChanger = null;
     if (this.state.rdsMode == 'instance_name') {
       rdsChanger = <FormGroup controlId="formControlsSelect">
-        <FormControl componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
+        <FormControl id="rdsSelector" componentClass="select" placeholder="select" value={this.state.captureRDSInstance} onChange={this.updateCaptureRDS}>
           {this.createDBInstancesSelect(this.props.databaseInstances)}
         </FormControl>
       </FormGroup>
@@ -376,7 +378,7 @@ class Capture extends React.Component {
         <h4>Oh snap! You got an error!</h4>
         <p>{this.state.alertError}</p>
         <p>
-          <Button onClick={this.handleCloseAlert}>Hide Alert</Button>
+          <Button id="captureHideAlertBtn" onClick={this.handleCloseAlert}>Hide Alert</Button>
         </p>
       </Alert>
     }
@@ -426,7 +428,7 @@ class Capture extends React.Component {
               >
                 <ControlLabel>Capture Name</ControlLabel>
                 <FormControl
-                  //id='captureNameInput'
+                  id='captureNameInput'
                   type="text"
                   value={this.state.captureName}
                   placeholder="Enter name"
@@ -448,22 +450,22 @@ class Capture extends React.Component {
               {rdsChanger}
               <FormGroup>
                 <ControlLabel>DB Name</ControlLabel>
-                <FormControl type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
+                <FormControl id="dbNameInput" type="text" placeholder="Enter name" value={this.state.captureDBName} onChange={this.handleDBNameChange} />
               </FormGroup>
               <FormGroup id="dbInfoForm">
                 <Col className="dbInfoFormCol" sm={6}>
                   <ControlLabel>DB Username</ControlLabel>
-                  <FormControl type="text" placeholder="Enter username" value={this.state.captureDBUsername} onChange={this.handleDBUsernameChange} />
+                  <FormControl id="dbUsernameInput" type="text" placeholder="Enter username" value={this.state.captureDBUsername} onChange={this.handleDBUsernameChange} />
                 </Col>
                 <Col className="dbInfoFormCol" sm={6}>
                   <ControlLabel>DB Password</ControlLabel>
-                  <FormControl type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
+                  <FormControl id="dbpasswordInput" type="password" placeholder="Enter password" value={this.state.captureDBPassword} onChange={this.handleDBPasswordChange} />
                 </Col>
               </FormGroup>
               <FormGroup>
                 <ControlLabel>Query Filtering</ControlLabel>
                 <ButtonToolbar>
-                  <ToggleButtonGroup type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
+                  <ToggleButtonGroup id="toggleFilterBtn" type="radio" name="options" value={this.state.filterMode} onChange={this.handleFilterModeChange}>
                     <ToggleButton id="toggle" value={true}>On</ToggleButton>
                     <ToggleButton id="toggle" value={false}>Off</ToggleButton>
                   </ToggleButtonGroup>
@@ -473,7 +475,7 @@ class Capture extends React.Component {
               <FormGroup>
                 <div className="modeButtonContainer">
                   <ButtonToolbar>
-                    <ToggleButtonGroup type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
+                    <ToggleButtonGroup id="toggleCaptureModeBtn" type="radio" name="options" value={this.state.captureMode} onChange={this.handleModeChange}>
                       <ToggleButton id="toggle" value='interactive'>Interactive Mode</ToggleButton>
                       <ToggleButton id="toggle" value='schedule'>Schedule Mode</ToggleButton>
                     </ToggleButtonGroup>
@@ -484,8 +486,8 @@ class Capture extends React.Component {
             </form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.handleClose}>Close</Button>
-            <Button bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
+            <Button id="closeNewCaptureBtn" onClick={this.handleClose}>Close</Button>
+            <Button id="submitNewCaptureBtn" bsStyle="primary" onClick={this.handleCloseAndStartCapture}>Start New Capture</Button>
           </Modal.Footer>
         </Modal>
 

@@ -1,0 +1,21 @@
+import pytest
+import unittest
+import requests
+import subprocess
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+from .context import *
+
+@pytest.mark.usefixtures('driver_init')
+class TestGUI(unittest.TestCase): 
+
+    def test_start(self): 
+        wait = WebDriverWait(self.driver, 20)
+        self.driver.get('http://0.0.0.0:5000')
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'Login')))
+
+        inputUsername = driver.find_element_by_xpath("//form[@class='Login']/input[1]")
+        inputPassword = driver.find_element_by_xpath("//form[@class='Login']/input[2]")
+
