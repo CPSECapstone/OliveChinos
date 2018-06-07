@@ -40,58 +40,25 @@ class CaptureList extends React.Component {
 
 
   renderCapturesTable(data, captureState) {
-      let currentCaptures = [];
-      let current;
-      let captureEditAction;
-      let that = this;
-      function changeTimezone(cell, row) {
-         if (cell === 'No end time.') {
-            return cell;
-         }
-         let d = new Date(cell)
-         d.setHours(d.getHours() - 7);
-         let datestring = d.getFullYear() + "-" + (d.getMonth()+1) 
-                        + "-" + d.getDate()  + " " + ("0" + d.getHours()).slice(-2) + ":" 
-                        + ("0" + d.getMinutes()).slice(-2) + ":" + ("0" + d.getSeconds()).slice(-2);
-         return datestring
-      }
-
-      function buttonFormatter(cell, row) {
-        if (captureState === 'completed') {
-          return (
-            <div className='row'>
-               <Button className='btn-warning' title='Replay this Capture'
-                  onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
-               >
-                  <span className="glyphicon glyphicon-repeat"></span>
-               </Button>
-               <Button className='btn-danger' title='Delete this Capture' style={{ marginLeft: '10px' }}
-                  onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
-               >
-                  <span className="glyphicon glyphicon-trash"></span>
-               </Button>
-               <Button className='btn-info' title='View Captured Transactions' style={{ marginLeft: '10px' }}
-                  onClick={() => that.handleShowCaptureTransactionsModal(row)}
-               >
-                  <span className="glyphicon glyphicon-eye-open"></span>
-               </Button>
-            </div>
-          );
-        }
-        else if (captureState === 'active') {
-          return (
-            <div className='row'>
-              <Button className='btn-danger'
-                onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'end'))}
-              >
-                STOP
+    let currentCaptures = [];
+    let current;
+    let captureEditAction;
+    let that = this;
+    function buttonFormatter(cell, row) {
+      if (captureState === 'completed') {
+        return (
+          <div className='row'>
+            <Button className='replayCaptureBtn btn-warning' title='Replay this Capture'
+              onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'REPLAY'))}
+            >
+              <span className="glyphicon glyphicon-repeat"></span>
             </Button>
-            <Button className='btn-danger' title='Delete this Capture' style={{ marginLeft: '10px' }}
+            <Button className='deleteCaptureBtn btn-danger' title='Delete this Capture' style={{ marginLeft: '10px' }}
               onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'delete'))}
             >
               <span className="glyphicon glyphicon-trash"></span>
             </Button>
-            <Button className='btn-info' title='View Captured Transactions' style={{ marginLeft: '10px' }}
+            <Button className='viewTransactionBtn btn-info' title='View Captured Transactions' style={{ marginLeft: '10px' }}
               onClick={() => that.handleShowCaptureTransactionsModal(row)}
             >
               <span className="glyphicon glyphicon-eye-open"></span>
@@ -102,7 +69,7 @@ class CaptureList extends React.Component {
       else if (captureState === 'active') {
         return (
           <div className='row'>
-            <Button className='btn-danger'
+            <Button className='stopActiveCapBtn btn-danger'
               onClick={() => that.props.dispatch(editCapture(row["captureName"], row["db"], 'end'))}
             >
               STOP
@@ -176,7 +143,7 @@ class CaptureList extends React.Component {
   renderRadioButtons() {
     return (
       <ButtonToolbar className="buttonToolbar">
-        <ToggleButtonGroup type="radio" name="options" value={this.state.captureType} onChange={this.handleCaptureTypeChange}>
+        <ToggleButtonGroup id="captureTypeToggleBtn" type="radio" name="options" value={this.state.captureType} onChange={this.handleCaptureTypeChange}>
           <ToggleButton className="toggleButton" id="toggle" value='Active' >
             Active
                 </ToggleButton>

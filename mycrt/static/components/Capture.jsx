@@ -378,7 +378,7 @@ class Capture extends React.Component {
         <h4>Oh snap! You got an error!</h4>
         <p>{this.state.alertError}</p>
         <p>
-          <Button id="hideAlertBtn" onClick={this.handleCloseAlert}>Hide Alert</Button>
+          <Button id="captureHideAlertBtn" onClick={this.handleCloseAlert}>Hide Alert</Button>
         </p>
       </Alert>
     }
