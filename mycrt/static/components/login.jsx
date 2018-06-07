@@ -64,10 +64,10 @@ class Login extends Component {
     event.preventDefault()
     var that = this
     this.getPythonLogin()
-      .then(function(result) {
+      .then(function (result) {
         that.authenticate()
       })
-      .catch(function(error) {
+      .catch(function (error) {
         that.setState({ loginError: true })
       })
   }
@@ -78,9 +78,11 @@ class Login extends Component {
     } else {
       return (
         <div
-          style={{color:'red',
-          margin:'auto',
-          textAlign:'center'}}
+          style={{
+            color: 'red',
+            margin: 'auto',
+            textAlign: 'center'
+          }}
         >
           Invalid Login Credentials
         </div>
@@ -95,54 +97,55 @@ class Login extends Component {
   renderLogin() {
     return (
       <div>
-      <div>
-        <div className="headerContainer">
-          <div id="headerLeft">
-            
-            
-          </div>
-          <div id="headerCenter">
-            <h1>
-              MyCRT
+        <div>
+          <div className="headerContainer">
+            <div id="headerLeft">
+
+
+            </div>
+            <div id="headerCenter">
+              <h1>
+                MyCRT
           </h1>
+            </div>
           </div>
-          </div>
-      </div>
-      <div
-        style={{
-          textAlign: 'center',
-          width: '30vw',
-          border: 'thin solid black',
-          padding: '15px',
-          height: '35vh'
-        }}
-        className="Login"
-      >
-        <form onSubmit={this.handleLogin}>
-          <ControlLabel>Username</ControlLabel>
-          <br />
-          <input type="text" onChange={this.handleUsernameChange} />
-          <br />
-          <ControlLabel style={{ marginTop: '10px' }}>
-            Password
+        </div>
+        <div
+          style={{
+            textAlign: 'center',
+            width: '30vw',
+            border: 'thin solid black',
+            padding: '15px',
+            height: '35vh'
+          }}
+          className="Login"
+        >
+          <form onSubmit={this.handleLogin}>
+            <ControlLabel>Username</ControlLabel>
+            <br />
+            <input type="text" id="loginUsername" onChange={this.handleUsernameChange} />
+            <br />
+            <ControlLabel style={{ marginTop: '10px' }}>
+              Password
           </ControlLabel>
-          <br />
-          <input style={{marginBottom:'30px'}}type="password" onChange={this.handlePasswordChange} />
-          <div className='row'>
-          <Button
-            block
-            bsSize="small"
-            disabled={!this.validateForm()}
-            type="submit"
-            onClick={this.handleLogin}
-            className="loginButton"
-          >
-            Login
+            <br />
+            <input style={{ marginBottom: '30px' }} type="password" id="loginPassword" onChange={this.handlePasswordChange} />
+            <div className='row'>
+              <Button
+                block
+                id="appLoginButton"
+                bsSize="small"
+                disabled={!this.validateForm()}
+                type="submit"
+                onClick={this.handleLogin}
+                className="loginButton"
+              >
+                Login
           </Button>
-          {this.errorMessage()}
-          </div>
-        </form>
-      </div>
+              {this.errorMessage()}
+            </div>
+          </form>
+        </div>
       </div>
     )
   }
