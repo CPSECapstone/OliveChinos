@@ -206,17 +206,18 @@ class Home extends Component {
         <div>
           <div className="tab" >
             <button
+              id="captureTabBtn"
               className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onCapture' })}
               onClick={() => { console.log(this.props.stateType); this.props.dispatch(changeStateForComponents("onCapture")) }}
               type="button"
             >
               Capture
             </button>
-            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onReplay' })}
+            <button id="replayTabBtn" className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onReplay' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onReplay"))}>
               Replay
             </button>
-            <button className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze' })}
+            <button id="analyzeTabBtn" className={classNames({ 'tablinks': true, 'activeTab': this.props.stateType == 'onAnalyze' })}
               onClick={() => this.props.dispatch(changeStateForComponents("onAnalyze"))}>
               Analyze
             </button>
